@@ -56,7 +56,8 @@ fun DialogX(
                         top = 25.dp, bottom = 30.dp, start = 20.dp, end = 20.dp
                     )
                     .align(Alignment.CenterHorizontally),
-                maxLines = 3
+                maxLines = 3,
+                color = colorResource(R.color.text_color)
             )
         },
         cancelString = cancelString,
