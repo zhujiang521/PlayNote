@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#141218</color>
+    <color name="text_color">#fafafa</color>
+    <color name="divider">#1Fe0e0f0</color>
+    <color name="item_assistant">#434343</color>
+    <color name="item_background">#000000</color>
+    <color name="popup_background">#000000</color>
+    <color name="item_select_background">#5B5858</color>
+    <color name="dialog_background">#45464C</color>
+    <color name="favorite_background">#181717</color>
+    <color name="card_border">#232323</color>
+    <color name="icon_color">#F0F0F0FF</color>
+</resources>
