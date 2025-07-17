@@ -4,18 +4,15 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.Picture
-import android.os.Build
 import android.view.MotionEvent
 import android.view.View
 import android.widget.FrameLayout
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -36,9 +33,9 @@ import androidx.ink.geometry.ImmutableVec
 import androidx.ink.rendering.android.canvas.CanvasStrokeRenderer
 import androidx.ink.strokes.Stroke
 import androidx.input.motionprediction.MotionEventPredictor
+import com.zj.data.R
 import com.zj.data.utils.saveBitmapToFile
 import com.zj.ink.data.EditNoteViewModel
-import com.zj.data.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -56,10 +53,6 @@ fun DrawingSurface(
     val selectedBrushFamily = viewModel.selectedBrushFamily
     val selectedBrushSize = viewModel.selectedBrushSize
 
-    // 在 DrawingSurface 的 touchListener 中添加坐标记录
-    var currentTouchX by remember { mutableFloatStateOf(0f) }
-    var currentTouchY by remember { mutableFloatStateOf(0f) }
-
     val context = LocalContext.current
     val rootViewState = remember { mutableStateOf<FrameLayout?>(null) }
     val scope = rememberCoroutineScope()
@@ -68,7 +61,7 @@ fun DrawingSurface(
     val currentPointerId = remember { mutableStateOf<Int?>(null) }
     val currentStrokeId = remember { mutableStateOf<InProgressStrokeId?>(null) }
     val defaultBrush = remember {
-        mutableStateOf<Brush>(
+        mutableStateOf(
             Brush.createWithColorIntArgb(
                 family = selectedBrushFamily.value,
                 colorIntArgb = selectedColor.intValue,
@@ -167,8 +160,6 @@ fun DrawingSurface(
                                     )
                                     true
                                 } else {
-                                    currentTouchX = event.x
-                                    currentTouchY = event.y
                                     val pointerId = checkNotNull(currentPointerId.value)
                                     val strokeId = checkNotNull(currentStrokeId.value)
 
@@ -262,7 +253,6 @@ fun DrawingSurface(
 }
 
 // 修改 recordCanvasToBitmap 函数：
-@RequiresApi(Build.VERSION_CODES.P)
 suspend fun recordCanvasToBitmap(
     strokes: List<Stroke>,
     canvasStrokeRenderer: CanvasStrokeRenderer,
