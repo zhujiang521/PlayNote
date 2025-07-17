@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Play AI</string>
+    <string name="app_name">Play Note</string>
     <string name="action_go">Send</string>
     <string name="label_prompt">Prompt</string>
     <string name="prompt_placeholder">Please enter the question you would like to ask</string>

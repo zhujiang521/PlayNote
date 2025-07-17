@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">玩 AI</string>
+    <string name="app_name">玩 Note</string>
     <string name="action_go">發送</string>
     <string name="label_prompt">提示</string>
     <string name="prompt_placeholder">請輸入想要提問的問題</string>
