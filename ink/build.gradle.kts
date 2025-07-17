@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -32,8 +34,10 @@ android {
         compose = true
         buildConfig = true
     }
-    kotlinOptions {
-        jvmTarget = libs.versions.jvm.target.get()
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
     }
 }
 
@@ -44,21 +48,14 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+    implementation(libs.bundles.compose)
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
-    implementation(libs.androidx.ink.authoring)
-    implementation(libs.androidx.ink.brush)
-    implementation(libs.androidx.ink.geometry)
-    implementation(libs.androidx.ink.nativeloader)
-    implementation(libs.androidx.ink.rendering)
-    implementation(libs.androidx.ink.strokes)
+    implementation(libs.bundles.ink)
+
     api(project(":data"))
 
     implementation(libs.androidx.input.motionprediction)

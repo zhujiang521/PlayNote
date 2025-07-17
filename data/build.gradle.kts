@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -37,8 +39,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = libs.versions.jvm.target.get()
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
     }
     buildFeatures {
         compose = true
@@ -60,29 +64,18 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+    implementation(libs.bundles.compose)
 
-    api(libs.androidx.datastore.preferences)
-    api(libs.androidx.room.runtime)
-    api(libs.androidx.room.ktx)
-    api(libs.androidx.room.paging)
+    api(libs.bundles.room)
     ksp(libs.androidx.room.compiler)
 
     implementation(libs.kotlinx.serialization.json)
-
     implementation(libs.kotlinx.coroutines.rx3)
 
-    api(libs.lottie.compose)
-
-    api(libs.coil.compose)
-    api(libs.coil.gif)
-    api(libs.coil.network.okhttp)
-
+    api(libs.bundles.coil)
     api(libs.bundles.markwon)
-
+    api(libs.androidx.datastore.preferences)
+    api(libs.lottie.compose)
     api(libs.androidx.paging.runtime.ktx)
     api(libs.androidx.paging.compose)
 

@@ -3,7 +3,7 @@ agp = "8.11.0"
 coilCompose = "3.2.0"
 datastorePreferences = "1.1.7"
 hiltNavigationCompose = "1.2.0"
-ink = "1.0.0-alpha04"
+ink = "1.0.0-alpha05"
 coreSplashscreen = "1.2.0-rc01"
 inputMotionprediction = "1.0.0-beta05"
 kotlin = "2.2.0"
@@ -31,7 +31,6 @@ gifCoil = "2.7.0"
 compile-sdk = "36"
 target-sdk = "36"
 min-sdk = "31"
-jvm-target = "11"
 major-version = "1.0.0"
 minor-version = "9999"  # 默认值，可以在构建时覆盖
 
@@ -84,6 +83,10 @@ markwon-tables = { module = "io.noties.markwon:ext-tables", version.ref = "markw
 
 [bundles]
 markwon = ["markwon-core", "markwon-editor", "markwon-html", "markwon-image-coil", "markwon-strikethrough", "markwon-tables"]
+ink = ["androidx-ink-strokes", "androidx-ink-rendering", "androidx-ink-nativeloader", "androidx-ink-geometry", "androidx-ink-brush", "androidx-ink-authoring"]
+compose = ["androidx-ui", "androidx-ui-graphics", "androidx-ui-tooling-preview", "androidx-material3"]
+room = ["androidx-room-ktx", "androidx-room-paging", "androidx-room-runtime"]
+coil = ["coil-network-okhttp", "coil-compose", "coil-gif"]
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

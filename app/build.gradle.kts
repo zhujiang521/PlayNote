@@ -1,4 +1,5 @@
 import com.android.build.api.variant.impl.VariantOutputImpl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
@@ -37,8 +38,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = libs.versions.jvm.target.get()
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
     }
     buildFeatures {
         compose = true
@@ -70,10 +73,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
+    implementation(libs.bundles.compose)
     implementation(project(":ink"))
 
     implementation(libs.androidx.navigation.compose)

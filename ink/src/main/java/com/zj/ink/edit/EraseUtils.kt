@@ -92,7 +92,7 @@ fun erasePartialStrokes(
             segments.forEach { segment ->
                 if (segment.size >= 2) { // 至少两个点才能形成线段
                     val newInputs = MutableStrokeInputBatch()
-                    segment.forEach { input -> newInputs.addOrThrow(input) }
+                    segment.forEach { input -> newInputs.add(input) }
                     val newStroke = Stroke(stroke.brush, newInputs)
                     updatedStrokes.add(newStroke)
                 }
