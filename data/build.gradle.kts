@@ -80,6 +80,7 @@ dependencies {
     api(libs.androidx.paging.compose)
 
     testImplementation(libs.junit)
+    debugImplementation(libs.androidx.ui.tooling)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
