@@ -116,6 +116,7 @@ fun NoteScreen(
                         onClick = {
                             editNote(item.id)
                         },
+                        searchQuery = viewModel.searchQuery.value,
                         onDelete = { viewModel.deleteNote(item) },
                     )
                 }

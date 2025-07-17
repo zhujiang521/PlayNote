@@ -34,6 +34,7 @@ import com.zj.data.model.Note
 import com.zj.data.utils.DateUtils
 import com.zj.data.R
 import com.zj.data.common.DeleteDialog
+import com.zj.data.common.HighlightedText
 import com.zj.data.common.SwipeBox
 import com.zj.data.common.SwipeBoxControl
 import com.zj.data.common.rememberSwipeBoxControl
@@ -47,6 +48,7 @@ import com.zj.data.md.MarkdownText
 fun NoteItem(
     onClick: () -> Unit = {},
     onDelete: () -> Unit = {},
+    searchQuery: String = "",
     control: SwipeBoxControl = rememberSwipeBoxControl(),
     note: Note
 ) {
@@ -103,12 +105,14 @@ fun NoteItem(
                     .clickable { onClick() }
                     .padding(dimensionResource(R.dimen.item_margin))
             ) {
-                Text(
+                HighlightedText(
                     text = note.title,
-                    fontSize = dimensionResource(R.dimen.title_text).value.sp,
-                    textAlign = TextAlign.Start,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 2,
+                    highlight = searchQuery,
+                    style = TextStyle(
+                        fontSize = dimensionResource(R.dimen.title_text).value.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    maxLines = 2
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
