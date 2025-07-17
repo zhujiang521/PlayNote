@@ -124,8 +124,8 @@
     <string name="markdown_default_title">Markdown格式預覽</string>
     <string name="search_hint">搜索便簽</string>
     <string name="share_title">分享</string>
-    <string name="share_image_via">分享图片</string>
+    <string name="share_image_via">分享圖片</string>
     <string name="file_not_found">文件未找到</string>
     <string name="share_file_via">分享文件</string>
-    <string name="share_failed">分享失败</string>
+    <string name="share_failed">分享失敗</string>
 </resources>

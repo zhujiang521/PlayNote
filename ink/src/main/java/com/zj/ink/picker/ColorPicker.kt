@@ -30,7 +30,7 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.zj.ink.R
+import com.zj.data.R
 
 @Composable
 fun ColorPicker(
@@ -62,7 +62,7 @@ fun ColorPicker(
                 .height(300.dp)
                 .padding(dimensionResource(R.dimen.screen_horizontal_margin)),
             colors = CardDefaults.cardColors(
-                containerColor = colorResource(com.zj.data.R.color.dialog_background)
+                containerColor = colorResource(R.color.dialog_background)
             )
         ) {
             Column(

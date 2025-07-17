@@ -15,7 +15,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import com.zj.ink.R
+import com.zj.data.R
 
 @Composable
 fun PenSizePicker(
@@ -28,7 +28,7 @@ fun PenSizePicker(
         Card(
             modifier = Modifier.size(300.dp, 150.dp),
             colors = CardDefaults.cardColors(
-                containerColor = colorResource(com.zj.data.R.color.dialog_background)
+                containerColor = colorResource(R.color.dialog_background)
             )
         ) {
             Column(

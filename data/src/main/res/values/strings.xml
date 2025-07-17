@@ -127,9 +127,9 @@
     <string name="chart_type_horizontal_bar">Horizontal Bar Chart</string>
     <string name="markdown_default_title">Markdown Format Preview</string>
     <string name="search_hint">Search notes</string>
-    <string name="share_title">分享</string>
-    <string name="share_image_via">分享图片</string>
-    <string name="file_not_found">文件未找到</string>
-    <string name="share_file_via">分享文件</string>
-    <string name="share_failed">分享失败</string>
+    <string name="share_title">Share</string>
+    <string name="share_image_via">Share Image</string>
+    <string name="file_not_found">File not found</string>
+    <string name="share_file_via">Share File</string>
+    <string name="share_failed">Failed to share</string>
 </resources>

@@ -17,7 +17,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.zj.data.model.Note
 import com.zj.data.utils.MarkdownExporter
-import com.zj.ink.R
+import com.zj.data.R
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -62,7 +62,7 @@ class EditNoteViewModel @Inject constructor(
     val selectedBrushFamily = mutableStateOf(StockBrushes.pressurePenLatest)
 
     @SuppressLint("MutableCollectionMutableState")
-    val drawUndoStack = mutableStateOf(mutableListOf<Set<Stroke>>(finishedStrokes.value))
+    val drawUndoStack = mutableStateOf(mutableListOf(finishedStrokes.value))
 
     @SuppressLint("MutableCollectionMutableState")
     val drawRedoStack = mutableStateOf(mutableListOf<Set<Stroke>>())

@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.ink.brush.BrushFamily
 import androidx.ink.brush.StockBrushes
-import com.zj.ink.R
+import com.zj.data.R
 
 @Composable
 fun PenPicker(
@@ -45,7 +45,7 @@ fun PenPicker(
                 .height(320.dp)
                 .padding(16.dp),
             colors = CardDefaults.cardColors(
-                containerColor = colorResource(com.zj.data.R.color.dialog_background)
+                containerColor = colorResource(R.color.dialog_background)
             )
         ) {
             Column(

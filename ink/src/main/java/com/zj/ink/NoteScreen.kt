@@ -27,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.zj.data.R
 import com.zj.data.model.INVALID_ID
 import com.zj.ink.data.NoteViewModel
 import com.zj.data.common.SearchTextField
@@ -87,7 +88,7 @@ fun NoteScreen(
                     .padding(dimensionResource(R.dimen.screen_horizontal_margin)),
                 shape = CircleShape,
                 contentColor = Color.White,
-                containerColor = colorResource(com.zj.data.R.color.primary) // 使用主题中的 secondary 颜色
+                containerColor = colorResource(R.color.primary) // 使用主题中的 secondary 颜色
             ) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_add),

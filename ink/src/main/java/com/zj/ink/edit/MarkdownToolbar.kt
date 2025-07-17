@@ -17,7 +17,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.zj.data.utils.saveImageToAppStorage
-import com.zj.ink.R
+import com.zj.data.R
 import com.zj.ink.picker.TablePicker
 
 val shortcutMap = mapOf(
@@ -106,12 +106,16 @@ internal fun MarkdownToolbar(
                     icon = button.icon,
                     contentDescription = button.title,
                     onClick = {
-                        if (button.title == R.string.image) {
-                            imagePicker.launch("image/*")
-                        } else if (button.title == R.string.table) {
-                            showTablePicker.value = true
-                        } else {
-                            onInsert(button.template)
+                        when (button.title) {
+                            R.string.image -> {
+                                imagePicker.launch("image/*")
+                            }
+                            R.string.table -> {
+                                showTablePicker.value = true
+                            }
+                            else -> {
+                                onInsert(button.template)
+                            }
                         }
                     }
                 )
