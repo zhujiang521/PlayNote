@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.zj.data.model.Note
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface NoteDao {
@@ -35,5 +36,8 @@ interface NoteDao {
 
     @Query("SELECT COUNT(*) FROM note")
     fun getNoteCount(): Int
+
+    @Query("SELECT * FROM note ORDER BY timestamp DESC LIMIT 10")
+    fun getRecentNotes(): Flow<List<Note>>
 
 }

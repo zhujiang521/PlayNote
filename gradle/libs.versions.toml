@@ -26,13 +26,14 @@ roomVersion = "2.7.2"
 hilt = "2.56.2"
 markwon = "4.6.2"
 gifCoil = "2.7.0"
+glanceVersion = "1.1.1"
 
 # 编译常量值
 compile-sdk = "36"
 target-sdk = "36"
 min-sdk = "31"
 major-version = "1.0.0"
-minor-version = "9999"  # 默认值，可以在构建时覆盖
+minor-version = "9999"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -80,6 +81,10 @@ markwon-html = { module = "io.noties.markwon:html", version.ref = "markwon" }
 markwon-image-coil = { module = "io.noties.markwon:image-coil", version.ref = "markwon" }
 markwon-strikethrough = { module = "io.noties.markwon:ext-strikethrough", version.ref = "markwon" }
 markwon-tables = { module = "io.noties.markwon:ext-tables", version.ref = "markwon" }
+glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glanceVersion" }
+glance-appwidget-preview = { module = "androidx.glance:glance-appwidget-preview", version.ref = "glanceVersion" }
+glance = { module = "androidx.glance:glance", version.ref = "glanceVersion" }
+glance-preview = { module = "androidx.glance:glance-preview", version.ref = "glanceVersion" }
 
 [bundles]
 markwon = ["markwon-core", "markwon-editor", "markwon-html", "markwon-image-coil", "markwon-strikethrough", "markwon-tables"]
@@ -87,6 +92,7 @@ ink = ["androidx-ink-strokes", "androidx-ink-rendering", "androidx-ink-nativeloa
 compose = ["androidx-ui", "androidx-ui-graphics", "androidx-ui-tooling-preview", "androidx-material3"]
 room = ["androidx-room-ktx", "androidx-room-paging", "androidx-room-runtime"]
 coil = ["coil-network-okhttp", "coil-compose", "coil-gif"]
+glance = ["glance-appwidget", "glance-appwidget-preview", "glance", "glance-preview"]
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
