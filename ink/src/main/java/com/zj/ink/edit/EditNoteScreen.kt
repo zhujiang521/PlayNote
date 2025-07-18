@@ -31,6 +31,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +39,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
@@ -55,14 +58,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.zj.data.model.Note
-import com.zj.data.model.isValid
-import com.zj.ink.data.EditNoteViewModel
 import com.zj.data.R
 import com.zj.data.common.DialogX
 import com.zj.data.common.InputTextField
 import com.zj.data.common.isPad
 import com.zj.data.md.MarkdownText
+import com.zj.data.model.Note
+import com.zj.data.model.isValid
+import com.zj.ink.data.EditNoteViewModel
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
@@ -79,6 +82,8 @@ fun EditNoteScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     // 创建下拉菜单包裹低优先级按钮
     var expanded by remember { mutableStateOf(false) }
+
+    val focusRequester = remember { FocusRequester() }
 
     // 返回键监听
     BackHandler(enabled = true) {
@@ -241,7 +246,8 @@ fun EditNoteScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(42.dp)
-                    .animateContentSize(),
+                    .animateContentSize()
+                    .focusRequester(focusRequester),
                 placeholder = stringResource(R.string.title_placeholder),
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             )
@@ -275,6 +281,12 @@ fun EditNoteScreen(
     ) {
         back()
     }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+        keyboardController?.show()
+    }
+
 }
 
 @Composable
