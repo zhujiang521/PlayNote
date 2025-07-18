@@ -17,18 +17,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,7 +30,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -50,7 +43,6 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -64,7 +56,6 @@ import com.zj.data.common.InputTextField
 import com.zj.data.common.isPad
 import com.zj.data.md.MarkdownText
 import com.zj.data.model.Note
-import com.zj.data.model.isValid
 import com.zj.ink.data.EditNoteViewModel
 
 @SuppressLint("ConfigurationScreenWidthHeight")
@@ -81,7 +72,6 @@ fun EditNoteScreen(
     // 在EditNoteScreen开头添加键盘控制器声明
     val keyboardController = LocalSoftwareKeyboardController.current
     // 创建下拉菜单包裹低优先级按钮
-    var expanded by remember { mutableStateOf(false) }
 
     val focusRequester = remember { FocusRequester() }
 
@@ -95,143 +85,16 @@ fun EditNoteScreen(
     }
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        stringResource(id = if (note.isValid()) R.string.edit_note else R.string.add_note),
-                        fontSize = dimensionResource(R.dimen.top_bar_title).value.sp
-                    )
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
-                navigationIcon = {
-                    IconButton(onClick = {
-                        if (isDirty) {
-                            exitDialogShown.value = true
-                        } else {
-                            back()
-                        }
-                    }) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_arrow_back),
-                            contentDescription = stringResource(R.string.back),
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        viewModel.undo()
-                    }, enabled = undoEnabled) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_undo),
-                            contentDescription = stringResource(R.string.undo)
-                        )
-                    }
-                    IconButton(onClick = {
-                        viewModel.redo()
-                    }, enabled = redoEnabled) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_redo),
-                            contentDescription = stringResource(R.string.redo)
-                        )
-                    }
-                    if (isPad()) {
-                        IconButton(onClick = {
-                            viewModel.showPreview.value = !viewModel.showPreview.value
-                        }) {
-                            Icon(
-                                painter = painterResource(
-                                    if (viewModel.showPreview.value) R.drawable.baseline_visibility
-                                    else R.drawable.baseline_visibility_off
-                                ),
-                                contentDescription = stringResource(R.string.preview),
-                            )
-                        }
-                        IconButton(onClick = {
-                            viewModel.showDialog.value = true
-                        }) {
-                            Icon(
-                                painter = painterResource(R.drawable.baseline_draw),
-                                contentDescription = stringResource(R.string.draw)
-                            )
-                        }
-                        if (isDirty) {
-                            IconButton(onClick = {
-                                viewModel.saveNote()
-                                keyboardController?.hide()
-                            }, enabled = note.title.isNotBlank() && note.content.isNotBlank()) {
-                                Icon(
-                                    painter = painterResource(R.drawable.baseline_save),
-                                    contentDescription = stringResource(R.string.save)
-                                )
-                            }
-                        } else {
-                            IconButton(onClick = {
-                                viewModel.exportMarkdownToDocx()
-                            }, enabled = note.title.isNotBlank() && note.content.isNotBlank()) {
-                                Icon(
-                                    painter = painterResource(R.drawable.baseline_share),
-                                    contentDescription = stringResource(R.string.share)
-                                )
-                            }
-                        }
-                    } else {
-                        IconButton(onClick = { expanded = true }) {
-                            Icon(
-                                painter = painterResource(R.drawable.baseline_more_vert),
-                                contentDescription = stringResource(R.string.more)
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier
-                                .background(MaterialTheme.colorScheme.surface),
-                            shape = MaterialTheme.shapes.medium
-                        ) {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        stringResource(R.string.preview),
-                                        color = if (viewModel.showPreview.value) colorResource(R.color.primary)
-                                        else colorResource(R.color.icon_color)
-                                    )
-                                },
-                                onClick = {
-                                    viewModel.showPreview.value = !viewModel.showPreview.value
-                                    expanded = false
-                                },
-                            )
-                            DropdownMenuItem(
-                                text = { Text(stringResource(R.string.draw)) },
-                                onClick = {
-                                    viewModel.showDialog.value = true
-                                    expanded = false
-                                },
-                            )
-                            if (isDirty) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.save)) },
-                                    onClick = {
-                                        viewModel.saveNote()
-                                        keyboardController?.hide()
-                                        expanded = false
-                                    },
-                                    enabled = note.title.isNotBlank() && note.content.isNotBlank()
-                                )
-                            } else {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.share)) },
-                                    onClick = {
-                                        viewModel.exportMarkdownToDocx()
-                                        expanded = false
-                                    },
-                                    enabled = note.title.isNotBlank() && note.content.isNotBlank()
-                                )
-                            }
-                        }
-                    }
-
-                })
+            EditNoteTopBar(
+                note = note,
+                isDirty = isDirty,
+                exitDialogShown = exitDialogShown,
+                back = back,
+                viewModel = viewModel,
+                undoEnabled = undoEnabled,
+                redoEnabled = redoEnabled,
+                keyboardController = keyboardController,
+            )
         }) { paddingValues ->
         Column(
             modifier = Modifier
