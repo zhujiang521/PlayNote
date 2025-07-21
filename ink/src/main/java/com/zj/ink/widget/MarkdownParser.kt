@@ -74,6 +74,22 @@ object MarkdownParser {
                     result.add(Divider)
                 }
 
+                // 表格
+                line.startsWith("|") && line.contains("|") -> {
+                    val tableLines = mutableListOf<String>()
+                    while (i < lines.size && lines[i].trimStart().startsWith("|")) {
+                        tableLines.add(lines[i].trim())
+                        i++
+                    }
+
+                    if (tableLines.size >= 2) {
+                        val headers = parseTableRow(tableLines[0])
+                        val rows = tableLines.subList(2, tableLines.size).map { parseTableRow(it) }
+
+                        result.add(Table(headers, rows))
+                    }
+                }
+
                 // 普通段落
                 line.isNotBlank() -> {
                     result.add(Paragraph(line))
@@ -85,4 +101,13 @@ object MarkdownParser {
 
         return result
     }
+
+    private fun parseTableRow(line: String): List<String> {
+        return line
+            .removePrefix("|")
+            .removeSuffix("|")
+            .split("|")
+            .map { it.trim() }
+    }
+
 }

@@ -14,6 +14,7 @@ import androidx.glance.background
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.Row
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
@@ -23,6 +24,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextDecoration
 import androidx.glance.text.TextStyle
+import com.zj.data.R
 
 @Composable
 fun RenderMarkdown(content: String) {
@@ -141,6 +143,59 @@ fun RenderMarkdown(content: String) {
                         ),
                         modifier = GlanceModifier.padding(vertical = 5.dp)
                     )
+                }
+
+                is Table -> {
+                    val tableCellPadding = 4.dp
+                    Column(
+                        modifier = GlanceModifier.fillMaxWidth()
+                            .padding(vertical = 5.dp)
+                    ) {
+
+                        Box(modifier = GlanceModifier.height(5.dp)) { }
+
+                        Column(
+                            modifier = GlanceModifier.fillMaxWidth()
+                                .background(ImageProvider(R.drawable.ic_table_background))
+                                .padding(1.dp)
+                        ) {
+
+                            // 表头
+                            Row(modifier = GlanceModifier.fillMaxWidth()) {
+                                element.headers.forEach { header ->
+                                    Text(
+                                        text = header,
+                                        style = TextStyle(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 12.sp,
+                                            color = textColor
+                                        ),
+                                        modifier = GlanceModifier
+                                            .defaultWeight()
+                                            .background(ImageProvider(R.drawable.ic_table_background))
+                                            .padding(tableCellPadding)
+                                    )
+                                }
+                            }
+
+                            // 表格行
+                            element.rows.forEach { row ->
+                                Row(modifier = GlanceModifier.fillMaxWidth()) {
+                                    row.forEach { cell ->
+                                        Text(
+                                            text = cell,
+                                            style = TextStyle(fontSize = 12.sp, color = textColor),
+                                            modifier = GlanceModifier
+                                                .defaultWeight()
+                                                .background(ImageProvider(R.drawable.ic_table_background))
+                                                .padding(tableCellPadding)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Box(modifier = GlanceModifier.height(5.dp)) { }
                 }
 
                 is Divider -> {
