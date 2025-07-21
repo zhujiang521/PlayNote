@@ -55,6 +55,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.bundles.ink)
+    implementation(libs.bundles.glance)
 
     api(project(":data"))
 

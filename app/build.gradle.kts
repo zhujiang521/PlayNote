@@ -81,7 +81,6 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
 
     implementation(libs.hilt.android)
-    implementation(project(":app_widget"))
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 

@@ -1,4 +1,4 @@
-package com.zj.note
+package com.zj.ink.data
 
 import android.content.Context
 import androidx.room.Room

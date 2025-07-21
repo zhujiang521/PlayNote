@@ -57,4 +57,7 @@ class NoteRepository @Inject constructor(private val noteDao: NoteDao) {
             noteDao.getNoteCount()
         }
     }
+
+    fun getRecentNotes(): Flow<List<Note>> = noteDao.getRecentNotes()
+
 }

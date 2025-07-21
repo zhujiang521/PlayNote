@@ -1,4 +1,4 @@
-package com.zj.widget
+package com.zj.ink.widget
 
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver

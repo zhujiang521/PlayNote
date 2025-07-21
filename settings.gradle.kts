@@ -29,4 +29,3 @@ rootProject.name = "PlayNote"
 include(":app")
 include(":ink")
 include(":data")
-include(":app_widget")

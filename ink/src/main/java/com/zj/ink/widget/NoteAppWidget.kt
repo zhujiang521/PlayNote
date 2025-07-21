@@ -1,4 +1,4 @@
-package com.zj.widget
+package com.zj.ink.widget
 
 import android.content.Context
 import androidx.compose.runtime.Composable
@@ -21,10 +21,13 @@ import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.ColumnScope
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
+import androidx.glance.preview.ExperimentalGlancePreviewApi
+import androidx.glance.preview.Preview
 import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
@@ -57,43 +60,56 @@ class NoteAppWidget : GlanceAppWidget() {
         id: GlanceId
     ) {
         provideContent {
-            val recentNotes = currentState<List<Note>>()
-            Column(
-                modifier = GlanceModifier.fillMaxSize().background(R.color.item_background)
-                    .padding(10.dp)
-                    .cornerRadius(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    modifier = GlanceModifier.padding(bottom = 10.dp),
-                    text = context.getString(R.string.note),
-                    style = TextStyle(fontSize = 16.sp)
-                )
-                if (recentNotes.isEmpty()) {
-                    Column(
-                        modifier = GlanceModifier.defaultWeight(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Image(
-                            provider = ImageProvider(R.drawable.ic_no_data),
-                            contentDescription = context.getString(R.string.no_content),
-                        )
-                        Text(
-                            text = context.getString(R.string.no_content),
-                            style = TextStyle(
-                                fontSize = 15.sp,
-                                color = textColor
-                            ),
-                            modifier = GlanceModifier.padding(16.dp)
-                        )
-                    }
-                } else {
-                    LazyColumn(
-                        modifier = GlanceModifier.fillMaxSize()
-                    ) { items(recentNotes.size) { NoteItem(note = recentNotes[it]) } }
-                }
+            NoteWidget(
+                recentNotes = currentState(),
+                title = context.getString(R.string.note),
+                noContent = context.getString(R.string.no_content)
+            )
+        }
+    }
+
+    @Composable
+    fun NoteWidget(recentNotes: List<Note>, title: String, noContent: String) {
+        Column(
+            modifier = GlanceModifier.fillMaxSize().background(R.color.item_background)
+                .padding(10.dp)
+                .cornerRadius(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                modifier = GlanceModifier.padding(bottom = 10.dp),
+                text = title,
+                style = TextStyle(fontSize = 16.sp)
+            )
+            if (recentNotes.isEmpty()) {
+                NoDataContent(noContent)
+            } else {
+                LazyColumn(
+                    modifier = GlanceModifier.fillMaxSize()
+                ) { items(recentNotes.size) { NoteItem(note = recentNotes[it]) } }
             }
+        }
+    }
+
+    @Composable
+    private fun ColumnScope.NoDataContent(noContent: String) {
+        Column(
+            modifier = GlanceModifier.defaultWeight(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Image(
+                provider = ImageProvider(R.drawable.ic_no_data),
+                contentDescription = noContent,
+            )
+            Text(
+                text = noContent,
+                style = TextStyle(
+                    fontSize = 15.sp,
+                    color = textColor
+                ),
+                modifier = GlanceModifier.padding(16.dp)
+            )
         }
     }
 
@@ -119,6 +135,19 @@ class NoteAppWidget : GlanceAppWidget() {
             }
             Box(modifier = GlanceModifier.height(10.dp)) { }
         }
+    }
+
+    @OptIn(ExperimentalGlancePreviewApi::class)
+    @Preview(widthDp = 200, heightDp = 150)
+    @Composable
+    private fun NoteWidgetPreview() {
+        NoteWidget(
+            listOf(
+                Note(id = 1, title = "Note1", content = "Note 1"),
+                Note(id = 2, title = "Note2", content = "Note 2"),
+                Note(id = 3, title = "Note3", content = "Note 2"),
+            ), "便签", "当前无内容"
+        )
     }
 
 }
