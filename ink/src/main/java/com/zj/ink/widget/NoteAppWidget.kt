@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.makeMainActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.core.DataStore
@@ -21,7 +20,6 @@ import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.lazy.LazyColumn
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
-import androidx.glance.color.ColorProvider
 import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -60,7 +58,7 @@ class NoteAppWidget : GlanceAppWidget() {
             }
 
             override fun getLocation(context: Context, fileKey: String): File {
-                throw NotImplementedError("Not implemented for Favorite App Widget State Definition")
+                throw NotImplementedError("Not implemented for Notes App Widget State Definition")
             }
         }
 
@@ -90,7 +88,7 @@ class NoteAppWidget : GlanceAppWidget() {
             Text(
                 modifier = GlanceModifier.padding(bottom = 10.dp),
                 text = title,
-                style = TextStyle(fontSize = 16.sp)
+                style = TextStyle(fontSize = 16.sp, color = textColor)
             )
             if (recentNotes.isEmpty()) {
                 NoDataContent(noContent)
@@ -144,12 +142,11 @@ class NoteAppWidget : GlanceAppWidget() {
             ) {
                 Text(
                     text = note.title,
-                    style = TextStyle(fontSize = 14.sp)
-                )
-                Text(
-                    text = note.content.take(50) + "...",
-                    style = TextStyle(fontSize = 12.sp)
-                )
+                    style = TextStyle(fontSize = 16.sp, color = textColor),
+                    modifier = GlanceModifier.padding(bottom = 8.dp),
+
+                    )
+                RenderMarkdown(note.content)
             }
             Box(modifier = GlanceModifier.height(10.dp)) { }
         }
@@ -169,8 +166,3 @@ class NoteAppWidget : GlanceAppWidget() {
     }
 
 }
-
-val textColor = ColorProvider(
-    day = Color(25, 25, 25),
-    night = Color(250, 250, 250)
-)

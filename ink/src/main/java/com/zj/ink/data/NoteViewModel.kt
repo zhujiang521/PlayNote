@@ -2,15 +2,13 @@ package com.zj.ink.data
 
 import android.app.Application
 import androidx.compose.runtime.mutableStateOf
-import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.zj.data.R
 import com.zj.data.model.Note
 import com.zj.data.utils.DataStoreUtils
-import com.zj.data.R
-import com.zj.ink.widget.NoteAppWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -30,8 +28,6 @@ class NoteViewModel @Inject constructor(
     val notes: StateFlow<PagingData<Note>> = _notes.asStateFlow()
 
     val searchExpanded = mutableStateOf(false)
-
-    val recentNotes = noteRepository.getRecentNotes()
 
     // 在 NoteViewModel 中添加
     private val _searchQuery = MutableStateFlow("")
@@ -67,16 +63,6 @@ class NoteViewModel @Inject constructor(
                 .collect { pagingData ->
                     _notes.value = pagingData
                 }
-        }
-        viewModelScope.launch {
-            recentNotes.collect {
-                // 示例：在插入或更新 Note 后调用
-                val glanceIds =
-                    GlanceAppWidgetManager(application).getGlanceIds(NoteAppWidget::class.java)
-                glanceIds.forEach {
-                    NoteAppWidget().update(application, it)
-                }
-            }
         }
     }
 
