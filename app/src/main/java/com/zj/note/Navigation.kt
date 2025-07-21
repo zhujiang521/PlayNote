@@ -37,11 +37,16 @@ const val NOTE_ID_ARG = "noteId"
 
 @SuppressLint("NewApi")
 @Composable
-fun NoteApp() {
+fun NoteApp(noteId: Int = DEFAULT_INVALID_ID) {
     val navController = rememberNavController()
+    val startRoute = if (noteId <= DEFAULT_INVALID_ID) {
+        NOTES_ROUTE
+    } else {
+        "$EDIT_NOTE_ROUTE/${noteId}"
+    }
     SharedTransitionLayout {
         NavHost(
-            navController, startDestination = NOTES_ROUTE, modifier = Modifier.fillMaxSize()
+            navController, startDestination = startRoute, modifier = Modifier.fillMaxSize()
         ) {
             animateComposable(route = NOTES_ROUTE) {
                 val viewModel = hiltViewModel<NoteViewModel>()

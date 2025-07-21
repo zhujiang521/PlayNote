@@ -1,6 +1,9 @@
 package com.zj.ink.widget
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
+import android.content.Intent.makeMainActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -10,7 +13,9 @@ import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.appWidgetBackground
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.lazy.LazyColumn
@@ -40,6 +45,10 @@ import java.io.File
  */
 
 class NoteAppWidget : GlanceAppWidget() {
+
+    companion object {
+        const val NOTE_ID_ARG = "noteId"
+    }
 
     override val stateDefinition: GlanceStateDefinition<List<Note>>
         get() = object : GlanceStateDefinition<List<Note>> {
@@ -71,9 +80,11 @@ class NoteAppWidget : GlanceAppWidget() {
     @Composable
     fun NoteWidget(recentNotes: List<Note>, title: String, noContent: String) {
         Column(
-            modifier = GlanceModifier.fillMaxSize().background(R.color.item_background)
+            modifier = GlanceModifier.fillMaxSize()
+                .background(R.color.item_background)
                 .padding(10.dp)
-                .cornerRadius(16.dp),
+                .cornerRadius(16.dp)
+                .appWidgetBackground(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
@@ -115,6 +126,13 @@ class NoteAppWidget : GlanceAppWidget() {
 
     @Composable
     fun NoteItem(note: Note) {
+        val intent =
+            makeMainActivity(ComponentName("com.zj.note", "com.zj.note.MainActivity")).apply {
+                action = Intent.ACTION_VIEW
+                putExtra(NOTE_ID_ARG, note.id)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+
         Column {
             Column(
                 modifier = GlanceModifier
@@ -122,7 +140,7 @@ class NoteAppWidget : GlanceAppWidget() {
                     .background(R.color.background)
                     .padding(8.dp)
                     .cornerRadius(10.dp)
-                    .appWidgetBackground()
+                    .clickable(onClick = actionStartActivity(intent))
             ) {
                 Text(
                     text = note.title,
