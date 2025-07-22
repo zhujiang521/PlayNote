@@ -38,6 +38,7 @@ import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import com.zj.data.R
 
 @Composable
 fun RenderMarkdown(
@@ -219,7 +220,7 @@ fun RenderMarkdown(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .border(0.5.dp, colorResource(com.zj.data.R.color.divider))
+                            .border(0.5.dp, colorResource(R.color.divider))
                             .padding(0.5.dp)
                     ) {
                         // 表头
@@ -231,8 +232,8 @@ fun RenderMarkdown(
                                     fontSize = 14.sp,
                                     modifier = Modifier
                                         .weight(weight)
-                                        .background(colorResource(com.zj.data.R.color.edit_background))
-                                        .border(0.5.dp, colorResource(com.zj.data.R.color.divider))
+                                        .background(colorResource(R.color.edit_background))
+                                        .border(0.5.dp, colorResource(R.color.divider))
                                         .padding(tableCellPadding)
                                 )
                             }
@@ -249,7 +250,7 @@ fun RenderMarkdown(
                                             .weight(weight)
                                             .border(
                                                 0.5.dp,
-                                                colorResource(com.zj.data.R.color.divider)
+                                                colorResource(R.color.divider)
                                             )
                                             .padding(tableCellPadding)
                                     )

@@ -82,7 +82,7 @@ object ImageLoader {
             }
 
             bitmap ?: BitmapFactory.decodeResource(
-                appContext.resources, R.drawable.baseline_color_lens
+                appContext.resources, R.drawable.baseline_image
             )
         }
     }
