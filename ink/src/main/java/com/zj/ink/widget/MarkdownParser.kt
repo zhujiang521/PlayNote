@@ -1,5 +1,7 @@
 package com.zj.ink.widget
 
+import android.util.Log
+
 
 object MarkdownParser {
     fun parse(text: String): List<MarkdownElement> {
@@ -67,6 +69,26 @@ object MarkdownParser {
                 // 引用
                 line.startsWith("> ") -> {
                     result.add(BlockQuote(line.removePrefix("> ")))
+                }
+
+                // 无序列表
+                line.trimStart().startsWith("- ") -> {
+                    val items = mutableListOf<String>()
+                    while (i < lines.size && (lines[i].trimStart().startsWith("- "))) {
+                        items.add(lines[i].trimStart().substring(2).trimStart())
+                        i++
+                    }
+                    result.add(UnorderedList(items))
+                }
+
+                // 有序列表
+                line.matches(Regex("""^\d+\. .*$""")) -> {
+                    val items = mutableListOf<String>()
+                    while (i < lines.size && lines[i].matches(Regex("""^\d+\. .*$"""))) {
+                        items.add(lines[i].substringAfter(". ").trimStart())
+                        i++
+                    }
+                    result.add(OrderedList(items))
                 }
 
                 // 分割线

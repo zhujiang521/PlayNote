@@ -14,6 +14,7 @@ import java.io.File
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
+import androidx.core.graphics.scale
 
 object ImageLoader {
 
@@ -40,9 +41,7 @@ object ImageLoader {
      * - Uri（file://... / content://...）
      */
     fun loadBitmap(
-        source: Any,
-        width: Int = 400,
-        height: Int = 200
+        source: Any, width: Int = 400, height: Int = 200
     ): Bitmap? {
         val key = "$source-$width-$height"
 
@@ -83,8 +82,7 @@ object ImageLoader {
             }
 
             bitmap ?: BitmapFactory.decodeResource(
-                appContext.resources,
-                R.drawable.baseline_color_lens
+                appContext.resources, R.drawable.baseline_color_lens
             )
         }
     }
@@ -105,9 +103,9 @@ object ImageLoader {
                 val input: InputStream = connection.inputStream
                 val bitmap = BitmapFactory.decodeStream(input)
                 input.close()
-                bitmap?.let {
-                    Bitmap.createScaledBitmap(it, width, height, true)
-                }
+                val size =
+                    calculateImageSize(bitmap.width, bitmap.height, width, height)
+                bitmap?.scale(size.first, size.second)
             } else {
                 null
             }
@@ -127,9 +125,9 @@ object ImageLoader {
 
         return try {
             val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-            bitmap?.let {
-                Bitmap.createScaledBitmap(it, width, height, true)
-            }
+            val size =
+                calculateImageSize(bitmap.width, bitmap.height, width, height)
+            bitmap?.scale(size.first, size.second)
         } catch (e: Exception) {
             Log.e(TAG, "文件加载失败: $filePath", e)
             null
@@ -140,12 +138,35 @@ object ImageLoader {
     private fun loadBitmapFromResource(resId: Int, width: Int, height: Int): Bitmap? {
         return try {
             val bitmap = BitmapFactory.decodeResource(appContext.resources, resId)
-            bitmap?.let {
-                Bitmap.createScaledBitmap(it, width, height, true)
-            }
+            val size =
+                calculateImageSize(bitmap.width, bitmap.height, width, height)
+            bitmap?.scale(size.first, size.second)
         } catch (e: Exception) {
             Log.e(TAG, "资源加载失败: $resId", e)
             null
         }
     }
+
+    private fun calculateImageSize(
+        width: Int, height: Int, reqWidth: Int, reqHeight: Int
+    ): Pair<Int, Int> {
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfWidth = width / 2
+            val halfHeight = height / 2
+
+            while ((halfWidth / inSampleSize) >= reqWidth &&
+                (halfHeight / inSampleSize) >= reqHeight
+            ) {
+                inSampleSize *= 2
+            }
+        }
+
+        val scaledWidth = width / inSampleSize
+        val scaledHeight = height / inSampleSize
+
+        return Pair(scaledWidth, scaledHeight)
+    }
+
 }

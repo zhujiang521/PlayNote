@@ -145,6 +145,40 @@ fun RenderMarkdown(content: String) {
                     )
                 }
 
+                is UnorderedList -> {
+                    Column {
+                        element.items.forEach { item ->
+                            Row {
+                                Text(
+                                    text = "•",
+                                    style = TextStyle(color = textColor)
+                                )
+                                Text(
+                                    text = " $item",
+                                    style = TextStyle(color = textColor)
+                                )
+                            }
+                        }
+                    }
+                }
+
+                is OrderedList -> {
+                    Column {
+                        element.items.forEachIndexed { index, item ->
+                            Row {
+                                Text(
+                                    text = "${index + 1}.",
+                                    style = TextStyle(color = textColor)
+                                )
+                                Text(
+                                    text = " $item",
+                                    style = TextStyle(color = textColor)
+                                )
+                            }
+                        }
+                    }
+                }
+
                 is Table -> {
                     val tableCellPadding = 4.dp
                     Column(
@@ -156,7 +190,7 @@ fun RenderMarkdown(content: String) {
 
                         Column(
                             modifier = GlanceModifier.fillMaxWidth()
-                                .background(ImageProvider(R.drawable.ic_table_background))
+                                .background(ImageProvider(R.drawable.ic_table_header_background))
                                 .padding(1.dp)
                         ) {
 
@@ -172,7 +206,7 @@ fun RenderMarkdown(content: String) {
                                         ),
                                         modifier = GlanceModifier
                                             .defaultWeight()
-                                            .background(ImageProvider(R.drawable.ic_table_background))
+                                            .background(ImageProvider(R.drawable.ic_table_header_background))
                                             .padding(tableCellPadding)
                                     )
                                 }
