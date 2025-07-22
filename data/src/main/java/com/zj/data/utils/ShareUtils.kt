@@ -57,6 +57,34 @@ suspend fun shareFile(
     }
 }
 
+suspend fun shareImage(context: Context, imageUrl: String, bitmap: Bitmap) {
+    val file = withContext(Dispatchers.IO) {
+        saveBitmapToFile(context, bitmap, imageUrl.extractFileNameFromUrl())
+    }
+    if (file == null) {
+        withContext(Dispatchers.Main.immediate) {
+            ToastUtil.showToast(context, context.getString(R.string.down_fail))
+        }
+        return
+    }
+    val uri = FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.fileprovider",
+        file
+    )
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "image/jpeg"
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    }
+    context.startActivity(
+        Intent.createChooser(
+            shareIntent,
+            context.getString(R.string.share_image_via)
+        )
+    )
+}
 
 suspend fun saveBitmapToFile(context: Context, bitmap: Bitmap, displayName: String): File? {
     return withContext(Dispatchers.IO) {

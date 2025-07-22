@@ -59,4 +59,12 @@
     <string name="file_not_found">File not found</string>
     <string name="share_file_via">Share File</string>
     <string name="share_failed">Failed to share</string>
+    <string name="down_fail">Download Failed</string>
+    <string name="download">Download</string>
+    <string name="set_wallpaper">Set wallpaper</string>
+    <string name="image_toast">The image has not yet been downloaded.</string>
+    <string name="share_image_via">Share Image.</string>
+    <string name="down_success">Download Successful.</string>
+    <string name="wallpaper_success">Set wallpaper successful.</string>
+    <string name="wallpaper_fail">Set wallpaper failed.</string>
 </resources>

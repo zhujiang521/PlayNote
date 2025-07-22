@@ -1,9 +1,12 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 
 package com.zj.ink.edit
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -62,6 +65,9 @@ import com.zj.ink.md.RenderMarkdown
 @Composable
 fun EditNoteScreen(
     viewModel: EditNoteViewModel = hiltViewModel<EditNoteViewModel>(),
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
+    onImageClick: (String) -> Unit = {},
     back: () -> Unit = {},
 ) {
     val note by viewModel.note.collectAsState()
@@ -125,12 +131,18 @@ fun EditNoteScreen(
                 ) {
                     NoteEditView(Modifier.weight(1f), viewModel)
 
-                    NotePreview(Modifier.weight(1f), viewModel, note, true)
+                    NotePreview(
+                        Modifier.weight(1f), viewModel, sharedTransitionScope,
+                        animatedContentScope, note, true, onImageClick
+                    )
                 }
             } else {
                 NoteEditView(Modifier.weight(1f), viewModel)
 
-                NotePreview(Modifier.weight(1f), viewModel, note, false)
+                NotePreview(
+                    Modifier.weight(1f), viewModel, sharedTransitionScope,
+                    animatedContentScope, note, false, onImageClick
+                )
             }
             NoteDrawDialog(viewModel) {
                 viewModel.updateNoteContentImage(it)
@@ -156,8 +168,11 @@ fun EditNoteScreen(
 private fun NotePreview(
     modifier: Modifier = Modifier,
     viewModel: EditNoteViewModel,
+    sharedTransitionScope: SharedTransitionScope,
+    animatedContentScope: AnimatedContentScope,
     note: Note,
-    isPad: Boolean
+    isPad: Boolean,
+    onImageClick: (String) -> Unit = {}
 ) {
     if (viewModel.showPreview.value) {
         if (isPad) {
@@ -182,7 +197,10 @@ private fun NotePreview(
             modifier = modifier
                 .fillMaxSize()
                 .padding(horizontal = dimensionResource(R.dimen.image_screen_horizontal_margin))
-                .animateContentSize()
+                .animateContentSize(),
+            sharedTransitionScope = sharedTransitionScope,
+            animatedContentScope = animatedContentScope,
+            onImageClick = onImageClick
         )
     }
 }

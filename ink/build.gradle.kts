@@ -56,6 +56,7 @@ dependencies {
 
     implementation(libs.bundles.ink)
     implementation(libs.bundles.glance)
+    implementation(libs.zoomable)
 
     api(project(":data"))
 

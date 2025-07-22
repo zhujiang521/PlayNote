@@ -3,6 +3,7 @@
 package com.zj.note
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
@@ -28,12 +29,16 @@ import com.zj.ink.NoteScreen
 import com.zj.ink.data.EditNoteViewModel
 import com.zj.ink.data.NoteViewModel
 import com.zj.ink.edit.EditNoteScreen
+import com.zj.ink.md.ImagePreview
+import com.zj.ink.md.ImageViewModel
 
 private const val NOTES_ROUTE = "notes"
 private const val EDIT_NOTE_ROUTE = "edit_note"
 const val DEFAULT_INVALID_ID = -1
+private const val IMAGE_PREVIEW_ROUTE = "image_preview"
 
 const val NOTE_ID_ARG = "noteId"
+const val IMAGE_URL_ARG = "imageUrl"
 
 @SuppressLint("NewApi")
 @Composable
@@ -67,7 +72,27 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID) {
                         viewModel.getNoteById(id)
                     }
                 }
-                EditNoteScreen(viewModel) {
+                EditNoteScreen(
+                    viewModel, sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedContentScope = this@animateComposable, onImageClick = {
+                        navController.navigate("${IMAGE_PREVIEW_ROUTE}/${Uri.encode(it)}")
+                    }) {
+                    navController.popBackStack()
+                }
+            }
+            composable(
+                route = "${IMAGE_PREVIEW_ROUTE}/{${IMAGE_URL_ARG}}",
+                arguments = listOf(navArgument(IMAGE_URL_ARG) { type = NavType.StringType }),
+            ) { backStackEntry ->
+                val imageUrl =
+                    backStackEntry.arguments?.getString(IMAGE_URL_ARG)?.let { Uri.decode(it) }
+                        ?: return@composable
+                val viewModel: ImageViewModel = hiltViewModel()
+                ImagePreview(
+                    viewModel = viewModel,
+                    imageUrl = imageUrl, sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedContentScope = this@composable,
+                ) {
                     navController.popBackStack()
                 }
             }

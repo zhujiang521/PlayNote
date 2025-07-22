@@ -26,6 +26,7 @@ roomVersion = "2.7.2"
 hilt = "2.56.2"
 gifCoil = "2.7.0"
 glanceVersion = "1.1.1"
+zoomable = "2.8.1"
 
 # 编译常量值
 compile-sdk = "36"
@@ -78,6 +79,7 @@ glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = 
 glance-appwidget-preview = { module = "androidx.glance:glance-appwidget-preview", version.ref = "glanceVersion" }
 glance = { module = "androidx.glance:glance", version.ref = "glanceVersion" }
 glance-preview = { module = "androidx.glance:glance-preview", version.ref = "glanceVersion" }
+zoomable = { module = "net.engawapg.lib:zoomable", version.ref = "zoomable" }
 
 [bundles]
 ink = ["androidx-ink-strokes", "androidx-ink-rendering", "androidx-ink-nativeloader", "androidx-ink-geometry", "androidx-ink-brush", "androidx-ink-authoring"]

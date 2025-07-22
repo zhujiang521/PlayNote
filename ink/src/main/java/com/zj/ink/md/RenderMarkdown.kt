@@ -1,7 +1,13 @@
+@file:OptIn(ExperimentalSharedTransitionApi::class)
+
 package com.zj.ink.md
 
+import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,7 +27,13 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
 
 @Composable
-fun RenderMarkdown(markdown: String, modifier: Modifier = Modifier) {
+fun RenderMarkdown(
+    markdown: String,
+    modifier: Modifier = Modifier,
+    sharedTransitionScope: SharedTransitionScope? = null,
+    animatedContentScope: AnimatedContentScope? = null,
+    onImageClick: (String) -> Unit = {}
+) {
     val elements = MarkdownParser.parse(markdown)
 
     LazyColumn(modifier = modifier.padding(16.dp)) {
@@ -95,14 +107,34 @@ fun RenderMarkdown(markdown: String, modifier: Modifier = Modifier) {
                 }
 
                 is Image -> {
-                    AsyncImage(
-                        model = element.url,
-                        contentDescription = "Markdown 图片",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp),
-                        contentScale = ContentScale.Crop
-                    )
+                    if (sharedTransitionScope != null && animatedContentScope != null) {
+                        with(sharedTransitionScope) {
+                            AsyncImage(
+                                model = element.url,
+                                contentDescription = "Markdown 图片",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .sharedElement(
+                                        sharedTransitionScope.rememberSharedContentState(key = "image-${element.url}"),
+                                        animatedVisibilityScope = animatedContentScope,
+                                    )
+                                    .clickable {
+                                        onImageClick(element.url)
+                                    },
+                                contentScale = ContentScale.Crop
+                            )
+                        }
+                    } else {
+                        AsyncImage(
+                            model = element.url,
+                            contentDescription = "Markdown 图片",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 

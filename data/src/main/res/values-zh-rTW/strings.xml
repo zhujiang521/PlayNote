@@ -56,4 +56,12 @@
     <string name="file_not_found">文件未找到</string>
     <string name="share_file_via">分享文件</string>
     <string name="share_failed">分享失敗</string>
+    <string name="down_fail">下載失敗</string>
+    <string name="download">下載</string>
+    <string name="set_wallpaper">設置壁紙</string>
+    <string name="image_toast">圖片還沒有下載完成</string>
+    <string name="share_image_via">分享圖片</string>
+    <string name="down_success">下載成功</string>
+    <string name="wallpaper_success">設置壁紙成功</string>
+    <string name="wallpaper_fail">設置壁紙失敗</string>
 </resources>
