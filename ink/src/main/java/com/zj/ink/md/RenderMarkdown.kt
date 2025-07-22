@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -148,26 +149,30 @@ fun RenderMarkdown(
                 }
 
                 is Code -> {
-                    Text(
-                        text = element.text,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 12.sp,
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(8.dp)
-                    )
+                    SelectionContainer {
+                        Text(
+                            text = element.text,
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(8.dp)
+                        )
+                    }
                 }
 
                 is CodeBlock -> {
-                    Text(
-                        text = element.text,
-                        fontFamily = FontFamily.Monospace,
-                        fontSize = 12.sp,
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(8.dp)
-                            .fillMaxWidth()
-                    )
+                    SelectionContainer {
+                        Text(
+                            text = element.text,
+                            fontFamily = FontFamily.Monospace,
+                            fontSize = 12.sp,
+                            modifier = Modifier
+                                .background(MaterialTheme.colorScheme.surface)
+                                .padding(8.dp)
+                                .fillMaxWidth()
+                        )
+                    }
                 }
 
                 is BlockQuote -> {
