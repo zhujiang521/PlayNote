@@ -1,6 +1,4 @@
-package com.zj.ink.widget
-
-import android.util.Log
+package com.zj.ink.md
 
 
 object MarkdownParser {

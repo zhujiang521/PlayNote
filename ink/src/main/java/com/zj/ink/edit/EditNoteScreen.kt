@@ -54,9 +54,9 @@ import com.zj.data.R
 import com.zj.data.common.DialogX
 import com.zj.data.common.InputTextField
 import com.zj.data.common.isPad
-import com.zj.data.md.MarkdownText
 import com.zj.data.model.Note
 import com.zj.ink.data.EditNoteViewModel
+import com.zj.ink.md.RenderMarkdown
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
@@ -177,7 +177,7 @@ private fun NotePreview(
                 color = colorResource(R.color.divider)
             )
         }
-        MarkdownText(
+        RenderMarkdown(
             markdown = note.content,
             modifier = modifier
                 .fillMaxSize()

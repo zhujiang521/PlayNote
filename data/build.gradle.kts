@@ -73,7 +73,6 @@ dependencies {
     implementation(libs.kotlinx.coroutines.rx3)
 
     api(libs.bundles.coil)
-    api(libs.bundles.markwon)
     api(libs.androidx.datastore.preferences)
     api(libs.lottie.compose)
     api(libs.androidx.paging.runtime.ktx)

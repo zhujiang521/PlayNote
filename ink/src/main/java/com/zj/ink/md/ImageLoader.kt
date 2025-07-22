@@ -1,5 +1,5 @@
 // ImageLoader.kt
-package com.zj.ink.widget
+package com.zj.ink.md
 
 import android.content.Context
 import android.graphics.Bitmap

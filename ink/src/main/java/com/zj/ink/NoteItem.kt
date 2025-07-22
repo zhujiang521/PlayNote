@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,15 +29,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.zj.data.model.Note
-import com.zj.data.utils.DateUtils
 import com.zj.data.R
 import com.zj.data.common.DeleteDialog
 import com.zj.data.common.HighlightedText
 import com.zj.data.common.SwipeBox
 import com.zj.data.common.SwipeBoxControl
 import com.zj.data.common.rememberSwipeBoxControl
-import com.zj.data.md.MarkdownText
+import com.zj.data.model.Note
+import com.zj.data.utils.DateUtils
+import com.zj.ink.md.RenderMarkdown
 
 
 /**
@@ -68,7 +67,7 @@ fun NoteItem(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(IntrinsicSize.Min) // 根据内容高度自动调整
+                    .wrapContentHeight()
                     .heightIn(min = 100.dp, max = 300.dp) // 限制高度范围
                     .align(Alignment.Center)
                     .padding(8.dp)
@@ -91,7 +90,7 @@ fun NoteItem(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(IntrinsicSize.Min) // 根据内容高度自动调整
+                .wrapContentHeight()
                 .heightIn(min = 100.dp, max = 300.dp), // 限制高度范围 ,
             shape = MaterialTheme.shapes.large,
             colors = CardDefaults.cardColors(
@@ -122,12 +121,11 @@ fun NoteItem(
                     maxLines = 2,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                MarkdownText(
+                RenderMarkdown(
                     markdown = note.content,
-                    fontSize = dimensionResource(R.dimen.subtitle_text).value.sp,
-                    textAlign = TextAlign.Start,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .heightIn(min = 100.dp, max = 300.dp)
                         .clickable { onClick() }
                 )
             }

@@ -1,4 +1,4 @@
-package com.zj.ink.widget
+package com.zj.ink.md
 
 import android.content.Intent
 import androidx.compose.runtime.Composable
@@ -10,6 +10,7 @@ import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.action.clickable
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.background
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Box
@@ -25,9 +26,11 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextDecoration
 import androidx.glance.text.TextStyle
 import com.zj.data.R
+import com.zj.ink.widget.gray
+import com.zj.ink.widget.textColor
 
 @Composable
-fun RenderMarkdown(content: String) {
+fun GlanceRenderMarkdown(content: String) {
     val elements = MarkdownParser.parse(content).take(10)
 
     Column {
@@ -89,7 +92,7 @@ fun RenderMarkdown(content: String) {
                             )
                         ),
                         modifier = GlanceModifier.clickable(
-                            onClick = androidx.glance.appwidget.action.actionStartActivity(
+                            onClick = actionStartActivity(
                                 Intent(
                                     Intent.ACTION_VIEW,
                                     element.url.toUri()
@@ -115,7 +118,7 @@ fun RenderMarkdown(content: String) {
                             fontSize = 12.sp,
                             color = textColor
                         ),
-                        modifier = GlanceModifier.background(gray)
+                        modifier = GlanceModifier.Companion.background(gray)
                             .padding(vertical = 5.dp)
                     )
                 }
@@ -128,7 +131,7 @@ fun RenderMarkdown(content: String) {
                             color = textColor,
                             fontFamily = FontFamily.Monospace
                         ),
-                        modifier = GlanceModifier.background(gray)
+                        modifier = GlanceModifier.Companion.background(gray)
                             .padding(vertical = 5.dp)
                     )
                 }

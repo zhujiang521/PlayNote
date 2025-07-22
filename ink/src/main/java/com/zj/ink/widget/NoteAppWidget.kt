@@ -36,6 +36,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.zj.data.R
 import com.zj.data.model.Note
+import com.zj.ink.md.GlanceRenderMarkdown
 import java.io.File
 
 /**
@@ -146,7 +147,7 @@ class NoteAppWidget : GlanceAppWidget() {
                     modifier = GlanceModifier.padding(bottom = 8.dp),
 
                     )
-                RenderMarkdown(note.content)
+                GlanceRenderMarkdown(note.content)
             }
             Box(modifier = GlanceModifier.height(10.dp)) { }
         }
