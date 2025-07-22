@@ -8,20 +8,32 @@ import androidx.compose.animation.SharedTransitionScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.*
-import androidx.compose.ui.text.font.*
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
@@ -36,8 +48,10 @@ fun RenderMarkdown(
 ) {
     val elements = MarkdownParser.parse(markdown)
 
-    LazyColumn(modifier = modifier.padding(16.dp)) {
-        items(elements) { element ->
+    Column(
+        modifier = modifier.verticalScroll(rememberScrollState()) // 添加垂直滚动
+    ) {
+        elements.forEach { element ->
             when (element) {
                 is Heading -> {
                     Text(
@@ -87,21 +101,16 @@ fun RenderMarkdown(
                 }
 
                 is Link -> {
-                    val uriHandler = LocalUriHandler.current
-                    ClickableText(
-                        text = buildAnnotatedString {
-                            append(element.text)
-                            addStyle(
-                                style = SpanStyle(
-                                    color = Color.Blue,
-                                    textDecoration = TextDecoration.Underline
-                                ),
-                                start = 0,
-                                end = element.text.length
-                            )
-                        },
-                        onClick = {
-                            uriHandler.openUri(element.url)
+                    BasicText(
+                        buildAnnotatedString {
+                            withLink(
+                                LinkAnnotation.Url(
+                                    element.url,
+                                    TextLinkStyles(style = SpanStyle(color = Color.Blue)),
+                                )
+                            ) {
+                                append(element.text)
+                            }
                         }
                     )
                 }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -93,7 +94,7 @@ fun NoteItem(
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight()
+                .height(IntrinsicSize.Min) // 根据内容高度自动调整
                 .heightIn(min = 100.dp, max = 300.dp), // 限制高度范围 ,
             shape = MaterialTheme.shapes.large,
             colors = CardDefaults.cardColors(
