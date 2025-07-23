@@ -20,6 +20,7 @@ import com.zj.data.model.Note
 import com.zj.data.utils.MarkdownExporter
 import com.zj.data.R
 import com.zj.ink.widget.NoteAppWidget
+import com.zj.ink.widget.updateNoteWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -114,11 +115,7 @@ class EditNoteViewModel @Inject constructor(
                 noteRepository.insertNote(_note.value)
             }
             _isDirty.value = false // 保存后标记为已保存
-            val glanceIds =
-                GlanceAppWidgetManager(getApplication()).getGlanceIds(NoteAppWidget::class.java)
-            glanceIds.forEach {
-                NoteAppWidget().update(getApplication(), it)
-            }
+            updateNoteWidget(getApplication())
         }
     }
 

@@ -9,6 +9,7 @@ import androidx.paging.cachedIn
 import com.zj.data.R
 import com.zj.data.model.Note
 import com.zj.data.utils.DataStoreUtils
+import com.zj.ink.widget.updateNoteWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -80,6 +81,7 @@ class NoteViewModel @Inject constructor(
     fun deleteNote(note: Note) {
         viewModelScope.launch {
             noteRepository.deleteNote(note)
+            updateNoteWidget(getApplication())
         }
     }
 
