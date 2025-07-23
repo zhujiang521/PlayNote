@@ -113,7 +113,7 @@ fun EditNoteTopBar(
                     }
                 } else {
                     IconButton(onClick = {
-                        viewModel.exportMarkdownToDocx()
+                        viewModel.exportMarkdown()
                     }, enabled = note.title.isNotBlank() && note.content.isNotBlank()) {
                         Icon(
                             painter = painterResource(R.drawable.baseline_share),
@@ -169,7 +169,7 @@ fun EditNoteTopBar(
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.share)) },
                             onClick = {
-                                viewModel.exportMarkdownToDocx()
+                                viewModel.exportMarkdown()
                                 expanded.value = false
                             },
                             enabled = note.title.isNotBlank() && note.content.isNotBlank()

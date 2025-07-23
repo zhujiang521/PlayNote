@@ -236,7 +236,7 @@ class EditNoteViewModel @Inject constructor(
         )
     }
 
-    fun exportMarkdownToDocx() {
+    fun exportMarkdown() {
         viewModelScope.launch {
             markdownExporter.exportMarkdownToFile(
                 markdownContent = _note.value.content,

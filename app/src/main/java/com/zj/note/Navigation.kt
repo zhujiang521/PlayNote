@@ -31,11 +31,14 @@ import com.zj.ink.data.NoteViewModel
 import com.zj.ink.edit.EditNoteScreen
 import com.zj.ink.md.ImagePreview
 import com.zj.ink.md.ImageViewModel
+import com.zj.ink.preview.NotePreview
+import com.zj.ink.preview.NotePreviewViewModel
 
 private const val NOTES_ROUTE = "notes"
 private const val EDIT_NOTE_ROUTE = "edit_note"
 const val DEFAULT_INVALID_ID = -1
 private const val IMAGE_PREVIEW_ROUTE = "image_preview"
+private const val NOTE_PREVIEW_ROUTE = "edit_preview"
 
 const val NOTE_ID_ARG = "noteId"
 const val IMAGE_URL_ARG = "imageUrl"
@@ -47,7 +50,7 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID) {
     val startRoute = if (noteId <= DEFAULT_INVALID_ID) {
         NOTES_ROUTE
     } else {
-        "$EDIT_NOTE_ROUTE/${noteId}"
+        "$NOTE_PREVIEW_ROUTE/${noteId}"
     }
     SharedTransitionLayout {
         NavHost(
@@ -79,6 +82,25 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID) {
                     }) {
                     navController.popBackStack()
                 }
+            }
+            animateComposable(
+                route = "$NOTE_PREVIEW_ROUTE/{$NOTE_ID_ARG}",
+                arguments = listOf(navArgument(NOTE_ID_ARG) { type = NavType.IntType }),
+            ) { backStackEntry ->
+                val id =
+                    backStackEntry.arguments?.getInt(NOTE_ID_ARG) ?: return@animateComposable
+
+                val viewModel = hiltViewModel<NotePreviewViewModel>()
+                if (id != DEFAULT_INVALID_ID) {
+                    LaunchedEffect(Unit) {
+                        viewModel.getNoteById(id)
+                    }
+                }
+                NotePreview(
+                    viewModel, sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedContentScope = this@animateComposable, onImageClick = {
+                        navController.navigate("${IMAGE_PREVIEW_ROUTE}/${Uri.encode(it)}")
+                    })
             }
             composable(
                 route = "${IMAGE_PREVIEW_ROUTE}/{${IMAGE_URL_ARG}}",
