@@ -125,7 +125,6 @@ fun RenderMarkdown(
                                 contentDescription = "Markdown 图片",
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(200.dp)
                                     .sharedElement(
                                         sharedTransitionScope.rememberSharedContentState(key = "image-${element.url}"),
                                         animatedVisibilityScope = animatedContentScope,
@@ -141,8 +140,7 @@ fun RenderMarkdown(
                             model = element.url,
                             contentDescription = "Markdown 图片",
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(200.dp),
+                                .fillMaxWidth(),
                             contentScale = ContentScale.Crop
                         )
                     }

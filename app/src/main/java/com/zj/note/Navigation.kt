@@ -83,12 +83,12 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID) {
                     navController.popBackStack()
                 }
             }
-            animateComposable(
+            composable(
                 route = "$NOTE_PREVIEW_ROUTE/{$NOTE_ID_ARG}",
                 arguments = listOf(navArgument(NOTE_ID_ARG) { type = NavType.IntType }),
             ) { backStackEntry ->
                 val id =
-                    backStackEntry.arguments?.getInt(NOTE_ID_ARG) ?: return@animateComposable
+                    backStackEntry.arguments?.getInt(NOTE_ID_ARG) ?: return@composable
 
                 val viewModel = hiltViewModel<NotePreviewViewModel>()
                 if (id != DEFAULT_INVALID_ID) {
@@ -98,7 +98,7 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID) {
                 }
                 NotePreview(
                     viewModel, sharedTransitionScope = this@SharedTransitionLayout,
-                    animatedContentScope = this@animateComposable, onImageClick = {
+                    animatedContentScope = this@composable, onImageClick = {
                         navController.navigate("${IMAGE_PREVIEW_ROUTE}/${Uri.encode(it)}")
                     })
             }
