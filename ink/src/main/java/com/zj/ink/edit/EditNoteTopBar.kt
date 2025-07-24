@@ -23,6 +23,8 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zj.data.R
 import com.zj.data.common.isPad
@@ -128,7 +130,13 @@ fun EditNoteTopBar(
                             )
                             DropdownMenu(
                                 expanded = menuExpanded,
-                                onDismissRequest = { menuExpanded = false }
+                                onDismissRequest = { menuExpanded = false },
+                                offset = DpOffset(
+                                    -dimensionResource(R.dimen.image_screen_horizontal_margin),
+                                    0.dp
+                                ),
+                                shape = MaterialTheme.shapes.medium,
+                                containerColor = MaterialTheme.colorScheme.surface
                             ) {
                                 DropdownMenuItem(
                                     text = { Text(stringResource(R.string.export_pdf)) },

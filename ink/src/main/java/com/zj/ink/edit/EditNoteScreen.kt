@@ -58,8 +58,10 @@ import com.zj.data.common.DialogX
 import com.zj.data.common.InputTextField
 import com.zj.data.common.isPad
 import com.zj.data.model.Note
+import com.zj.data.model.isValid
 import com.zj.ink.data.EditNoteViewModel
 import com.zj.ink.md.RenderMarkdown
+import kotlinx.coroutines.delay
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
@@ -158,8 +160,11 @@ fun EditNoteScreen(
     }
 
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-        keyboardController?.show()
+        delay(100)
+        if (!note.isValid()) {
+            focusRequester.requestFocus()
+            keyboardController?.show()
+        }
     }
 
 }
