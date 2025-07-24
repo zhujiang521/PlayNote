@@ -12,8 +12,10 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.SoftwareKeyboardController
@@ -41,6 +43,7 @@ fun EditNoteTopBar(
     keyboardController: SoftwareKeyboardController?,
 ) {
     val expanded = remember { mutableStateOf(false) }
+    var menuExpanded by remember { mutableStateOf(false) }
 
     TopAppBar(
         title = {
@@ -115,10 +118,41 @@ fun EditNoteTopBar(
                     IconButton(onClick = {
                         viewModel.exportMarkdown()
                     }, enabled = note.title.isNotBlank() && note.content.isNotBlank()) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_share),
-                            contentDescription = stringResource(R.string.share)
-                        )
+                        IconButton(
+                            onClick = { menuExpanded = true },
+                            enabled = note.title.isNotBlank() && note.content.isNotBlank()
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_share),
+                                contentDescription = stringResource(R.string.share)
+                            )
+                            DropdownMenu(
+                                expanded = menuExpanded,
+                                onDismissRequest = { menuExpanded = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.export_pdf)) },
+                                    onClick = {
+                                        viewModel.exportMarkdownToPdf()
+                                        menuExpanded = false
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.export_html)) },
+                                    onClick = {
+                                        viewModel.exportMarkdownToHtml()
+                                        menuExpanded = false
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.export_md)) },
+                                    onClick = {
+                                        viewModel.exportMarkdown()
+                                        menuExpanded = false
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
             } else {

@@ -40,4 +40,22 @@ class NotePreviewViewModel @Inject constructor(
         }
     }
 
+    fun exportMarkdownToPdf() {
+        viewModelScope.launch {
+            markdownExporter.exportMarkdownToPdf(
+                markdownContent = _note.value.content,
+                title = _note.value.title,
+            )
+        }
+    }
+
+    fun exportMarkdownToHtml() {
+        viewModelScope.launch {
+            markdownExporter.exportMarkdownToHtml(
+                markdownContent = _note.value.content,
+                title = _note.value.title,
+            )
+        }
+    }
+
 }

@@ -72,6 +72,9 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.rx3)
 
+    implementation(libs.bundles.commonmark)
+    implementation(libs.html2pdf)
+
     api(libs.bundles.coil)
     api(libs.androidx.datastore.preferences)
     api(libs.lottie.compose)

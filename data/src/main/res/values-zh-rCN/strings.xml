@@ -67,4 +67,7 @@
     <string name="down_success">下载成功</string>
     <string name="wallpaper_success">设置壁纸成功</string>
     <string name="wallpaper_fail">设置壁纸失败</string>
+    <string name="export_pdf">导出为PDF</string>
+    <string name="export_html">导出为HTML</string>
+    <string name="export_md">导出为MarkDown</string>
 </resources>

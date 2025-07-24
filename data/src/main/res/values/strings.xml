@@ -67,4 +67,7 @@
     <string name="down_success">Download Successful.</string>
     <string name="wallpaper_success">Set wallpaper successful.</string>
     <string name="wallpaper_fail">Set wallpaper failed.</string>
+    <string name="export_pdf">Export to PDF</string>
+    <string name="export_html">Export to HTML</string>
+    <string name="export_md">Export to MarkDown</string>
 </resources>
