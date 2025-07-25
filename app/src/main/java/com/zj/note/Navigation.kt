@@ -100,6 +100,8 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID) {
                     viewModel, sharedTransitionScope = this@SharedTransitionLayout,
                     animatedContentScope = this@composable, onImageClick = {
                         navController.navigate("${IMAGE_PREVIEW_ROUTE}/${Uri.encode(it)}")
+                    }, onEditClick = {
+                        navController.navigate("$EDIT_NOTE_ROUTE/${it}")
                     })
             }
             composable(
