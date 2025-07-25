@@ -17,7 +17,7 @@ val markdownSample = """
 
 [链接文本](https://www.baidu.com)
 
-![示例图片](https://wx3.sinaimg.cn/mw690/88e90961ly1hwvqdknjo4j20u0140tav.jpg)
+![示例图片](https://img1.baidu.com/it/u=3860791285,218631115&fm=253&fmt=auto&app=138&f=JPEG?w=799&h=500)
 
 | 表头1 | 表头2 | 表头3 |
 |-------|-------|-------|

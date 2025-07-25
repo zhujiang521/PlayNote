@@ -5,27 +5,35 @@ package com.zj.ink.md
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -37,7 +45,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil3.compose.AsyncImage
+import coil3.compose.SubcomposeAsyncImage
+import coil3.request.ImageRequest
+import coil3.size.Size.Companion.ORIGINAL
 import com.zj.data.R
 
 @Composable
@@ -120,9 +130,11 @@ fun RenderMarkdown(
                 is Image -> {
                     if (sharedTransitionScope != null && animatedContentScope != null) {
                         with(sharedTransitionScope) {
-                            AsyncImage(
-                                model = element.url,
-                                contentDescription = "Markdown 图片",
+                            SubcomposeAsyncImage(
+                                model = ImageRequest.Builder(LocalContext.current)
+                                    .data(element.url)
+                                    .size(ORIGINAL)
+                                    .build(),
                                 modifier = Modifier
                                     .sharedElement(
                                         sharedTransitionScope.rememberSharedContentState(key = "image-${element.url}"),
@@ -131,15 +143,49 @@ fun RenderMarkdown(
                                     .clickable {
                                         onImageClick(element.url)
                                     },
-                                contentScale = ContentScale.Crop
+                                contentDescription = stringResource(R.string.image),
+                                contentScale = ContentScale.Fit,
+                                loading = {
+                                    Box(
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        CircularProgressIndicator(modifier = Modifier.size(30.dp))
+                                    }
+                                },
+                                error = {
+                                    Image(
+                                        painterResource(R.drawable.ic_placeholder_big),
+                                        contentDescription = stringResource(R.string.down_fail)
+                                    )
+                                },
                             )
                         }
                     } else {
-                        AsyncImage(
-                            model = element.url,
-                            contentDescription = "Markdown 图片",
-                            contentScale = ContentScale.Crop
+                        SubcomposeAsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(element.url)
+                                .size(ORIGINAL)
+                                .build(),
+                            modifier = Modifier.clickable {
+                                onImageClick(element.url)
+                            },
+                            contentDescription = stringResource(R.string.image),
+                            contentScale = ContentScale.Fit,
+                            loading = {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    CircularProgressIndicator(modifier = Modifier.size(30.dp))
+                                }
+                            },
+                            error = {
+                                Image(
+                                    painterResource(R.drawable.ic_placeholder_big),
+                                    contentDescription = stringResource(R.string.down_fail)
+                                )
+                            },
                         )
+
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
