@@ -23,14 +23,13 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.DpOffset
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.zj.data.R
 import com.zj.data.common.isPad
 import com.zj.data.model.Note
 import com.zj.data.model.isValid
 import com.zj.ink.data.EditNoteViewModel
+import com.zj.ink.widget.ShareIconButton
 
 @ExperimentalMaterial3Api
 @Composable
@@ -45,8 +44,7 @@ fun EditNoteTopBar(
     keyboardController: SoftwareKeyboardController?,
 ) {
     val expanded = remember { mutableStateOf(false) }
-    var menuExpanded by remember { mutableStateOf(false) }
-
+    var showShareDialog by remember { mutableStateOf(false) } // 添加这行
     TopAppBar(
         title = {
             Text(
@@ -117,51 +115,7 @@ fun EditNoteTopBar(
                         )
                     }
                 } else {
-                    IconButton(onClick = {
-                        viewModel.exportMarkdown()
-                    }, enabled = note.title.isNotBlank() && note.content.isNotBlank()) {
-                        IconButton(
-                            onClick = { menuExpanded = true },
-                            enabled = note.title.isNotBlank() && note.content.isNotBlank()
-                        ) {
-                            Icon(
-                                painter = painterResource(R.drawable.baseline_share),
-                                contentDescription = stringResource(R.string.share)
-                            )
-                            DropdownMenu(
-                                expanded = menuExpanded,
-                                onDismissRequest = { menuExpanded = false },
-                                offset = DpOffset(
-                                    -dimensionResource(R.dimen.image_screen_horizontal_margin),
-                                    0.dp
-                                ),
-                                shape = MaterialTheme.shapes.medium,
-                                containerColor = MaterialTheme.colorScheme.surface
-                            ) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.export_pdf)) },
-                                    onClick = {
-                                        viewModel.exportMarkdownToPdf()
-                                        menuExpanded = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.export_html)) },
-                                    onClick = {
-                                        viewModel.exportMarkdownToHtml()
-                                        menuExpanded = false
-                                    }
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.export_md)) },
-                                    onClick = {
-                                        viewModel.exportMarkdown()
-                                        menuExpanded = false
-                                    }
-                                )
-                            }
-                        }
-                    }
+                    ShareIconButton(viewModel, note)
                 }
             } else {
                 IconButton(onClick = { expanded.value = true }) {
@@ -211,7 +165,7 @@ fun EditNoteTopBar(
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.share)) },
                             onClick = {
-                                viewModel.exportMarkdown()
+                                showShareDialog = true // 显示分享选项对话框
                                 expanded.value = false
                             },
                             enabled = note.title.isNotBlank() && note.content.isNotBlank()
@@ -221,4 +175,12 @@ fun EditNoteTopBar(
             }
 
         })
+    // 在 TopAppBar 外部添加对话框
+    if (showShareDialog) {
+        ShareOptionsDialog(
+            viewModel = viewModel,
+            note = note,
+            onDismissRequest = { showShareDialog = false }
+        )
+    }
 }

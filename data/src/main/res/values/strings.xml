@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Play Note</string>
     <string name="bad_network_view_tip">Click on the screen to reload</string>
     <string name="back">Back</string>
@@ -70,4 +70,7 @@
     <string name="export_pdf">Export to PDF</string>
     <string name="export_html">Export to HTML</string>
     <string name="export_md">Export to MarkDown</string>
+    <string name="exporting_pdf" tools:ignore="TypographyEllipsis">Exporting PDF...</string>
+    <string name="exporting_html" tools:ignore="TypographyEllipsis">Exporting HTML...</string>
+    <string name="exporting_md" tools:ignore="TypographyEllipsis">Exporting Markdown...</string>
 </resources>

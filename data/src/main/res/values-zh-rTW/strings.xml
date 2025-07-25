@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">玩 Note</string>
     <string name="bad_network_view_tip">點擊屏幕重新加載</string>
     <string name="back">返回</string>
@@ -67,4 +67,7 @@
     <string name="export_pdf">導出為PDF</string>
     <string name="export_html">導出為HTML</string>
     <string name="export_md">導出為MarkDown</string>
+    <string name="exporting_pdf" tools:ignore="TypographyEllipsis">正在導出PDF...</string>
+    <string name="exporting_html" tools:ignore="TypographyEllipsis">正在導出HTML...</string>
+    <string name="exporting_md" tools:ignore="TypographyEllipsis">正在導出Markdown...</string>
 </resources>

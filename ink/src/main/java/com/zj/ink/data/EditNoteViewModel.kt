@@ -13,11 +13,9 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.ink.brush.StockBrushes
 import androidx.ink.strokes.Stroke
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.zj.data.R
 import com.zj.data.model.Note
-import com.zj.data.utils.MarkdownExporter
 import com.zj.ink.widget.updateNoteWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,7 +30,7 @@ import javax.inject.Inject
 class EditNoteViewModel @Inject constructor(
     application: Application,
     private val noteRepository: NoteRepository
-) : AndroidViewModel(application) {
+) : BaseShareViewModel(application) {
 
     // 新增：使用 TextFieldValue 管理文本和光标位置
     private val _noteContent = mutableStateOf(TextFieldValue(""))
@@ -55,7 +53,6 @@ class EditNoteViewModel @Inject constructor(
     // 新增：标记是否有未保存的修改
     private val _isDirty = MutableStateFlow(false)
     val isDirty: StateFlow<Boolean> get() = _isDirty
-    private val markdownExporter = MarkdownExporter(getApplication())
 
     // 绘图状态
     val finishedStrokes = mutableStateOf<Set<Stroke>>(emptySet())
@@ -234,33 +231,6 @@ class EditNoteViewModel @Inject constructor(
         updateNoteContent(
             TextFieldValue(newContentText, TextRange(newCursorPosition))
         )
-    }
-
-    fun exportMarkdown() {
-        viewModelScope.launch {
-            markdownExporter.exportMarkdownToFile(
-                markdownContent = _note.value.content,
-                title = _note.value.title,
-            )
-        }
-    }
-
-    fun exportMarkdownToPdf() {
-        viewModelScope.launch {
-            markdownExporter.exportMarkdownToPdf(
-                markdownContent = _note.value.content,
-                title = _note.value.title,
-            )
-        }
-    }
-
-    fun exportMarkdownToHtml() {
-        viewModelScope.launch {
-            markdownExporter.exportMarkdownToHtml(
-                markdownContent = _note.value.content,
-                title = _note.value.title,
-            )
-        }
     }
 
     fun clearDrawState() {
