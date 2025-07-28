@@ -4,11 +4,10 @@ import android.app.Application
 import android.content.ContentResolver
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
 import com.zj.data.model.Note
 import com.zj.ink.data.NoteRepository
+import com.zj.ink.widget.updateNoteWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import javax.inject.Inject
@@ -20,7 +19,9 @@ class SendNoteViewModel @Inject constructor(
 ) : AndroidViewModel(application) {
 
     suspend fun insertNote(note: Note): Long {
-        return noteRepository.insertNote(note)
+        val id = noteRepository.insertNote(note)
+        updateNoteWidget(getApplication())
+        return id
     }
 
     suspend fun readAndSaveMarkdownFile(uri: Uri): Long {
