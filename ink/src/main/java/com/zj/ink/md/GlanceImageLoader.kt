@@ -95,9 +95,14 @@ object GlanceImageLoader {
                 }
             }
 
-            bitmap ?: BitmapFactory.decodeResource(
-                appContext.resources, R.drawable.ic_placeholder
-            )
+            // 处理加载结果
+            // 加载成功，移除失败记录（如果有的话）
+            bitmap ?: loadPlaceholderBitmap()
+        }.also { loadedBitmap ->
+            // 只有成功加载的图片才放入缓存
+            if (loadedBitmap != loadPlaceholderBitmap() && !loadedBitmap.isRecycled) {
+                memoryCache.put(key, loadedBitmap)
+            }
         }
     }
 
@@ -194,6 +199,11 @@ object GlanceImageLoader {
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
                 capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
+    // 加载占位图
+    private fun loadPlaceholderBitmap(): Bitmap {
+        return BitmapFactory.decodeResource(appContext.resources, R.drawable.ic_placeholder)
     }
 
 }
