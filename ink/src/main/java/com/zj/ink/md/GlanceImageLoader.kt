@@ -1,9 +1,10 @@
-// ImageLoader.kt
 package com.zj.ink.md
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.util.Log
 import android.util.LruCache
 import com.zj.data.R
@@ -16,9 +17,24 @@ import java.net.HttpURLConnection
 import java.net.URL
 import androidx.core.graphics.scale
 
-object ImageLoader {
+/**
+ * 图片加载器，用于在 Glance 组件中加载和显示图片
+ *
+ * 支持多种图片来源：
+ * - 网络图片 (URL)
+ * - 本地资源 (R.drawable.xxx)
+ * - 本地文件 (文件路径)
+ *
+ * 特性：
+ * - 内存缓存 (LruCache)
+ * - 图片尺寸压缩优化
+ * - 网络状态检测
+ * - 超时控制
+ * - 错误处理和占位图
+ */
+object GlanceImageLoader {
 
-    private const val TAG = "ImageLoader"
+    private const val TAG = "GlanceImageLoader"
     private const val MAX_CACHE_SIZE = 10 * 1024 * 1024 // 10MB
     private val memoryCache = object : LruCache<String, Bitmap>(MAX_CACHE_SIZE) {
         override fun sizeOf(key: String, value: Bitmap): Int {
@@ -40,9 +56,7 @@ object ImageLoader {
      * - 本地文件路径（/sdcard/Pictures/image.jpg）
      * - Uri（file://... / content://...）
      */
-    fun loadBitmap(
-        source: Any, width: Int = 400, height: Int = 200
-    ): Bitmap? {
+    fun loadBitmap(source: Any, width: Int = 400, height: Int = 200): Bitmap {
         val key = "$source-$width-$height"
 
         Log.d(TAG, "loadBitmap: source:$source")
@@ -82,13 +96,16 @@ object ImageLoader {
             }
 
             bitmap ?: BitmapFactory.decodeResource(
-                appContext.resources, R.drawable.baseline_image
+                appContext.resources, R.drawable.ic_placeholder
             )
         }
     }
 
     // 网络图片加载（使用 HttpURLConnection）
     private fun loadBitmapFromNetwork(urlString: String, width: Int, height: Int): Bitmap? {
+        if (!isNetworkAvailable()) {
+            return null
+        }
         return try {
             val url = URL(urlString)
             val connection = url.openConnection() as HttpURLConnection
@@ -167,6 +184,16 @@ object ImageLoader {
         val scaledHeight = height / inSampleSize
 
         return Pair(scaledWidth, scaledHeight)
+    }
+
+    // 检查网络是否可用
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager =
+            appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
 }

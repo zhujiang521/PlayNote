@@ -29,6 +29,11 @@ import com.zj.data.R
 import com.zj.ink.widget.gray
 import com.zj.ink.widget.textColor
 
+/**
+ * 在 Glance 组件中渲染 Markdown 内容
+ *
+ * @param content 需要渲染的 Markdown 字符串内容
+ */
 @Composable
 fun GlanceRenderMarkdown(content: String) {
     val elements = MarkdownParser.parse(content).take(10)
@@ -103,12 +108,10 @@ fun GlanceRenderMarkdown(content: String) {
                 }
 
                 is Image -> {
-                    ImageLoader.loadBitmap(element.url)?.let {
-                        Image(
-                            provider = ImageProvider(it),
-                            contentDescription = "Markdown 图片"
-                        )
-                    }
+                    Image(
+                        provider = ImageProvider(GlanceImageLoader.loadBitmap(element.url)),
+                        contentDescription = "Markdown 图片"
+                    )
                 }
 
                 is Code -> {

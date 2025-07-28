@@ -50,6 +50,17 @@ import coil3.request.ImageRequest
 import coil3.size.Size.Companion.ORIGINAL
 import com.zj.data.R
 
+/**
+ * 渲染 Markdown 内容为 Jetpack Compose UI 组件。
+ *
+ * 该函数接收一个 Markdown 字符串，并将其解析为一系列 UI 元素进行展示，支持标题、段落、加粗、斜体、链接、图片、代码块、列表、表格等多种 Markdown 语法。
+ *
+ * @param markdown 要渲染的 Markdown 文本内容。
+ * @param modifier 应用于根布局的 Modifier。
+ * @param sharedTransitionScope 用于支持共享元素过渡动画的 SharedTransitionScope 对象（可选）。
+ * @param animatedContentScope 用于支持共享元素过渡动画的 AnimatedContentScope 对象（可选）。
+ * @param onImageClick 当图片被点击时触发的回调函数，参数为图片 URL。
+ */
 @Composable
 fun RenderMarkdown(
     markdown: String,
@@ -154,7 +165,7 @@ fun RenderMarkdown(
                                 },
                                 error = {
                                     Image(
-                                        painterResource(R.drawable.ic_placeholder_big),
+                                        painterResource(R.drawable.ic_placeholder),
                                         contentDescription = stringResource(R.string.down_fail)
                                     )
                                 },
