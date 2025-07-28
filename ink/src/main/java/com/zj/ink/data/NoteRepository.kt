@@ -21,8 +21,8 @@ class NoteRepository @Inject constructor(private val noteDao: NoteDao) {
         ).flow
     }
 
-    suspend fun insertNote(note: Note) {
-        withContext(Dispatchers.IO) {
+    suspend fun insertNote(note: Note): Long {
+        return withContext(Dispatchers.IO) {
             noteDao.insertNote(note)
         }
     }
