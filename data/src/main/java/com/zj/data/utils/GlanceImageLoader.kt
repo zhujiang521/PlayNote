@@ -1,4 +1,4 @@
-package com.zj.ink.md
+package com.zj.data.utils
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -7,6 +7,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
 import android.util.LruCache
+import androidx.core.graphics.scale
 import com.zj.data.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -15,7 +16,6 @@ import java.io.File
 import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
-import androidx.core.graphics.scale
 
 /**
  * 图片加载器，用于在 Glance 组件中加载和显示图片

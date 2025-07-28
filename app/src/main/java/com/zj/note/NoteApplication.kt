@@ -2,7 +2,7 @@ package com.zj.note
 
 import android.app.Application
 import com.zj.data.utils.DataStoreUtils
-import com.zj.ink.md.GlanceImageLoader
+import com.zj.data.utils.GlanceImageLoader
 import dagger.hilt.android.HiltAndroidApp
 
 @HiltAndroidApp

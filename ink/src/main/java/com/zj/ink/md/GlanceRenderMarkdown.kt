@@ -26,6 +26,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextDecoration
 import androidx.glance.text.TextStyle
 import com.zj.data.R
+import com.zj.data.utils.GlanceImageLoader
 import com.zj.ink.widget.gray
 import com.zj.ink.widget.textColor
 
