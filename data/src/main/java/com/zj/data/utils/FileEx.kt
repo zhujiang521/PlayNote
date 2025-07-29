@@ -7,6 +7,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.util.Locale
+import java.util.UUID
 
 fun String.getMimeType(): String? {
     val extension = MimeTypeMap.getFileExtensionFromUrl(this)
@@ -39,10 +40,33 @@ fun Context.getExternalStorageDir(): File {
 }
 
 fun Uri?.getImageName(): String {
+    // 使用UUID确保每个文件名都是唯一的
+    val timestamp = System.currentTimeMillis()
+    val uniqueId = UUID.randomUUID().toString().take(8)
+
     return if (this != null) {
-        lastPathSegment?.filter { it.isDigit() }?.takeLast(10) ?: (1000..99999).random()
-            .toString()
+        try {
+            // 尝试获取原始扩展名
+            val originalFileName = this.lastPathSegment?.substringAfterLast("/", "")
+            val extension =
+                if (!originalFileName.isNullOrEmpty() && originalFileName.contains(".")) {
+                    originalFileName.substringAfterLast(".")
+                } else {
+                    // 默认扩展名
+                    "jpg"
+                }
+
+            // 确保扩展名是有效的
+            val validExtension = when (extension.lowercase()) {
+                "jpg", "jpeg", "png", "gif", "webp" -> extension
+                else -> "jpg"
+            }
+
+            "image_${timestamp}_${uniqueId}.${validExtension}"
+        } catch (_: Exception) {
+            "image_${timestamp}_${uniqueId}.jpg"
+        }
     } else {
-        (1000..99999).random().toString()
-    } + ".jpg"
+        "image_${timestamp}_${uniqueId}.jpg"
+    }
 }

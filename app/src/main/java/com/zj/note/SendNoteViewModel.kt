@@ -21,14 +21,23 @@ class SendNoteViewModel @Inject constructor(
     private val noteRepository: NoteRepository
 ) : AndroidViewModel(application) {
 
+    /**
+     * 插入新的笔记
+     * @param note 要插入的笔记对象
+     * @return 插入的笔记ID
+     */
     suspend fun insertNote(note: Note): Long {
         val id = noteRepository.insertNote(note)
         updateNoteWidget(getApplication())
         return id
     }
 
+    /**
+     * 读取并保存从外部分享的Markdown文件
+     * @param uri Markdown文件的Uri
+     * @return 新创建笔记的ID，失败时返回-1
+     */
     suspend fun readAndSaveMarkdownFile(uri: Uri): Long {
-
         return try {
             val contentResolver: ContentResolver = application.contentResolver
             val title = getApplication<Application>().getString(com.zj.data.R.string.note)
@@ -47,6 +56,12 @@ class SendNoteViewModel @Inject constructor(
         }
     }
 
+
+    /**
+     * 读取并保存从外部分享的图片文件
+     * @param uri 图片文件的Uri
+     * @return 新创建笔记的ID
+     */
     suspend fun readAndSaveImageFile(uri: Uri): Long {
         return withContext(Dispatchers.IO) {
             val context = getApplication<Application>().applicationContext
