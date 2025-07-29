@@ -31,18 +31,7 @@ class SendNoteViewModel @Inject constructor(
 
         return try {
             val contentResolver: ContentResolver = application.contentResolver
-            var title = getApplication<Application>().getString(com.zj.data.R.string.note)
-
-            // 尝试从Uri获取文件名作为标题
-            if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
-                contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-                    val nameIndex = cursor.getColumnIndex("_display_name")
-                    if (cursor.moveToFirst() && nameIndex != -1) {
-                        val fileName = cursor.getString(nameIndex)
-                        title = fileName.substringBeforeLast(".", fileName)
-                    }
-                }
-            }
+            val title = getApplication<Application>().getString(com.zj.data.R.string.note)
 
             // 读取文件内容
             val markdownContent = contentResolver.openInputStream(uri)?.use { inputStream ->
