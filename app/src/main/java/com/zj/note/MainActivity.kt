@@ -38,13 +38,14 @@ class MainActivity : ComponentActivity() {
 
     private fun handleIntent(intent: Intent?) {
         try {
+            noteId =
+                intent?.getIntExtra(NOTE_ID_ARG, DEFAULT_INVALID_ID) ?: DEFAULT_INVALID_ID
+            if (noteId != DEFAULT_INVALID_ID) {
+                return
+            }
             when (intent?.action) {
                 Intent.ACTION_SEND -> {
                     handleSendIntent(intent)
-                }
-
-                Intent.ACTION_SEND_MULTIPLE -> {
-                    handleSendMultipleIntent(intent)
                 }
 
                 Intent.ACTION_VIEW -> {
@@ -65,42 +66,41 @@ class MainActivity : ComponentActivity() {
     private fun handleSendIntent(intent: Intent) {
         lifecycleScope.launch {
             try {
-                when (intent.type) {
-                    "text/markdown", "text/x-markdown" -> {
-                        // 处理分享的Markdown文件
-                        val uri = intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
-                        uri?.let {
-                            val newNoteId = viewModel.readAndSaveMarkdownFile(it)
-                            noteId = newNoteId.toInt()
-                            refreshContent()
-                        }
+                val type = intent.type
+                if (type == "text/markdown" || type == "text/x-markdown") {
+                    // 处理分享的Markdown文件
+                    val uri = intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+                    uri?.let {
+                        val newNoteId = viewModel.readAndSaveMarkdownFile(it)
+                        noteId = newNoteId.toInt()
+                        refreshContent()
                     }
-
-                    "text/plain" -> {
-                        // 处理分享的纯文本
-                        val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT) ?: ""
-                        if (sharedText.isNotEmpty()) {
-                            val note = Note(
-                                id = 0,
-                                title = "Shared Text",
-                                content = sharedText,
-                                timestamp = System.currentTimeMillis()
-                            )
-                            val newNoteId = viewModel.insertNote(note)
-                            noteId = newNoteId.toInt()
-                            refreshContent()
-                        }
+                } else if (type == "text/plain") {
+                    // 处理分享的纯文本
+                    val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT) ?: ""
+                    if (sharedText.isNotEmpty()) {
+                        val note = Note(
+                            id = 0,
+                            title = getString(com.zj.data.R.string.note),
+                            content = sharedText,
+                            timestamp = System.currentTimeMillis()
+                        )
+                        val newNoteId = viewModel.insertNote(note)
+                        noteId = newNoteId.toInt()
+                        refreshContent()
+                    }
+                } else if (type?.startsWith("image/") == true) {
+                    val uri = intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+                    uri?.let {
+                        val newNoteId = viewModel.readAndSaveImageFile(it)
+                        noteId = newNoteId.toInt()
+                        refreshContent()
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
-    }
-
-    private fun handleSendMultipleIntent(intent: Intent) {
-        // 处理多个文件分享（可选实现）
-        // 您可以在这里实现导入多个Markdown文件的功能
     }
 
     private fun handleViewIntent(intent: Intent) {
@@ -138,6 +138,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val DEFAULT_INVALID_ID = -1
-        const val NOTE_ID_ARG = "note_id"
+        const val NOTE_ID_ARG = "noteId"
     }
 }
