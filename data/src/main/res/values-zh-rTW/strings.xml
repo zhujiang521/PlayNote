@@ -64,9 +64,11 @@
     <string name="down_success">下載成功</string>
     <string name="wallpaper_success">設置壁紙成功</string>
     <string name="wallpaper_fail">設置壁紙失敗</string>
+    <string name="export_image">導出為圖片</string>
     <string name="export_pdf">導出為PDF</string>
     <string name="export_html">導出為HTML</string>
     <string name="export_md">導出為MarkDown</string>
+    <string name="exporting_image" tools:ignore="TypographyEllipsis">正在導出圖片...</string>
     <string name="exporting_pdf" tools:ignore="TypographyEllipsis">正在導出PDF...</string>
     <string name="exporting_html" tools:ignore="TypographyEllipsis">正在導出HTML...</string>
     <string name="exporting_md" tools:ignore="TypographyEllipsis">正在導出Markdown...</string>
