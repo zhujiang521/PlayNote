@@ -2,12 +2,6 @@
 agp = "8.11.1"
 coilCompose = "3.3.0"
 commonmark = "0.25.0"
-commonmarkExtGfmTables = "0.25.0"
-commonmarkExtFootnotes = "0.25.0"
-commonmarkExtHeadingAnchor = "0.25.0"
-commonmarkExtGfmStrikethrough = "0.25.0"
-commonmarkExtTaskListItems = "0.25.0"
-commonmarkExtAutolink = "0.25.0"
 datastorePreferences = "1.1.7"
 hiltNavigationCompose = "1.2.0"
 html2pdf = "6.2.0"
@@ -28,7 +22,7 @@ activityCompose = "1.10.1"
 composeBom = "2025.06.01"
 googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
 lottieCompose = "6.6.7"
-navigationCompose = "2.9.2"
+navigationCompose = "2.9.3"
 pagingRuntimeKtx = "3.3.5"
 roomVersion = "2.7.2"
 hilt = "2.57"
@@ -65,12 +59,12 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coilCompose" }
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-gif = { module = "io.coil-kt:coil-gif", version.ref = "gifCoil" }
-commonmark-ext-autolink = { module = "org.commonmark:commonmark-ext-autolink", version.ref = "commonmarkExtAutolink" }
-commonmark-ext-task-list-items = { module = "org.commonmark:commonmark-ext-task-list-items", version.ref = "commonmarkExtTaskListItems" }
-commonmark-ext-gfm-strikethrough = { module = "org.commonmark:commonmark-ext-gfm-strikethrough", version.ref = "commonmarkExtGfmStrikethrough" }
-commonmark-ext-heading-anchor = { module = "org.commonmark:commonmark-ext-heading-anchor", version.ref = "commonmarkExtHeadingAnchor" }
-commonmark-ext-footnotes = { module = "org.commonmark:commonmark-ext-footnotes", version.ref = "commonmarkExtFootnotes" }
-commonmark-ext-gfm-tables = { module = "org.commonmark:commonmark-ext-gfm-tables", version.ref = "commonmarkExtGfmTables" }
+commonmark-ext-autolink = { module = "org.commonmark:commonmark-ext-autolink", version.ref = "commonmark" }
+commonmark-ext-task-list-items = { module = "org.commonmark:commonmark-ext-task-list-items", version.ref = "commonmark" }
+commonmark-ext-gfm-strikethrough = { module = "org.commonmark:commonmark-ext-gfm-strikethrough", version.ref = "commonmark" }
+commonmark-ext-heading-anchor = { module = "org.commonmark:commonmark-ext-heading-anchor", version.ref = "commonmark" }
+commonmark-ext-footnotes = { module = "org.commonmark:commonmark-ext-footnotes", version.ref = "commonmark" }
+commonmark-ext-gfm-tables = { module = "org.commonmark:commonmark-ext-gfm-tables", version.ref = "commonmark" }
 commonmark = { module = "org.commonmark:commonmark", version.ref = "commonmark" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hilt" }
