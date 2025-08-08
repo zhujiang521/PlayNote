@@ -100,9 +100,21 @@ class EditNoteViewModel @Inject constructor(
 
     fun saveNote() {
         viewModelScope.launch {
-            if (_note.value.title.isBlank()) {
-                _note.value.title = getApplication<Application>().getString(R.string.note)
-                updateNoteTitle(_note.value.title)
+            if (_note.value.title.isBlank() || _note.value.content.isBlank()) {
+                if (_note.value.title.isBlank()) {
+                    // 使用 updateNoteTitle 来更新标题，而不是直接修改 _note.value.title
+                    updateNoteTitle(getApplication<Application>().getString(R.string.note))
+                }
+                if (_note.value.content.isBlank()) {
+                    val updatedNote = _note.value // 获取更新后的 note
+                    _note.value = updatedNote.copy(content = updatedNote.title)
+                    updateNoteContent(
+                        TextFieldValue(
+                            _note.value.content,
+                            TextRange(_note.value.content.length)
+                        )
+                    )
+                }
             }
             if (_note.value.id > 0) {
                 noteRepository.updateNote(_note.value)
@@ -120,6 +132,9 @@ class EditNoteViewModel @Inject constructor(
         noteUndoStack.add(EditState(currentState, newTitle.length))
         noteRedoStack.clear()
         _note.value = currentState.copy(title = newTitle)
+        _note.update {
+            it.copy(title = newTitle)
+        }
         _undoEnabled.value = noteUndoStack.isNotEmpty()
         _isDirty.value = true
     }

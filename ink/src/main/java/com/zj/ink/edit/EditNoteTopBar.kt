@@ -108,7 +108,7 @@ fun EditNoteTopBar(
                     IconButton(onClick = {
                         viewModel.saveNote()
                         keyboardController?.hide()
-                    }, enabled = note.title.isNotBlank() && note.content.isNotBlank()) {
+                    }, enabled = note.title.isNotBlank() || note.content.isNotBlank()) {
                         Icon(
                             painter = painterResource(R.drawable.baseline_save),
                             contentDescription = stringResource(R.string.save)
@@ -159,7 +159,7 @@ fun EditNoteTopBar(
                                 keyboardController?.hide()
                                 expanded.value = false
                             },
-                            enabled = note.title.isNotBlank() && note.content.isNotBlank()
+                            enabled = note.title.isNotBlank() || note.content.isNotBlank()
                         )
                     } else {
                         DropdownMenuItem(
