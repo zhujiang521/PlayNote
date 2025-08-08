@@ -87,12 +87,21 @@ object ZipUtils {
                     }
                 }
 
-                // 打包为ZIP文件
-                val zipFile = File(context.cacheDir, "$title.zip")
-                zipDirectory(tempDir, zipFile)
-
-                // 分享 ZIP 文件
-                shareFile(context, zipFile, "application/zip")
+                // 如果有图片则打包为ZIP文件分享，否则直接分享原始文件
+                if (imageUrls.isNotEmpty()) {
+                    // 打包为ZIP文件
+                    val zipFile = File(context.cacheDir, "$title.zip")
+                    zipDirectory(tempDir, zipFile)
+                    // 分享 ZIP 文件
+                    shareFile(context, zipFile, "application/zip")
+                } else {
+                    // 直接分享原始文件
+                    val mimeType = when (exportType) {
+                        ExportType.HTML -> "text/html"
+                        ExportType.MD -> "text/markdown"
+                    }
+                    shareFile(context, exportFile, mimeType)
+                }
 
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to export Markdown file with images", e)

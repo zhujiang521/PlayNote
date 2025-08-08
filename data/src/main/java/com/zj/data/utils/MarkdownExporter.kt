@@ -101,4 +101,23 @@ class MarkdownExporter(private val context: Context) {
         exportMarkdownWithImages(context, title, markdownContent, ZipUtils.ExportType.MD)
     }
 
+    /**
+     * 将Markdown内容导出为纯文本
+     * 直接分享原始的Markdown文本内容，无需创建临时文件
+     *
+     * @param title 文件名（用于分享时的标题）
+     * @param markdownContent Markdown格式的内容
+     */
+    suspend fun exportMarkdownToText(title: String, markdownContent: String) {
+        withContext(Dispatchers.IO) {
+            try {
+                // 直接分享文本内容
+                shareText(context, title, markdownContent)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to export Markdown to text", e)
+                throw RuntimeException("Failed to export Markdown to text", e)
+            }
+        }
+    }
+
 }

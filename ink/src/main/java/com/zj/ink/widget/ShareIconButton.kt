@@ -54,6 +54,13 @@ fun ShareIconButton(viewModel: BaseShareViewModel, note: Note) {
             containerColor = MaterialTheme.colorScheme.surface
         ) {
             DropdownMenuItem(
+                text = { Text(stringResource(R.string.export_text)) },
+                onClick = {
+                    viewModel.exportMarkdownToText(note)
+                    expanded = false
+                }
+            )
+            DropdownMenuItem(
                 text = { Text(stringResource(R.string.export_image)) },
                 onClick = {
                     viewModel.exportMarkdownToImage(note)

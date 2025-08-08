@@ -48,6 +48,26 @@ fun ShareOptionsDialog(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
+                TextButton(
+                    onClick = {
+                        viewModel.exportMarkdownToText(note) {
+                            onDismissRequest()
+                        }
+                    },
+                    modifier = Modifier
+                        .padding(vertical = 4.dp),
+                    contentPadding = PaddingValues(
+                        horizontal = dimensionResource(R.dimen.screen_horizontal_margin),
+                        vertical = dimensionResource(R.dimen.image_screen_horizontal_margin),
+                    )
+                ) {
+                    Text(
+                        text = stringResource(R.string.export_text),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                }
+
                 TextButton(
                     onClick = {
                         viewModel.exportMarkdownToImage(note) {

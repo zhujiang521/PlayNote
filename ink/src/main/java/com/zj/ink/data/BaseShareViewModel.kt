@@ -31,7 +31,42 @@ open class BaseShareViewModel(private val application: Application) :
     private val markdownExporter = MarkdownExporter(getApplication())
 
     /**
-     * 将笔记导出为 PDF 格式
+     * 将笔记导出为文本
+     *
+     * @param note 要导出的笔记对象
+     */
+    fun exportMarkdownToText(note: Note) {
+        exportMarkdownToText(note) {}
+    }
+
+    /**
+     * 将笔记导出为文本
+     *
+     * @param note 要导出的笔记对象
+     * @param onFinishedListener 导出完成后的回调函数
+     */
+    fun exportMarkdownToText(note: Note, onFinishedListener: () -> Unit) {
+        viewModelScope.launch {
+            // 设置导出状态为正在进行，并显示相应消息
+            _isExporting.value = true
+            _exportMessage.value = application.getString(R.string.exporting_text)
+            try {
+                // 执行实际的 PDF 导出操作
+                markdownExporter.exportMarkdownToText(
+                    markdownContent = note.content,
+                    title = note.title,
+                )
+            } finally {
+                // 无论导出成功与否，都重置导出状态
+                _isExporting.value = false
+                _exportMessage.value = ""
+                onFinishedListener()
+            }
+        }
+    }
+
+    /**
+     * 将笔记导出为图片
      *
      * @param note 要导出的笔记对象
      */
@@ -40,7 +75,7 @@ open class BaseShareViewModel(private val application: Application) :
     }
 
     /**
-     * 将笔记导出为 PDF 格式
+     * 将笔记导出为图片
      *
      * @param note 要导出的笔记对象
      * @param onFinishedListener 导出完成后的回调函数
