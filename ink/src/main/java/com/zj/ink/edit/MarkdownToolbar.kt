@@ -85,7 +85,7 @@ internal fun MarkdownToolbar(
             ToolbarButton(
                 icon = R.drawable.baseline_quote,
                 title = R.string.quote,
-                template = ">%s\n"
+                template = "> %s\n"
             ),
             ToolbarButton(
                 icon = R.drawable.baseline_table_chart,
