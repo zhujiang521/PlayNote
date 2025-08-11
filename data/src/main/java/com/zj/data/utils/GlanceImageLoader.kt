@@ -10,10 +10,9 @@ import android.util.LruCache
 import androidx.core.graphics.scale
 import com.zj.data.R
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
-import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -37,15 +36,15 @@ object GlanceImageLoader {
     private const val TAG = "GlanceImageLoader"
     private const val MAX_CACHE_SIZE = 10 * 1024 * 1024 // 10MB
     private val memoryCache = object : LruCache<String, Bitmap>(MAX_CACHE_SIZE) {
-        override fun sizeOf(key: String, value: Bitmap): Int {
-            return value.byteCount
+        override fun sizeOf(key: String, bitmap: Bitmap): Int {
+            return bitmap.allocationByteCount
         }
     }
 
     private lateinit var appContext: Context
 
     fun init(context: Context) {
-        appContext = context
+        appContext = context.applicationContext
     }
 
     /**
@@ -56,7 +55,7 @@ object GlanceImageLoader {
      * - 本地文件路径（/sdcard/Pictures/image.jpg）
      * - Uri（file://... / content://...）
      */
-    fun loadBitmap(source: Any, width: Int = 400, height: Int = 200): Bitmap {
+    suspend fun loadBitmap(source: Any, width: Int = 400, height: Int = 200): Bitmap {
         val key = "$source-$width-$height"
 
         Log.d(TAG, "loadBitmap: source:$source")
@@ -68,36 +67,40 @@ object GlanceImageLoader {
         }
 
         // 同步调用，内部使用协程 + 超时控制
-        return runBlocking(Dispatchers.IO) {
-            val bitmap = withTimeoutOrNull(3000) { // 3秒超时
-                when (source) {
-                    is String -> {
-                        if (source.startsWith("http")) {
-                            loadBitmapFromNetwork(source, width, height)
-                        } else if (source.startsWith("file://")) {
-                            loadBitmapFromFile(source.removePrefix("file://"), width, height)
-                        } else {
-                            loadBitmapFromFile(source, width, height)
+        return withContext(Dispatchers.IO) {
+            try {
+                val bitmap = withTimeoutOrNull(3000) { // 3秒超时
+                    when (source) {
+                        is String -> {
+                            if (source.startsWith("http")) {
+                                loadBitmapFromNetwork(source, width, height)
+                            } else if (source.startsWith("file://")) {
+                                loadBitmapFromFile(source.removePrefix("file://"), width, height)
+                            } else {
+                                loadBitmapFromFile(source, width, height)
+                            }
+                        }
+
+                        is Int -> {
+                            loadBitmapFromResource(source, width, height)
+                        }
+
+                        is File -> {
+                            loadBitmapFromFile(source.absolutePath, width, height)
+                        }
+
+                        else -> {
+                            null
                         }
                     }
-
-                    is Int -> {
-                        loadBitmapFromResource(source, width, height)
-                    }
-
-                    is File -> {
-                        loadBitmapFromFile(source.absolutePath, width, height)
-                    }
-
-                    else -> {
-                        null
-                    }
                 }
-            }
 
-            // 处理加载结果
-            // 加载成功，移除失败记录（如果有的话）
-            bitmap ?: loadPlaceholderBitmap()
+                // 处理加载结果
+                bitmap ?: loadPlaceholderBitmap()
+            } catch (e: Exception) {
+                Log.e(TAG, "加载图片时发生异常", e)
+                loadPlaceholderBitmap()
+            }
         }.also { loadedBitmap ->
             // 只有成功加载的图片才放入缓存
             if (loadedBitmap != loadPlaceholderBitmap() && !loadedBitmap.isRecycled) {
@@ -111,29 +114,34 @@ object GlanceImageLoader {
         if (!isNetworkAvailable()) {
             return null
         }
+        var connection: HttpURLConnection? = null
         return try {
             val url = URL(urlString)
-            val connection = url.openConnection() as HttpURLConnection
-            connection.connectTimeout = 3000
-            connection.readTimeout = 3000
-            connection.requestMethod = "GET"
-            connection.doInput = true
-            connection.useCaches = true
+            connection = url.openConnection() as HttpURLConnection
+            connection.apply {
+                connectTimeout = 3000
+                readTimeout = 3000
+                requestMethod = "GET"
+                doInput = true
+                useCaches = true
+                setRequestProperty("User-Agent", "Mozilla/5.0")
+            }
             connection.connect()
 
             if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                val input: InputStream = connection.inputStream
-                val bitmap = BitmapFactory.decodeStream(input)
-                input.close()
-                val size =
-                    calculateImageSize(bitmap.width, bitmap.height, width, height)
-                bitmap?.scale(size.first, size.second)
+                connection.inputStream.use { input ->
+                    val bitmap = BitmapFactory.decodeStream(input)
+                    val size = calculateImageSize(bitmap.width, bitmap.height, width, height)
+                    bitmap.scale(size.first, size.second, filter = true)
+                }
             } else {
                 null
             }
         } catch (e: Exception) {
             Log.e(TAG, "网络图片加载失败: $urlString", e)
             null
+        } finally {
+            connection?.disconnect()
         }
     }
 
@@ -146,10 +154,18 @@ object GlanceImageLoader {
         }
 
         return try {
-            val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-            val size =
-                calculateImageSize(bitmap.width, bitmap.height, width, height)
-            bitmap?.scale(size.first, size.second)
+            val options = BitmapFactory.Options()
+            // 先获取图片尺寸信息
+            options.inJustDecodeBounds = true
+            BitmapFactory.decodeFile(file.absolutePath, options)
+
+            // 计算缩放比例
+            options.inSampleSize = calculateInSampleSize(options, width, height)
+            options.inJustDecodeBounds = false
+
+            val bitmap = BitmapFactory.decodeFile(file.absolutePath, options)
+            val size = calculateImageSize(bitmap.width, bitmap.height, width, height)
+            bitmap.scale(size.first, size.second, filter = true)
         } catch (e: Exception) {
             Log.e(TAG, "文件加载失败: $filePath", e)
             null
@@ -159,34 +175,60 @@ object GlanceImageLoader {
     // 资源 ID 加载
     private fun loadBitmapFromResource(resId: Int, width: Int, height: Int): Bitmap? {
         return try {
-            val bitmap = BitmapFactory.decodeResource(appContext.resources, resId)
-            val size =
-                calculateImageSize(bitmap.width, bitmap.height, width, height)
-            bitmap?.scale(size.first, size.second)
+            val options = BitmapFactory.Options()
+            // 先获取图片尺寸信息
+            options.inJustDecodeBounds = true
+            BitmapFactory.decodeResource(appContext.resources, resId, options)
+
+            // 计算缩放比例
+            options.inSampleSize = calculateInSampleSize(options, width, height)
+            options.inJustDecodeBounds = false
+
+            val bitmap = BitmapFactory.decodeResource(appContext.resources, resId, options)
+            val size = calculateImageSize(bitmap.width, bitmap.height, width, height)
+            bitmap.scale(size.first, size.second, filter = true)
         } catch (e: Exception) {
             Log.e(TAG, "资源加载失败: $resId", e)
             null
         }
     }
 
-    private fun calculateImageSize(
-        width: Int, height: Int, reqWidth: Int, reqHeight: Int
-    ): Pair<Int, Int> {
+    private fun calculateInSampleSize(
+        options: BitmapFactory.Options,
+        reqWidth: Int,
+        reqHeight: Int
+    ): Int {
+        val height = options.outHeight
+        val width = options.outWidth
         var inSampleSize = 1
 
         if (height > reqHeight || width > reqWidth) {
-            val halfWidth = width / 2
             val halfHeight = height / 2
+            val halfWidth = width / 2
 
-            while ((halfWidth / inSampleSize) >= reqWidth &&
-                (halfHeight / inSampleSize) >= reqHeight
-            ) {
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
                 inSampleSize *= 2
             }
         }
 
-        val scaledWidth = width / inSampleSize
-        val scaledHeight = height / inSampleSize
+        return inSampleSize
+    }
+
+    private fun calculateImageSize(
+        width: Int, height: Int, reqWidth: Int, reqHeight: Int
+    ): Pair<Int, Int> {
+        // 如果原图尺寸小于等于目标尺寸，则不需要缩放
+        if (width <= reqWidth && height <= reqHeight) {
+            return Pair(width, height)
+        }
+
+        // 保持宽高比的缩放
+        val widthRatio = width.toFloat() / reqWidth
+        val heightRatio = height.toFloat() / reqHeight
+        val scaleRatio = maxOf(widthRatio, heightRatio)
+
+        val scaledWidth = (width / scaleRatio).toInt()
+        val scaledHeight = (height / scaleRatio).toInt()
 
         return Pair(scaledWidth, scaledHeight)
     }

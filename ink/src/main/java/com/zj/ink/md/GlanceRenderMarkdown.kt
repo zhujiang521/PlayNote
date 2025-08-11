@@ -1,8 +1,13 @@
 package com.zj.ink.md
 
 import android.content.Intent
+import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,6 +35,7 @@ import com.zj.data.R
 import com.zj.data.utils.GlanceImageLoader
 import com.zj.ink.widget.gray
 import com.zj.ink.widget.textColor
+import kotlinx.coroutines.launch
 
 /**
  * 在 Glance 组件中渲染 Markdown 内容
@@ -41,6 +47,8 @@ fun GlanceRenderMarkdown(content: String) {
     val elements = remember(content) {
         MarkdownParser.parse(content).take(10)
     }
+    val coroutineScope = rememberCoroutineScope()
+
     Column {
         elements.forEach { element ->
             when (element) {
@@ -111,10 +119,20 @@ fun GlanceRenderMarkdown(content: String) {
                 }
 
                 is Image -> {
-                    Image(
-                        provider = ImageProvider(GlanceImageLoader.loadBitmap(element.url)),
-                        contentDescription = "Markdown 图片"
-                    )
+                    var bitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+                    // 使用 rememberCoroutineScope 启动协程加载图片
+                    coroutineScope.launch {
+                        bitmap = GlanceImageLoader.loadBitmap(element.url)
+                    }
+
+                    // 当 bitmap 不为空时，显示图片
+                    if (bitmap != null) {
+                        Image(
+                            provider = ImageProvider(bitmap!!),
+                            contentDescription = "Markdown 图片"
+                        )
+                    }
                 }
 
                 is Code -> {

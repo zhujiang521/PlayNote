@@ -152,7 +152,7 @@ object ZipUtils {
     /**
      * 使用GlanceImageLoader下载并保存图片
      */
-    fun downloadAndSaveImage(imageUrl: String, targetFile: File) {
+    suspend fun downloadAndSaveImage(imageUrl: String, targetFile: File) {
         try {
             // 使用URL直接下载图片（如果GlanceImageLoader有特定方法，可以替换这部分）
             val bitmap = GlanceImageLoader.loadBitmap(imageUrl)
