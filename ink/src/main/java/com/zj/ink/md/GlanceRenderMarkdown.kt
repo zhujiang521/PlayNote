@@ -2,6 +2,7 @@ package com.zj.ink.md
 
 import android.content.Intent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,8 +38,9 @@ import com.zj.ink.widget.textColor
  */
 @Composable
 fun GlanceRenderMarkdown(content: String) {
-    val elements = MarkdownParser.parse(content).take(10)
-
+    val elements = remember(content) {
+        MarkdownParser.parse(content).take(10)
+    }
     Column {
         elements.forEach { element ->
             when (element) {

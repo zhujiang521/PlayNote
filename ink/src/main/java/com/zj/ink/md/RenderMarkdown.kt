@@ -26,6 +26,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -69,8 +70,9 @@ fun RenderMarkdown(
     animatedContentScope: AnimatedContentScope? = null,
     onImageClick: (String) -> Unit = {}
 ) {
-    val elements = MarkdownParser.parse(markdown)
-
+    val elements = remember(markdown) {
+        MarkdownParser.parse(markdown)
+    }
     Column(
         modifier = modifier.verticalScroll(rememberScrollState()) // 添加垂直滚动
     ) {
