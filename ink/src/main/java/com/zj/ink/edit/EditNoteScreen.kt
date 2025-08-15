@@ -1,4 +1,8 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
+@file:OptIn(
+    ExperimentalMaterial3Api::class,
+    ExperimentalSharedTransitionApi::class,
+    ExperimentalLayoutApi::class
+)
 
 package com.zj.ink.edit
 
@@ -11,12 +15,14 @@ import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -91,6 +97,7 @@ fun EditNoteScreen(
             back()
         }
     }
+
     Scaffold(
         topBar = {
             EditNoteTopBar(
@@ -110,6 +117,7 @@ fun EditNoteScreen(
                 .padding(paddingValues)
                 .padding(horizontal = dimensionResource(R.dimen.screen_horizontal_margin))
                 .background(MaterialTheme.colorScheme.background)
+                .imePadding()
         ) {
             InputTextField(
                 value = note.title,
@@ -125,10 +133,13 @@ fun EditNoteScreen(
 
             Spacer(Modifier.height(dimensionResource(R.dimen.image_screen_horizontal_margin)))
             val isPad = isPad()
+
+            // 使用weight时需要确保父布局可以正确处理软键盘
             if (isPad) {
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
+                        .weight(1f) // 将weight移到这里
                         .padding(dimensionResource(R.dimen.image_screen_horizontal_margin))
                 ) {
                     NoteEditView(Modifier.weight(1f), viewModel)
@@ -139,12 +150,19 @@ fun EditNoteScreen(
                     )
                 }
             } else {
-                NoteEditView(Modifier.weight(1f), viewModel)
+                // 对于非平板设备，使用Column垂直排列
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f) // 使用weight分配剩余空间
+                ) {
+                    NoteEditView(Modifier.weight(1f), viewModel)
 
-                NotePreview(
-                    Modifier.weight(1f), viewModel, sharedTransitionScope,
-                    animatedContentScope, note, false, onImageClick
-                )
+                    NotePreview(
+                        Modifier.weight(1f), viewModel, sharedTransitionScope,
+                        animatedContentScope, note, false, onImageClick
+                    )
+                }
             }
             NoteDrawDialog(viewModel) {
                 viewModel.updateNoteContentImage(it)
@@ -166,7 +184,6 @@ fun EditNoteScreen(
             keyboardController?.show()
         }
     }
-
 }
 
 @Composable
@@ -229,6 +246,7 @@ private fun NoteEditView(modifier: Modifier = Modifier, viewModel: EditNoteViewM
             onValueChange = { viewModel.updateNoteContent(it) },
             modifier = Modifier
                 .fillMaxSize()
+                .weight(1f) // 添加weight来分配空间
                 .padding(horizontal = dimensionResource(R.dimen.image_screen_horizontal_margin))
                 .onPreviewKeyEvent { keyEvent ->
                     if (keyEvent.type == KeyEventType.KeyDown && keyEvent.isCtrlPressed) {
@@ -264,6 +282,5 @@ private fun NoteEditView(modifier: Modifier = Modifier, viewModel: EditNoteViewM
                     innerTextField()
                 }
             })
-
     }
 }

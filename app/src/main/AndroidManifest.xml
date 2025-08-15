@@ -21,7 +21,8 @@
             android:name=".MainActivity"
             android:enableOnBackInvokedCallback="true"
             android:exported="true"
-            android:theme="@style/Theme.PlayNote">
+            android:theme="@style/Theme.PlayNote"
+            android:windowSoftInputMode="adjustResize|stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -30,8 +31,10 @@
             <!-- 支持打开本地和外部存储中的MD文件 (方案1: 基于MIME类型和文件扩展名) -->
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data android:scheme="file" />
                 <data android:scheme="content" />
                 <data android:host="*" />
@@ -43,8 +46,10 @@
             <!-- 支持打开本地和外部存储中的MD文件 (方案2: 基于文件扩展名) -->
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data android:scheme="file" />
                 <data android:scheme="content" />
                 <data android:host="*" />
