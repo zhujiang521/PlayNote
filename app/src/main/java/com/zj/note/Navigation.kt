@@ -33,6 +33,7 @@ import com.zj.ink.md.ImagePreview
 import com.zj.ink.md.ImageViewModel
 import com.zj.ink.preview.NotePreview
 import com.zj.ink.preview.NotePreviewViewModel
+import com.zj.ink.widget.NoteAppWidget.Companion.NOTE_FROM_VALUE
 
 private const val NOTES_ROUTE = "notes"
 private const val EDIT_NOTE_ROUTE = "edit_note"
@@ -45,7 +46,7 @@ const val IMAGE_URL_ARG = "imageUrl"
 
 @SuppressLint("NewApi")
 @Composable
-fun NoteApp(noteId: Int = DEFAULT_INVALID_ID) {
+fun NoteApp(noteId: Int = DEFAULT_INVALID_ID, noteFromArg: String?) {
     val navController = rememberNavController()
     val startRoute = if (noteId <= DEFAULT_INVALID_ID) {
         NOTES_ROUTE
@@ -58,9 +59,13 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID) {
         ) {
             animateComposable(route = NOTES_ROUTE) {
                 val viewModel = hiltViewModel<NoteViewModel>()
-                NoteScreen(viewModel = viewModel, editNote = {
-                    navController.navigate("$EDIT_NOTE_ROUTE/${it}")
-                })
+                NoteScreen(
+                    viewModel = viewModel,
+                    previewNote = {
+                        navController.navigate("$NOTE_PREVIEW_ROUTE/${it}")
+                    }, editNote = {
+                        navController.navigate("$EDIT_NOTE_ROUTE/${it}")
+                    })
             }
             animateComposable(
                 route = "$EDIT_NOTE_ROUTE/{$NOTE_ID_ARG}",
@@ -76,19 +81,21 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID) {
                     }
                 }
                 EditNoteScreen(
-                    viewModel, sharedTransitionScope = this@SharedTransitionLayout,
-                    animatedContentScope = this@animateComposable, onImageClick = {
+                    viewModel = viewModel,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedContentScope = this@animateComposable,
+                    onImageClick = {
                         navController.navigate("${IMAGE_PREVIEW_ROUTE}/${Uri.encode(it)}")
                     }) {
                     navController.popBackStack()
                 }
             }
-            composable(
+            animateComposable(
                 route = "$NOTE_PREVIEW_ROUTE/{$NOTE_ID_ARG}",
                 arguments = listOf(navArgument(NOTE_ID_ARG) { type = NavType.IntType }),
             ) { backStackEntry ->
                 val id =
-                    backStackEntry.arguments?.getInt(NOTE_ID_ARG) ?: return@composable
+                    backStackEntry.arguments?.getInt(NOTE_ID_ARG) ?: return@animateComposable
 
                 val viewModel = hiltViewModel<NotePreviewViewModel>()
                 if (id != DEFAULT_INVALID_ID) {
@@ -97,12 +104,17 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID) {
                     }
                 }
                 NotePreview(
-                    viewModel, sharedTransitionScope = this@SharedTransitionLayout,
-                    animatedContentScope = this@composable, onImageClick = {
+                    viewModel = viewModel,
+                    showBackButton = noteFromArg != NOTE_FROM_VALUE,
+                    sharedTransitionScope = this@SharedTransitionLayout,
+                    animatedContentScope = this@animateComposable,
+                    onImageClick = {
                         navController.navigate("${IMAGE_PREVIEW_ROUTE}/${Uri.encode(it)}")
-                    }, onEditClick = {
+                    },
+                    onEditClick = {
                         navController.navigate("$EDIT_NOTE_ROUTE/${it}")
-                    })
+                    },
+                    back = { navController.popBackStack() })
             }
             composable(
                 route = "${IMAGE_PREVIEW_ROUTE}/{${IMAGE_URL_ARG}}",
@@ -114,7 +126,8 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID) {
                 val viewModel: ImageViewModel = hiltViewModel()
                 ImagePreview(
                     viewModel = viewModel,
-                    imageUrl = imageUrl, sharedTransitionScope = this@SharedTransitionLayout,
+                    imageUrl = imageUrl,
+                    sharedTransitionScope = this@SharedTransitionLayout,
                     animatedContentScope = this@composable,
                 ) {
                     navController.popBackStack()

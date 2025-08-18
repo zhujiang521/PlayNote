@@ -38,6 +38,7 @@ import com.zj.data.lce.NoContent
 fun NoteScreen(
     viewModel: NoteViewModel = hiltViewModel(),
     editNote: (Int) -> Unit = {},
+    previewNote: (Int) -> Unit = {},
 ) {
     val notes = viewModel.notes.collectAsLazyPagingItems()
     Scaffold(
@@ -114,7 +115,7 @@ fun NoteScreen(
                     NoteItem(
                         note = item,
                         onClick = {
-                            editNote(item.id)
+                            previewNote(item.id)
                         },
                         searchQuery = viewModel.searchQuery.value,
                         onDelete = { viewModel.deleteNote(item) },

@@ -30,10 +30,12 @@ import com.zj.ink.widget.ShareIconButton
 @Composable
 fun NotePreview(
     viewModel: NotePreviewViewModel = hiltViewModel<NotePreviewViewModel>(),
+    showBackButton: Boolean = true,
     sharedTransitionScope: SharedTransitionScope,
     animatedContentScope: AnimatedContentScope,
     onEditClick: (Int) -> Unit = {},
-    onImageClick: (String) -> Unit = {}
+    onImageClick: (String) -> Unit = {},
+    back: () -> Unit = {},
 ) {
     val note by viewModel.note.collectAsState()
     Scaffold(
@@ -44,6 +46,15 @@ fun NotePreview(
                         note.title,
                         fontSize = dimensionResource(R.dimen.top_bar_title).value.sp
                     )
+                },
+                navigationIcon = {
+                    if (!showBackButton) return@TopAppBar
+                    IconButton(onClick = { back() }) {
+                        Icon(
+                            painter = painterResource(R.drawable.baseline_arrow_back),
+                            contentDescription = stringResource(R.string.back),
+                        )
+                    }
                 },
                 actions = {
                     IconButton(

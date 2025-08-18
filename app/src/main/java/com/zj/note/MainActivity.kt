@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.zj.data.model.Note
+import com.zj.ink.widget.NoteAppWidget.Companion.NOTE_FROM_ARG
 import com.zj.note.ui.theme.PlayNoteTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -18,6 +19,7 @@ import kotlinx.coroutines.launch
 class MainActivity : ComponentActivity() {
 
     private var noteId: Int = DEFAULT_INVALID_ID
+    private var noteFromArg: String? = null
     private val viewModel: SendNoteViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,7 +28,7 @@ class MainActivity : ComponentActivity() {
         handleIntent(intent)
         setContent {
             PlayNoteTheme {
-                NoteApp(noteId)
+                NoteApp(noteId, noteFromArg)
             }
         }
     }
@@ -40,6 +42,7 @@ class MainActivity : ComponentActivity() {
         try {
             noteId =
                 intent?.getIntExtra(NOTE_ID_ARG, DEFAULT_INVALID_ID) ?: DEFAULT_INVALID_ID
+            noteFromArg = intent?.getStringExtra(NOTE_FROM_ARG)
             if (noteId != DEFAULT_INVALID_ID) {
                 return
             }
@@ -55,6 +58,7 @@ class MainActivity : ComponentActivity() {
                 else -> {
                     noteId =
                         intent?.getIntExtra(NOTE_ID_ARG, DEFAULT_INVALID_ID) ?: DEFAULT_INVALID_ID
+                    noteFromArg = intent?.getStringExtra(NOTE_FROM_ARG)
                 }
             }
         } catch (e: Exception) {
@@ -131,7 +135,7 @@ class MainActivity : ComponentActivity() {
         // 重新设置content以刷新UI
         setContent {
             PlayNoteTheme {
-                NoteApp(noteId)
+                NoteApp(noteId, noteFromArg)
             }
         }
     }

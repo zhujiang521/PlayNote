@@ -46,7 +46,9 @@ import java.io.File
 class NoteAppWidget : GlanceAppWidget() {
 
     companion object {
-        const val NOTE_ID_ARG = "noteId"
+        private const val NOTE_ID_ARG = "noteId"
+        const val NOTE_FROM_ARG = "noteFromArg"
+        const val NOTE_FROM_VALUE = "widget"
     }
 
     override val stateDefinition: GlanceStateDefinition<List<Note>>
@@ -129,6 +131,7 @@ class NoteAppWidget : GlanceAppWidget() {
             makeMainActivity(ComponentName("com.zj.note", "com.zj.note.MainActivity")).apply {
                 action = Intent.ACTION_VIEW
                 putExtra(NOTE_ID_ARG, note.id)
+                putExtra(NOTE_FROM_ARG, NOTE_FROM_VALUE)
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
 
