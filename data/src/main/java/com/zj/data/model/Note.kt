@@ -6,8 +6,8 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "note")
 data class Note(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    var title: String,
-    var content: String,
+    val title: String,
+    val content: String,
     val timestamp: Long = System.currentTimeMillis(),
 )
 
