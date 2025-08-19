@@ -1,9 +1,9 @@
-package com.zj.data.utils
+package com.zj.data.export
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Bitmap.createBitmap
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
 import android.util.Log
@@ -19,9 +19,9 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 
-object PdfUtils {
+object PdfExportManager {
 
-    private const val TAG = "PdfUtils"
+    private const val TAG = "PdfExportManager"
     private var cachedFontProgram: FontProgram? = null
     private const val DEFAULT_SCALE = 2f
     private const val DEFAULT_MARGIN = 20
@@ -136,7 +136,7 @@ object PdfUtils {
                 maxWidth = maxOf(maxWidth, width)
                 totalHeight += height
 
-                createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
+                Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
                     renderPageToCanvas(page, scale, this)
                     bitmaps.add(this)
                 }
@@ -155,7 +155,7 @@ object PdfUtils {
 
     private fun renderPageToCanvas(page: PdfRenderer.Page, scale: Float, bitmap: Bitmap) {
         Canvas(bitmap).apply {
-            drawColor(android.graphics.Color.WHITE)
+            drawColor(Color.WHITE)
             scale(scale, scale)
             page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
         }
@@ -171,7 +171,7 @@ object PdfUtils {
         val (maxWidth, totalHeight) = totalSize
         val finalSize = calculateFinalSize(maxWidth, totalHeight, margin, bitmaps.size)
 
-        createBitmap(finalSize.first, finalSize.second, Bitmap.Config.ARGB_8888).apply {
+        Bitmap.createBitmap(finalSize.first, finalSize.second, Bitmap.Config.ARGB_8888).apply {
             drawAllPages(this, bitmaps, maxWidth, margin)
             saveToFile(outputFile, quality)
             recycle()
@@ -197,7 +197,7 @@ object PdfUtils {
         margin: Int
     ) {
         Canvas(finalBitmap).apply {
-            drawColor(android.graphics.Color.WHITE)
+            drawColor(Color.WHITE)
             var currentY = margin
 
             bitmaps.forEach { bitmap ->

@@ -1,8 +1,9 @@
-package com.zj.data.utils
+package com.zj.data.export
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.util.Log
+import com.zj.data.utils.shareFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedOutputStream
@@ -10,12 +11,13 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.util.UUID
+import java.util.regex.Pattern
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
-object ZipUtils {
+object ZipExportManager {
 
-    private const val TAG = "ZipUtils"
+    private const val TAG = "ZipExportManager"
 
     /**
      * 导出类型枚举
@@ -118,7 +120,7 @@ object ZipUtils {
      */
     fun extractImageUrls(markdownContent: String): List<String> {
         val imageRegex = """!\[.*?]\((.*?)\)"""
-        val pattern = java.util.regex.Pattern.compile(imageRegex)
+        val pattern = Pattern.compile(imageRegex)
         val matcher = pattern.matcher(markdownContent)
         val result = mutableListOf<String>()
         while (matcher.find()) {

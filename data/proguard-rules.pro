@@ -179,7 +179,7 @@
 -keep class com.zj.data.**Module { *; }
 
 # 保留导出相关的类
--keep class com.zj.data.utils.MarkdownExporter { *; }
+-keep class com.zj.data.export.MarkdownExporter { *; }
 
 # ============ 其他第三方库 ============
 # 保留 Zoomable 相关类

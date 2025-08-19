@@ -1,10 +1,11 @@
-package com.zj.data.utils
+package com.zj.data.export
 
 import android.content.Context
 import android.util.Log
-import com.zj.data.utils.PdfUtils.convertPdfToImage
-import com.zj.data.utils.PdfUtils.generatePdfFromMarkdown
-import com.zj.data.utils.ZipUtils.exportMarkdownWithImages
+import com.zj.data.export.PdfExportManager.convertPdfToImage
+import com.zj.data.export.PdfExportManager.generatePdfFromMarkdown
+import com.zj.data.utils.shareFile
+import com.zj.data.utils.shareText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -88,7 +89,7 @@ class MarkdownExporter(private val context: Context) {
      * @param markdownContent Markdown格式的内容
      */
     suspend fun exportMarkdownToHtml(title: String, markdownContent: String) {
-        exportMarkdownWithImages(context, title, markdownContent, ZipUtils.ExportType.HTML)
+        ZipExportManager.exportMarkdownWithImages(context, title, markdownContent, ZipExportManager.ExportType.HTML)
     }
 
     /**
@@ -98,7 +99,7 @@ class MarkdownExporter(private val context: Context) {
      * @param markdownContent Markdown格式的内容
      */
     suspend fun exportMarkdownToFile(title: String, markdownContent: String) {
-        exportMarkdownWithImages(context, title, markdownContent, ZipUtils.ExportType.MD)
+        ZipExportManager.exportMarkdownWithImages(context, title, markdownContent, ZipExportManager.ExportType.MD)
     }
 
     /**

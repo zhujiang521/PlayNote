@@ -3,7 +3,7 @@ package com.zj.ink.preview
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.zj.data.model.Note
-import com.zj.data.utils.MarkdownExporter
+import com.zj.data.export.MarkdownExporter
 import com.zj.ink.data.BaseShareViewModel
 import com.zj.ink.data.NoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel

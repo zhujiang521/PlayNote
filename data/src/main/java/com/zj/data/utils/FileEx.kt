@@ -2,18 +2,10 @@ package com.zj.data.utils
 
 import android.content.Context
 import android.net.Uri
-import android.webkit.MimeTypeMap
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
-import java.util.Locale
 import java.util.UUID
-
-fun String.getMimeType(): String? {
-    val extension = MimeTypeMap.getFileExtensionFromUrl(this)
-    return MimeTypeMap.getSingleton()
-        .getMimeTypeFromExtension(extension.lowercase(Locale.getDefault()))
-}
 
 fun Context.saveImageToAppStorage(uri: Uri): String {
     val appStorageDir = getExternalStorageDir()
