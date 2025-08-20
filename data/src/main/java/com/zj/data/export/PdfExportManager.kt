@@ -18,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
+import androidx.core.graphics.createBitmap
 
 object PdfExportManager {
 
@@ -136,7 +137,7 @@ object PdfExportManager {
                 maxWidth = maxOf(maxWidth, width)
                 totalHeight += height
 
-                Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888).apply {
+                createBitmap(width, height).apply {
                     renderPageToCanvas(page, scale, this)
                     bitmaps.add(this)
                 }
@@ -171,7 +172,7 @@ object PdfExportManager {
         val (maxWidth, totalHeight) = totalSize
         val finalSize = calculateFinalSize(maxWidth, totalHeight, margin, bitmaps.size)
 
-        Bitmap.createBitmap(finalSize.first, finalSize.second, Bitmap.Config.ARGB_8888).apply {
+        createBitmap(finalSize.first, finalSize.second).apply {
             drawAllPages(this, bitmaps, maxWidth, margin)
             saveToFile(outputFile, quality)
             recycle()

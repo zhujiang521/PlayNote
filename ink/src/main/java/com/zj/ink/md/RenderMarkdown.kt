@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
@@ -29,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -68,6 +70,7 @@ fun RenderMarkdown(
     modifier: Modifier = Modifier,
     sharedTransitionScope: SharedTransitionScope? = null,
     animatedContentScope: AnimatedContentScope? = null,
+    showRoundShape: Boolean = false,
     onImageClick: (String) -> Unit = {}
 ) {
     val elements = remember(markdown) {
@@ -149,6 +152,10 @@ fun RenderMarkdown(
                                     .size(ORIGINAL)
                                     .build(),
                                 modifier = Modifier
+                                    .clip(
+                                        if (showRoundShape)
+                                            RoundedCornerShape(8.dp) else RoundedCornerShape(0.dp)
+                                    )
                                     .sharedElement(
                                         sharedTransitionScope.rememberSharedContentState(key = "image-${element.url}"),
                                         animatedVisibilityScope = animatedContentScope,
@@ -179,9 +186,14 @@ fun RenderMarkdown(
                                 .data(element.url)
                                 .size(ORIGINAL)
                                 .build(),
-                            modifier = Modifier.clickable {
-                                onImageClick(element.url)
-                            },
+                            modifier = Modifier
+                                .clip(
+                                    if (showRoundShape)
+                                        RoundedCornerShape(8.dp) else RoundedCornerShape(0.dp)
+                                )
+                                .clickable {
+                                    onImageClick(element.url)
+                                },
                             contentDescription = stringResource(R.string.image),
                             contentScale = ContentScale.Fit,
                             loading = {

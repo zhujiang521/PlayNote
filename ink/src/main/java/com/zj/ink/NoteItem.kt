@@ -130,7 +130,8 @@ fun NoteItem(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 100.dp, max = 300.dp)
-                        .clickable { onClick() }
+                        .clickable { onClick() },
+                    showRoundShape = true
                 )
             }
         }

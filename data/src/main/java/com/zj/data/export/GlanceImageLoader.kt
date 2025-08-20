@@ -3,6 +3,12 @@ package com.zj.data.export
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Rect
+import android.graphics.RectF
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.util.Log
@@ -15,6 +21,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
+import androidx.core.graphics.createBitmap
 
 /**
  * 图片加载器，用于在 Glance 组件中加载和显示图片
@@ -30,6 +37,7 @@ import java.net.URL
  * - 网络状态检测
  * - 超时控制
  * - 错误处理和占位图
+ * - 圆角处理
  */
 object GlanceImageLoader {
 
@@ -54,11 +62,21 @@ object GlanceImageLoader {
      * - 本地资源（R.drawable.xxx）
      * - 本地文件路径（/sdcard/Pictures/image.jpg）
      * - Uri（file://... / content://...）
+     *
+     * @param source 图片来源
+     * @param width 目标宽度
+     * @param height 目标高度
+     * @param roundedCorners 是否添加圆角
      */
-    suspend fun loadBitmap(source: Any, width: Int = 400, height: Int = 200): Bitmap {
-        val key = "$source-$width-$height"
+    suspend fun loadBitmap(
+        source: Any,
+        width: Int = 400,
+        height: Int = 200,
+        roundedCorners: Boolean = false
+    ): Bitmap {
+        val key = "$source-$width-$height-$roundedCorners"
 
-        Log.d(TAG, "loadBitmap: source:$source")
+        Log.d(TAG, "loadBitmap: source:$source, roundedCorners:$roundedCorners")
 
         // 检查内存缓存
         val cached = memoryCache.get(key)
@@ -96,7 +114,14 @@ object GlanceImageLoader {
                 }
 
                 // 处理加载结果
-                bitmap ?: loadPlaceholderBitmap()
+                val resultBitmap = bitmap ?: loadPlaceholderBitmap()
+
+                // 如果需要圆角处理，则应用圆角
+                if (roundedCorners && resultBitmap != loadPlaceholderBitmap()) {
+                    getRoundedCornerBitmap(resultBitmap) // 8dp 圆角
+                } else {
+                    resultBitmap
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "加载图片时发生异常", e)
                 loadPlaceholderBitmap()
@@ -246,6 +271,27 @@ object GlanceImageLoader {
     // 加载占位图
     private fun loadPlaceholderBitmap(): Bitmap {
         return BitmapFactory.decodeResource(appContext.resources, R.drawable.ic_placeholder)
+    }
+
+    // 为 Bitmap 添加圆角
+    private fun getRoundedCornerBitmap(bitmap: Bitmap): Bitmap {
+        val cornerRadius = 10f
+        val output = createBitmap(bitmap.width, bitmap.height)
+        val canvas = Canvas(output)
+
+        val paint = Paint()
+        val rect = Rect(0, 0, bitmap.width, bitmap.height)
+        val rectF = RectF(rect)
+
+        paint.isAntiAlias = true
+        canvas.drawARGB(0, 0, 0, 0)
+        paint.color = -0xbdbdbe // 设置为灰色
+        canvas.drawRoundRect(rectF, cornerRadius, cornerRadius, paint)
+
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        canvas.drawBitmap(bitmap, rect, rect, paint)
+
+        return output
     }
 
 }

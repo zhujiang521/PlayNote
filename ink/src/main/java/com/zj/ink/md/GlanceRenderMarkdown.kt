@@ -123,14 +123,14 @@ fun GlanceRenderMarkdown(content: String) {
 
                     // 使用 rememberCoroutineScope 启动协程加载图片
                     coroutineScope.launch {
-                        bitmap = GlanceImageLoader.loadBitmap(element.url)
+                        bitmap = GlanceImageLoader.loadBitmap(element.url, roundedCorners = true)
                     }
 
                     // 当 bitmap 不为空时，显示图片
                     if (bitmap != null) {
                         Image(
                             provider = ImageProvider(bitmap!!),
-                            contentDescription = "Markdown 图片"
+                            contentDescription = "Markdown 图片",
                         )
                     }
                 }
