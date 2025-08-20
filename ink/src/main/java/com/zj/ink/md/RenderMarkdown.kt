@@ -2,7 +2,6 @@
 
 package com.zj.ink.md
 
-import android.content.ClipData
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionScope
@@ -10,7 +9,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +30,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draganddrop.DragAndDropTransferData
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -51,7 +48,6 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import coil3.size.Size.Companion.ORIGINAL
@@ -166,11 +162,6 @@ fun RenderMarkdown(
                                     )
                                     .clickable {
                                         onImageClick(element.url)
-                                    }
-                                    .dragAndDropSource { _ ->
-                                        val clipData =
-                                            ClipData.newRawUri("Image", element.url.toUri())
-                                        DragAndDropTransferData(clipData)
                                     },
                                 contentDescription = stringResource(R.string.image),
                                 contentScale = ContentScale.Fit,
@@ -202,11 +193,6 @@ fun RenderMarkdown(
                                 )
                                 .clickable {
                                     onImageClick(element.url)
-                                }
-                                .dragAndDropSource { _ ->
-                                    val clipData =
-                                        ClipData.newRawUri("Image", element.url.toUri())
-                                    DragAndDropTransferData(clipData)
                                 },
                             contentDescription = stringResource(R.string.image),
                             contentScale = ContentScale.Fit,
