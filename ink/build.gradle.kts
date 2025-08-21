@@ -65,6 +65,8 @@ dependencies {
     implementation(libs.bundles.glance)
     implementation(libs.zoomable)
 
+    implementation(libs.refresh)
+
     api(project(":data"))
 
     implementation(libs.androidx.input.motionprediction)

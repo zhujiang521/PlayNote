@@ -85,6 +85,16 @@ class NoteViewModel @Inject constructor(
         }
     }
 
+    fun refreshData() {
+        viewModelScope.launch {
+            noteRepository.getAllNotes()
+                .cachedIn(viewModelScope)
+                .collect { pagingData ->
+                    _notes.value = pagingData
+                }
+        }
+    }
+
     companion object {
         private const val KEY_HAS_INSERTED = "has_inserted_default_note"
     }

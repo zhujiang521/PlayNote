@@ -2,9 +2,12 @@
 
 package com.zj.ink
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -33,6 +36,7 @@ import com.zj.ink.data.NoteViewModel
 import com.zj.data.common.SearchTextField
 import com.zj.data.common.lazyPagingStates
 import com.zj.data.lce.NoContent
+import com.zj.ink.widget.SwipeRefresh
 
 @Composable
 fun NoteScreen(
@@ -100,28 +104,38 @@ fun NoteScreen(
         if (notes.itemCount == 0) {
             NoContent()
         } else {
-            LazyVerticalStaggeredGrid(
+            val state: LazyStaggeredGridState = rememberLazyStaggeredGridState()
+            SwipeRefresh(
                 modifier = Modifier
                     .padding(paddingValues)
                     .padding(horizontal = dimensionResource(R.dimen.screen_horizontal_margin)),
-                columns = StaggeredGridCells.Adaptive(dimensionResource(R.dimen.note_card_width)),
-            ) {
-                items(
-                    count = notes.itemCount,
-                    key = notes.itemKey(),
-                    contentType = notes.itemContentType()
-                ) { index ->
-                    val item = notes[index] ?: return@items
-                    NoteItem(
-                        note = item,
-                        onClick = {
-                            previewNote(item.id)
-                        },
-                        searchQuery = viewModel.searchQuery.value,
-                        onDelete = { viewModel.deleteNote(item) },
-                    )
+                lazyListState = state,
+                refresh = {
+                    viewModel.refreshData()
+                }) {
+                LazyVerticalStaggeredGrid(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    state = state,
+                    columns = StaggeredGridCells.Adaptive(dimensionResource(R.dimen.note_card_width)),
+                ) {
+                    items(
+                        count = notes.itemCount,
+                        key = notes.itemKey(),
+                        contentType = notes.itemContentType()
+                    ) { index ->
+                        val item = notes[index] ?: return@items
+                        NoteItem(
+                            note = item,
+                            onClick = {
+                                previewNote(item.id)
+                            },
+                            searchQuery = viewModel.searchQuery.value,
+                            onDelete = { viewModel.deleteNote(item) },
+                        )
+                    }
+                    lazyPagingStates(notes)
                 }
-                lazyPagingStates(notes)
             }
         }
     }
