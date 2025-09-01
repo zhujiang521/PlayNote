@@ -12,8 +12,8 @@
       "filters": [],
       "attributes": [],
       "versionCode": 1119999,
-      "versionName": "1.1.1.9999-2025.08.21-release",
-      "outputFile": "PlayNote-1.1.1.9999-2025.08.21-release.apk"
+      "versionName": "1.1.1.9999-2025.09.01-release",
+      "outputFile": "PlayNote-1.1.1.9999-2025.09.01-release.apk"
     }
   ],
   "elementType": "File",
@@ -22,14 +22,14 @@
       "minApi": 28,
       "maxApi": 30,
       "baselineProfiles": [
-        "baselineProfiles/1/PlayNote-1.1.1.9999-2025.08.21-release.dm"
+        "baselineProfiles/1/PlayNote-1.1.1.9999-2025.09.01-release.dm"
       ]
     },
     {
       "minApi": 31,
       "maxApi": 2147483647,
       "baselineProfiles": [
-        "baselineProfiles/0/PlayNote-1.1.1.9999-2025.08.21-release.dm"
+        "baselineProfiles/0/PlayNote-1.1.1.9999-2025.09.01-release.dm"
       ]
     }
   ],
