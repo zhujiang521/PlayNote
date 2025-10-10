@@ -63,10 +63,11 @@ fun PenPicker(
 
                 // 列出所有可用画笔类型
                 val brushOptions = listOf(
-                    StockBrushes.markerLatest,
-                    StockBrushes.pressurePenLatest,
-                    StockBrushes.highlighterLatest,
-                    StockBrushes.dashedLineLatest
+                    StockBrushes.marker(),
+                    StockBrushes.pressurePen(),
+                    StockBrushes.highlighter(),
+                    StockBrushes.dashedLine(),
+                    StockBrushes.emojiHighlighter("😀"),
                 )
 
                 brushOptions.forEach { brush ->
@@ -106,10 +107,11 @@ private fun BrushOptionItem(
     ) {
         Text(
             text = when (brushFamily) {
-                StockBrushes.markerLatest -> stringResource(R.string.pen_marker)
-                StockBrushes.pressurePenLatest -> stringResource(R.string.pen_pressure)
-                StockBrushes.highlighterLatest -> stringResource(R.string.pen_highlighter)
-                StockBrushes.dashedLineLatest -> stringResource(R.string.pen_dashed_line)
+                StockBrushes.marker() -> stringResource(R.string.pen_marker)
+                StockBrushes.pressurePen() -> stringResource(R.string.pen_pressure)
+                StockBrushes.highlighter() -> stringResource(R.string.pen_highlighter)
+                StockBrushes.dashedLine() -> stringResource(R.string.pen_dashed_line)
+                StockBrushes.emojiHighlighter("😀") -> "stringResource(R.string.pen_emoji)"
                 else -> stringResource(R.string.pen_unknown)
             },
             modifier = Modifier.padding(start = dimensionResource(R.dimen.screen_horizontal_margin)),

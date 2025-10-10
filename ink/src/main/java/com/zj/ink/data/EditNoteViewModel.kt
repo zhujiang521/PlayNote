@@ -57,7 +57,7 @@ class EditNoteViewModel @Inject constructor(
     // 绘图状态
     val finishedStrokes = mutableStateOf<Set<Stroke>>(emptySet())
     val selectedColor = mutableIntStateOf(Color.Black.toArgb())
-    val selectedBrushFamily = mutableStateOf(StockBrushes.pressurePenLatest)
+    val selectedBrushFamily = mutableStateOf(StockBrushes.pressurePen())
 
     @SuppressLint("MutableCollectionMutableState")
     val drawUndoStack = mutableStateOf(mutableListOf(finishedStrokes.value))
@@ -252,7 +252,7 @@ class EditNoteViewModel @Inject constructor(
         // 重置绘图状态
         finishedStrokes.value = emptySet()
         selectedColor.intValue = Color.Black.toArgb()
-        selectedBrushFamily.value = StockBrushes.pressurePenLatest
+        selectedBrushFamily.value = StockBrushes.pressurePen()
         drawUndoStack.value.clear()
         drawRedoStack.value.clear()
         selectedBrushSize.floatValue = 5f
