@@ -2,6 +2,8 @@
 
 package com.zj.ink.md
 
+import androidx.compose.runtime.saveable.rememberSaveable
+
 /**
  * PlayNote Markdown渲染器 - Compose版本
  *
@@ -30,6 +32,7 @@ package com.zj.ink.md
  * - 语法高亮结果缓存
  * - 错误处理和优雅降级
  * - 主题适配（日间/夜间模式）
+ * - 优化的状态管理
  *
  * @author PlayNote开发团队
  * @since 1.0
@@ -68,7 +71,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -139,21 +144,42 @@ fun RenderMarkdown(
         return
     }
 
-    // 优化的解析缓存机制，支持大文档处理和错误处理
-    val (elements, hasError) = remember(markdown) {
+    // 集中式状态管理
+    data class MarkdownRenderState(
+        val elements: List<MarkdownElement>,
+        val hasError: Boolean,
+        val expandedSections: Set<Int> = emptySet()
+    )
+
+    // 使用rememberSaveable保存渲染状态
+    val renderState = rememberSaveable(markdown, saver = run {
+        listSaver(
+            save = { state ->
+                listOf(state.elements, state.hasError, state.expandedSections)
+            },
+            restore = { restored ->
+                MarkdownRenderState(
+                    elements = restored[0] as List<MarkdownElement>,
+                    hasError = restored[1] as Boolean,
+                    expandedSections = restored[2] as Set<Int>
+                )
+            }
+        )
+    }) {
         try {
             val parsed = MarkdownParser.parse(markdown)
-            Pair(parsed, false)
+            MarkdownRenderState(parsed, false)
         } catch (e: Exception) {
-            // 解析失败时的降级处理
             println("RenderMarkdown: Parse error - ${e.message}")
             val fallbackElements = listOf(
                 Paragraph("内容解析出现问题，请检查格式"),
                 Paragraph(markdown.take(500) + if (markdown.length > 500) "..." else "")
             )
-            Pair(fallbackElements, true)
+            MarkdownRenderState(fallbackElements, true)
         }
     }
+
+    val (elements, hasError) = renderState
 
     // 显示解析错误提示
     if (hasError) {

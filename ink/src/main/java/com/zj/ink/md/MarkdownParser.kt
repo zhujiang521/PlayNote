@@ -21,23 +21,65 @@ package com.zj.ink.md
  */
 object MarkdownParser {
 
-    // 预编译正则表达式，避免重复编译提升性能
-    /** 脚注定义正则表达式，匹配 [^id]: content 格式 */
+    /** 匹配脚注定义语法: [^id]: content */
+    @JvmStatic
     private val FOOTNOTE_DEFINITION_REGEX = Regex("""^\[\^([^\]]+)\]:\s*(.*)$""")
-    /** 脚注引用正则表达式，匹配 [^id] 格式 */
+
+    /** 匹配脚注引用语法: [^id] */
+    @JvmStatic
     private val FOOTNOTE_REFERENCE_REGEX = Regex("""\[\^([^\]]+)\]""")
-    /** 内联数学公式正则表达式，匹配 $formula$ 格式 */
+
+    /** 匹配内联数学公式语法: $formula$ */
+    @JvmStatic
     private val MATH_INLINE_REGEX = Regex("""\$([^$]+)\$""")
-    /** 上标正则表达式，匹配 X^2^ 格式 */
+
+    /** 匹配上标语法: ^text^ */
+    @JvmStatic
     private val SUPERSCRIPT_REGEX = Regex("""\^([^^\s]+)\^""")
-    /** 下标正则表达式，匹配 H~2~O 格式 */
+
+    /** 匹配下标语法: ~text~ */
+    @JvmStatic
     private val SUBSCRIPT_REGEX = Regex("""~([^~\s]+)~""")
-    /** 任务列表正则表达式，匹配 - [x] 或 - [ ] 格式 */
+
+    /** 匹配任务列表语法: - [ ] 或 - [x] */
+    @JvmStatic
     private val TASK_LIST_REGEX = Regex("""^- \[([ x])\] .*$""")
-    /** 有序列表正则表达式，匹配 1. item 格式 */
+
+    /** 匹配有序列表语法: 1. item */
+    @JvmStatic
     private val ORDERED_LIST_REGEX = Regex("""^\d+\. .*$""")
-    /** 多级引用正则表达式，匹配 > >> >>> 格式 */
+
+    /** 匹配多级引用语法: > >> >>> */
+    @JvmStatic
     private val MULTI_QUOTE_REGEX = Regex("""^(>+)\s*(.*)$""")
+
+    /** 匹配加粗语法: **text** */
+    @JvmStatic
+    private val BOLD_REGEX = Regex("""\*\*([^*]+)\*\*""")
+
+    /** 匹配斜体语法: *text* */
+    @JvmStatic
+    private val ITALIC_REGEX = Regex("""\*([^*]+)\*""")
+
+    /** 匹配删除线语法: ~~text~~ */
+    @JvmStatic
+    private val STRIKETHROUGH_REGEX = Regex("""~~([^~]+)~~""")
+
+    /** 匹配高亮语法: ==text== */
+    @JvmStatic
+    private val HIGHLIGHT_REGEX = Regex("""==([^=]+)==""")
+
+    /** 匹配行内代码语法: `code` */
+    @JvmStatic
+    private val INLINE_CODE_REGEX = Regex("""`([^`]+)`""")
+
+    /** 匹配链接语法: [text](url) */
+    @JvmStatic
+    private val LINK_REGEX = Regex("""\[([^\]]+)\]\(([^)]+)\)""")
+
+    /** 匹配图片语法: ![alt](src) */
+    @JvmStatic
+    private val IMAGE_REGEX = Regex("""!\[([^\]]*)\]\(([^)]+)\)""")
 
     // 转义字符映射表，提升字符串替换性能
     /** 转义字符映射表，将Markdown转义字符转换为实际字符 */
@@ -59,10 +101,13 @@ object MarkdownParser {
     // 错误处理相关常量
     /** 最大文本长度限制(1MB)，防止内存溢出 */
     private const val MAX_TEXT_LENGTH = 1_000_000 // 1MB文本限制
+
     /** 最大嵌套层级，防止过深嵌套影响性能 */
     private const val MAX_NESTING_LEVEL = 10 // 最大嵌套层级
+
     /** 最大表格列数，防止表格过大影响渲染 */
     private const val MAX_TABLE_COLUMNS = 50 // 最大表格列数
+
     /** 最大列表项数，防止列表过长影响性能 */
     private const val MAX_LIST_ITEMS = 1000 // 最大列表项数
 
@@ -141,6 +186,7 @@ object MarkdownParser {
                     logParseError("Empty input text provided")
                     return emptyList()
                 }
+
                 text.length > MAX_TEXT_LENGTH -> {
                     logParseError("Text too long: ${text.length} characters (max: $MAX_TEXT_LENGTH)")
                     return listOf(Paragraph("文档过大，无法解析"))
@@ -195,6 +241,7 @@ object MarkdownParser {
                             val content = trimmed.dropWhile { it == '#' }.trim()
                             Heading(level, content.take(200)) // 限制标题长度
                         }
+
                         else -> Paragraph(trimmed.take(1000)) // 限制段落长度
                     }
                 }
@@ -393,16 +440,22 @@ object MarkdownParser {
             when {
                 line.startsWith("###### ") && line.length > 7 ->
                     Heading(6, unescapeText(line.removePrefix("###### ").take(200)))
+
                 line.startsWith("##### ") && line.length > 6 ->
                     Heading(5, unescapeText(line.removePrefix("##### ").take(200)))
+
                 line.startsWith("#### ") && line.length > 5 ->
                     Heading(4, unescapeText(line.removePrefix("#### ").take(200)))
+
                 line.startsWith("### ") && line.length > 4 ->
                     Heading(3, unescapeText(line.removePrefix("### ").take(200)))
+
                 line.startsWith("## ") && line.length > 3 ->
                     Heading(2, unescapeText(line.removePrefix("## ").take(200)))
+
                 line.startsWith("# ") && line.length > 2 ->
                     Heading(1, unescapeText(line.removePrefix("# ").take(200)))
+
                 else -> null
             }
         } catch (e: Exception) {
@@ -493,35 +546,31 @@ object MarkdownParser {
         return try {
             when {
                 // 高亮文本
-                line.contains("==") && line.indexOf("==") != line.lastIndexOf("==") -> {
-                    val content = line.removePrefix("==").removeSuffix("==")
-                    if (content.isNotEmpty() && content.length <= 500) {
-                        Highlight(unescapeText(content))
-                    } else null
+                HIGHLIGHT_REGEX.containsMatchIn(line) -> {
+                    HIGHLIGHT_REGEX.find(line)?.let { match ->
+                        Highlight(unescapeText(match.groupValues[1].take(500)))
+                    }
                 }
 
                 // 删除线
-                line.contains("~~") && line.indexOf("~~") != line.lastIndexOf("~~") -> {
-                    val content = line.removePrefix("~~").removeSuffix("~~")
-                    if (content.isNotEmpty() && content.length <= 500) {
-                        Strikethrough(unescapeText(content))
-                    } else null
+                STRIKETHROUGH_REGEX.containsMatchIn(line) -> {
+                    STRIKETHROUGH_REGEX.find(line)?.let { match ->
+                        Strikethrough(unescapeText(match.groupValues[1].take(500)))
+                    }
                 }
 
                 // 加粗
-                line.contains("**") && line.indexOf("**") != line.lastIndexOf("**") -> {
-                    val content = line.removePrefix("**").removeSuffix("**")
-                    if (content.isNotEmpty() && content.length <= 500) {
-                        Bold(unescapeText(content))
-                    } else null
+                BOLD_REGEX.containsMatchIn(line) -> {
+                    BOLD_REGEX.find(line)?.let { match ->
+                        Bold(unescapeText(match.groupValues[1].take(500)))
+                    }
                 }
 
                 // 斜体
-                line.contains("*") && line.indexOf("*") != line.lastIndexOf("*") -> {
-                    val content = line.removePrefix("*").removeSuffix("*")
-                    if (content.isNotEmpty() && content.length <= 500) {
-                        Italic(unescapeText(content))
-                    } else null
+                ITALIC_REGEX.containsMatchIn(line) -> {
+                    ITALIC_REGEX.find(line)?.let { match ->
+                        Italic(unescapeText(match.groupValues[1].take(500)))
+                    }
                 }
 
                 else -> null
@@ -561,7 +610,8 @@ object MarkdownParser {
                     val urlEnd = line.indexOf(")", urlStart)
 
                     if (textStart != -1 && textEnd != -1 && urlStart != -1 && urlEnd != -1 &&
-                        textEnd > textStart && urlStart == textEnd + 1 && urlEnd > urlStart) {
+                        textEnd > textStart && urlStart == textEnd + 1 && urlEnd > urlStart
+                    ) {
                         val text = line.substring(textStart + 1, textEnd)
                         val url = line.substring(urlStart + 1, urlEnd)
 
@@ -669,7 +719,10 @@ object MarkdownParser {
     /**
      * 安全的嵌套列表解析
      */
-    private fun parseNestedListSafe(lines: List<String>, startIndex: Int): Pair<List<MarkdownElement>, Int> {
+    private fun parseNestedListSafe(
+        lines: List<String>,
+        startIndex: Int
+    ): Pair<List<MarkdownElement>, Int> {
         return try {
             val (elements, nextIndex) = parseNestedList(lines, startIndex)
 
@@ -694,7 +747,9 @@ object MarkdownParser {
             val tableLines = mutableListOf<String>()
             var i = startIndex
 
-            while (i < lines.size && lines[i].trimStart().startsWith("|") && tableLines.size < 100) {
+            while (i < lines.size && lines[i].trimStart()
+                    .startsWith("|") && tableLines.size < 100
+            ) {
                 tableLines.add(lines[i].trim().take(2000)) // 限制行长度
                 i++
             }
@@ -709,7 +764,8 @@ object MarkdownParser {
                     return Pair(null, i)
                 }
 
-                val rows = tableLines.subList(2, tableLines.size).mapNotNull { parseTableRowSafe(it) }
+                val rows =
+                    tableLines.subList(2, tableLines.size).mapNotNull { parseTableRowSafe(it) }
                 Pair(Table(headers, rows, alignments), i)
             } else {
                 Pair(null, i)
@@ -774,12 +830,47 @@ object MarkdownParser {
 
             // 标题（优化：使用更高效的字符检查）
             when {
-                line.startsWith("###### ") -> result.add(Heading(6, unescapeText(line.removePrefix("###### "))))
-                line.startsWith("##### ") -> result.add(Heading(5, unescapeText(line.removePrefix("##### "))))
-                line.startsWith("#### ") -> result.add(Heading(4, unescapeText(line.removePrefix("#### "))))
-                line.startsWith("### ") -> result.add(Heading(3, unescapeText(line.removePrefix("### "))))
-                line.startsWith("## ") -> result.add(Heading(2, unescapeText(line.removePrefix("## "))))
-                line.startsWith("# ") -> result.add(Heading(1, unescapeText(line.removePrefix("# "))))
+                line.startsWith("###### ") -> result.add(
+                    Heading(
+                        6,
+                        unescapeText(line.removePrefix("###### "))
+                    )
+                )
+
+                line.startsWith("##### ") -> result.add(
+                    Heading(
+                        5,
+                        unescapeText(line.removePrefix("##### "))
+                    )
+                )
+
+                line.startsWith("#### ") -> result.add(
+                    Heading(
+                        4,
+                        unescapeText(line.removePrefix("#### "))
+                    )
+                )
+
+                line.startsWith("### ") -> result.add(
+                    Heading(
+                        3,
+                        unescapeText(line.removePrefix("### "))
+                    )
+                )
+
+                line.startsWith("## ") -> result.add(
+                    Heading(
+                        2,
+                        unescapeText(line.removePrefix("## "))
+                    )
+                )
+
+                line.startsWith("# ") -> result.add(
+                    Heading(
+                        1,
+                        unescapeText(line.removePrefix("# "))
+                    )
+                )
 
                 // 脚注定义 (优化：使用预编译正则)
                 FOOTNOTE_DEFINITION_REGEX.matches(line) -> {
@@ -839,7 +930,13 @@ object MarkdownParser {
 
                 // 删除线
                 line.contains("~~") -> {
-                    result.add(Strikethrough(unescapeText(line.removePrefix("~~").removeSuffix("~~"))))
+                    result.add(
+                        Strikethrough(
+                            unescapeText(
+                                line.removePrefix("~~").removeSuffix("~~")
+                            )
+                        )
+                    )
                 }
 
                 // 加粗
@@ -883,8 +980,10 @@ object MarkdownParser {
                 }
 
                 // 行内代码
-                line.contains("`") -> {
-                    result.add(Code(unescapeText(line.removePrefix("`").removeSuffix("`").replace("`", ""))))
+                INLINE_CODE_REGEX.containsMatchIn(line) -> {
+                    INLINE_CODE_REGEX.find(line)?.let { match ->
+                        result.add(Code(unescapeText(match.groupValues[1])))
+                    }
                 }
 
                 // 多级引用支持 (优化：使用正则表达式一次性解析)
@@ -983,7 +1082,10 @@ object MarkdownParser {
      * 解析嵌套列表结构
      * 返回 Pair(解析的元素列表, 下一个处理的行索引)
      */
-    private fun parseNestedList(lines: List<String>, startIndex: Int): Pair<List<MarkdownElement>, Int> {
+    private fun parseNestedList(
+        lines: List<String>,
+        startIndex: Int
+    ): Pair<List<MarkdownElement>, Int> {
         val result = mutableListOf<MarkdownElement>()
         var currentIndex = startIndex
 
@@ -998,21 +1100,33 @@ object MarkdownParser {
             when {
                 // 任务列表
                 trimmedLine.matches(Regex("""^- \[([ x])\] .*$""")) -> {
-                    val (taskItems, nextIndex) = parseTaskListItems(lines, currentIndex, indentLevel)
+                    val (taskItems, nextIndex) = parseTaskListItems(
+                        lines,
+                        currentIndex,
+                        indentLevel
+                    )
                     result.addAll(taskItems)
                     currentIndex = nextIndex
                 }
 
                 // 无序列表
                 trimmedLine.startsWith("- ") -> {
-                    val (unorderedItems, nextIndex) = parseUnorderedListItems(lines, currentIndex, indentLevel)
+                    val (unorderedItems, nextIndex) = parseUnorderedListItems(
+                        lines,
+                        currentIndex,
+                        indentLevel
+                    )
                     result.addAll(unorderedItems)
                     currentIndex = nextIndex
                 }
 
                 // 有序列表
                 trimmedLine.matches(Regex("""^\d+\. .*$""")) -> {
-                    val (orderedItems, nextIndex) = parseOrderedListItems(lines, currentIndex, indentLevel)
+                    val (orderedItems, nextIndex) = parseOrderedListItems(
+                        lines,
+                        currentIndex,
+                        indentLevel
+                    )
                     result.addAll(orderedItems)
                     currentIndex = nextIndex
                 }
@@ -1035,7 +1149,11 @@ object MarkdownParser {
     /**
      * 解析任务列表项目
      */
-    private fun parseTaskListItems(lines: List<String>, startIndex: Int, baseLevel: Int): Pair<List<MarkdownElement>, Int> {
+    private fun parseTaskListItems(
+        lines: List<String>,
+        startIndex: Int,
+        baseLevel: Int
+    ): Pair<List<MarkdownElement>, Int> {
         val result = mutableListOf<MarkdownElement>()
         var currentIndex = startIndex
 
@@ -1073,7 +1191,11 @@ object MarkdownParser {
     /**
      * 解析无序列表项目
      */
-    private fun parseUnorderedListItems(lines: List<String>, startIndex: Int, baseLevel: Int): Pair<List<MarkdownElement>, Int> {
+    private fun parseUnorderedListItems(
+        lines: List<String>,
+        startIndex: Int,
+        baseLevel: Int
+    ): Pair<List<MarkdownElement>, Int> {
         val items = mutableListOf<String>()
         val nestedItems = mutableListOf<MarkdownElement>()
         var currentIndex = startIndex
@@ -1088,7 +1210,7 @@ object MarkdownParser {
             when {
                 // 同级别无序列表项
                 currentLevel == baseLevel && trimmedLine.startsWith("- ") &&
-                !trimmedLine.matches(Regex("""^- \[([ x])\] .*$""")) -> {
+                        !trimmedLine.matches(Regex("""^- \[([ x])\] .*$""")) -> {
                     items.add(unescapeText(trimmedLine.substring(2).trimStart()))
                     currentIndex++
                 }
@@ -1117,7 +1239,11 @@ object MarkdownParser {
     /**
      * 解析有序列表项目
      */
-    private fun parseOrderedListItems(lines: List<String>, startIndex: Int, baseLevel: Int): Pair<List<MarkdownElement>, Int> {
+    private fun parseOrderedListItems(
+        lines: List<String>,
+        startIndex: Int,
+        baseLevel: Int
+    ): Pair<List<MarkdownElement>, Int> {
         val items = mutableListOf<String>()
         val nestedItems = mutableListOf<MarkdownElement>()
         var currentIndex = startIndex

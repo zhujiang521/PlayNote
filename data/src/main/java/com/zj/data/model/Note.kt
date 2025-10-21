@@ -1,9 +1,16 @@
 package com.zj.data.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "note")
+@Entity(
+    tableName = "note",
+    indices = [
+        Index(value = ["timestamp"], name = "idx_note_timestamp"),
+        Index(value = ["title", "content"], name = "idx_note_search")
+    ]
+)
 data class Note(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val title: String,
