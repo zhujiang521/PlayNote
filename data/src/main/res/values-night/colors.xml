@@ -11,4 +11,18 @@
     <color name="favorite_background">#181717</color>
     <color name="card_border">#232323</color>
     <color name="icon_color">#F0F0F0FF</color>
+
+    <!-- Markdown扩展功能颜色 - 夜间模式 -->
+    <color name="highlight_background">#FFFF00</color>
+    <color name="highlight_text">#000000</color>
+    <color name="code_background">#21262D</color>
+    <color name="code_border">#30363D</color>
+    <color name="syntax_keyword">#FF7B72</color>
+    <color name="syntax_string">#A5D6FF</color>
+    <color name="syntax_comment">#8B949E</color>
+    <color name="syntax_number">#79C0FF</color>
+    <color name="footnote_background">#21262D</color>
+    <color name="footnote_border">#30363D</color>
+    <color name="task_list_checked">#3FB950</color>
+    <color name="task_list_unchecked">#8B949E</color>
 </resources>

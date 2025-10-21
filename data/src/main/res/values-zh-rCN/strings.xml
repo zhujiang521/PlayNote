@@ -77,4 +77,28 @@
     <string name="exporting_pdf" tools:ignore="TypographyEllipsis">正在导出PDF...</string>
     <string name="exporting_html" tools:ignore="TypographyEllipsis">正在导出HTML...</string>
     <string name="exporting_md" tools:ignore="TypographyEllipsis">正在导出Markdown...</string>
+
+    <!-- Markdown扩展功能字符串 -->
+    <string name="highlight">高亮</string>
+    <string name="task_list">任务列表</string>
+    <string name="footnote">脚注</string>
+    <string name="superscript">上标</string>
+    <string name="subscript">下标</string>
+    <string name="math_formula">数学公式</string>
+    <string name="code_language">代码语言</string>
+    <string name="table_alignment">表格对齐</string>
+    <string name="nested_list">嵌套列表</string>
+    <string name="task_completed">任务已完成</string>
+    <string name="task_pending">任务待办</string>
+    <string name="syntax_highlighting">语法高亮</string>
+
+    <!-- 错误处理和边界情况字符串 -->
+    <string name="markdown_empty_content">没有内容可显示</string>
+    <string name="markdown_parse_error">内容解析错误，请检查格式</string>
+    <string name="markdown_render_error">渲染时发生错误</string>
+    <string name="markdown_content_too_large">内容过大无法处理</string>
+    <string name="markdown_memory_error">解析内存不足</string>
+    <string name="markdown_stack_overflow">内容结构过于复杂</string>
+    <string name="markdown_element_error">元素渲染错误</string>
+    <string name="markdown_fallback_mode">使用简化解析模式</string>
 </resources>

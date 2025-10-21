@@ -77,4 +77,28 @@
     <string name="exporting_pdf" tools:ignore="TypographyEllipsis">Exporting PDF...</string>
     <string name="exporting_html" tools:ignore="TypographyEllipsis">Exporting HTML...</string>
     <string name="exporting_md" tools:ignore="TypographyEllipsis">Exporting Markdown...</string>
+
+    <!-- Markdown扩展功能字符串 -->
+    <string name="highlight">Highlight</string>
+    <string name="task_list">Task List</string>
+    <string name="footnote">Footnote</string>
+    <string name="superscript">Superscript</string>
+    <string name="subscript">Subscript</string>
+    <string name="math_formula">Math Formula</string>
+    <string name="code_language">Code Language</string>
+    <string name="table_alignment">Table Alignment</string>
+    <string name="nested_list">Nested List</string>
+    <string name="task_completed">Task Completed</string>
+    <string name="task_pending">Task Pending</string>
+    <string name="syntax_highlighting">Syntax Highlighting</string>
+
+    <!-- 错误处理和边界情况字符串 -->
+    <string name="markdown_empty_content">No content to display</string>
+    <string name="markdown_parse_error">Content parsing error, please check format</string>
+    <string name="markdown_render_error">Rendering error occurred</string>
+    <string name="markdown_content_too_large">Content is too large to process</string>
+    <string name="markdown_memory_error">Insufficient memory for parsing</string>
+    <string name="markdown_stack_overflow">Content structure is too complex</string>
+    <string name="markdown_element_error">Error rendering element</string>
+    <string name="markdown_fallback_mode">Using simplified parsing mode</string>
 </resources>
