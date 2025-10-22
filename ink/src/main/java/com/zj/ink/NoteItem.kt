@@ -33,6 +33,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.zj.data.R
 import com.zj.data.common.DeleteDialog
 import com.zj.data.common.HighlightedText
@@ -41,6 +42,7 @@ import com.zj.data.common.SwipeBoxControl
 import com.zj.data.common.rememberSwipeBoxControl
 import com.zj.data.model.Note
 import com.zj.data.utils.DateUtils
+import com.zj.ink.data.NoteViewModel
 import com.zj.ink.md.RenderMarkdown
 
 
@@ -53,7 +55,8 @@ fun NoteItem(
     onDelete: () -> Unit = {},
     searchQuery: String = "",
     control: SwipeBoxControl = rememberSwipeBoxControl(),
-    note: Note
+    note: Note,
+    viewModel: NoteViewModel = hiltViewModel()
 ) {
     val showDialog = remember { mutableStateOf(false) }
     SwipeBox(
@@ -131,7 +134,10 @@ fun NoteItem(
                         .fillMaxWidth()
                         .heightIn(min = 100.dp, max = 300.dp)
                         .clickable { onClick() },
-                    showRoundShape = true
+                    showRoundShape = true,
+                    onTaskToggle = { taskIndex, taskText, currentChecked ->
+                        viewModel.toggleTaskAndSave(note, taskIndex, taskText, currentChecked)
+                    }
                 )
             }
         }

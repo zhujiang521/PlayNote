@@ -16,6 +16,7 @@ import androidx.ink.strokes.Stroke
 import androidx.lifecycle.viewModelScope
 import com.zj.data.R
 import com.zj.data.model.Note
+import com.zj.ink.md.TaskListHelper
 import com.zj.ink.widget.updateNoteWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -151,6 +152,39 @@ class EditNoteViewModel @Inject constructor(
         _undoEnabled.value = noteUndoStack.isNotEmpty()
         _redoEnabled.value = noteRedoStack.isNotEmpty()
         _isDirty.value = true
+    }
+
+    /**
+     * 切换任务列表项的完成状态（编辑页面专用）
+     *
+     * 仅修改内存中的内容，不立即保存到数据库
+     * 支持撤销/重做功能
+     *
+     * @param taskIndex 任务在所有 TaskList 元素中的索引
+     * @param taskText 任务文本内容（用于验证）
+     * @param currentChecked 当前的选中状态
+     */
+    fun toggleTaskInContent(taskIndex: Int, taskText: String, currentChecked: Boolean) {
+        val currentContent = _note.value.content
+
+        // 使用 TaskListHelper 切换任务状态
+        val newContent = TaskListHelper.toggleTaskState(
+            content = currentContent,
+            taskIndex = taskIndex,
+            taskText = taskText,
+            currentChecked = currentChecked
+        )
+
+        // 如果内容有变化，则更新
+        if (newContent != currentContent) {
+            // 通过 updateNoteContent 更新内容，自动记录到撤销栈
+            updateNoteContent(
+                TextFieldValue(
+                    text = newContent,
+                    selection = _noteContent.value.selection // 保持光标位置
+                )
+            )
+        }
     }
 
 

@@ -2,8 +2,6 @@
 
 package com.zj.ink.md
 
-import androidx.compose.runtime.saveable.rememberSaveable
-
 /**
  * PlayNote Markdown渲染器 - Compose版本
  *
@@ -72,8 +70,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.listSaver
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -118,7 +116,8 @@ fun RenderMarkdown(
     sharedTransitionScope: SharedTransitionScope? = null,
     animatedContentScope: AnimatedContentScope? = null,
     showRoundShape: Boolean = false,
-    onImageClick: (String) -> Unit = {}
+    onImageClick: (String) -> Unit = {},
+    onTaskToggle: ((taskIndex: Int, taskText: String, currentChecked: Boolean) -> Unit)? = null
 ) {
     // 输入验证和错误处理
     if (markdown.isBlank()) {
@@ -217,7 +216,8 @@ fun RenderMarkdown(
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope,
                 showRoundShape = showRoundShape,
-                onImageClick = onImageClick
+                onImageClick = onImageClick,
+                onTaskToggle = onTaskToggle
             )
         }
         return
@@ -230,7 +230,8 @@ fun RenderMarkdown(
         sharedTransitionScope = sharedTransitionScope,
         animatedContentScope = animatedContentScope,
         showRoundShape = showRoundShape,
-        onImageClick = onImageClick
+        onImageClick = onImageClick,
+        onTaskToggle = onTaskToggle
     )
 }
 
@@ -244,7 +245,8 @@ private fun RenderElementsList(
     sharedTransitionScope: SharedTransitionScope?,
     animatedContentScope: AnimatedContentScope?,
     showRoundShape: Boolean,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    onTaskToggle: ((taskIndex: Int, taskText: String, currentChecked: Boolean) -> Unit)?
 ) {
     // 大文档优化：使用LazyColumn替代Column+verticalScroll，减少内存占用
     val isLargeDocument = remember(elements) { elements.size > 100 }
@@ -258,10 +260,13 @@ private fun RenderElementsList(
             itemsIndexed(elements) { index, element ->
                 SafeRenderMarkdownElement(
                     element = element,
+                    elementIndex = index,
+                    allElements = elements,
                     sharedTransitionScope = sharedTransitionScope,
                     animatedContentScope = animatedContentScope,
                     showRoundShape = showRoundShape,
-                    onImageClick = onImageClick
+                    onImageClick = onImageClick,
+                    onTaskToggle = onTaskToggle
                 )
             }
         }
@@ -273,10 +278,13 @@ private fun RenderElementsList(
             elements.forEachIndexed { index, element ->
                 SafeRenderMarkdownElement(
                     element = element,
+                    elementIndex = index,
+                    allElements = elements,
                     sharedTransitionScope = sharedTransitionScope,
                     animatedContentScope = animatedContentScope,
                     showRoundShape = showRoundShape,
-                    onImageClick = onImageClick
+                    onImageClick = onImageClick,
+                    onTaskToggle = onTaskToggle
                 )
             }
         }
@@ -289,17 +297,23 @@ private fun RenderElementsList(
 @Composable
 private fun SafeRenderMarkdownElement(
     element: MarkdownElement,
+    elementIndex: Int,
+    allElements: List<MarkdownElement>,
     sharedTransitionScope: SharedTransitionScope?,
     animatedContentScope: AnimatedContentScope?,
     showRoundShape: Boolean,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    onTaskToggle: ((taskIndex: Int, taskText: String, currentChecked: Boolean) -> Unit)?
 ) {
     RenderMarkdownElement(
         element = element,
+        elementIndex = elementIndex,
+        allElements = allElements,
         sharedTransitionScope = sharedTransitionScope,
         animatedContentScope = animatedContentScope,
         showRoundShape = showRoundShape,
-        onImageClick = onImageClick
+        onImageClick = onImageClick,
+        onTaskToggle = onTaskToggle
     )
 }
 
@@ -310,10 +324,13 @@ private fun SafeRenderMarkdownElement(
 @Composable
 private fun RenderMarkdownElement(
     element: MarkdownElement,
+    elementIndex: Int,
+    allElements: List<MarkdownElement>,
     sharedTransitionScope: SharedTransitionScope?,
     animatedContentScope: AnimatedContentScope?,
     showRoundShape: Boolean,
-    onImageClick: (String) -> Unit
+    onImageClick: (String) -> Unit,
+    onTaskToggle: ((taskIndex: Int, taskText: String, currentChecked: Boolean) -> Unit)?
 ) {
     when (element) {
         is Heading -> {
@@ -632,11 +649,21 @@ private fun RenderMarkdownElement(
         }
 
         is TaskList -> {
+            // 计算当前任务在所有TaskList元素中的索引
+            val taskIndex = remember(elementIndex, allElements) {
+                allElements.take(elementIndex + 1)
+                    .filterIsInstance<TaskList>()
+                    .size - 1
+            }
+
             TaskListItem(
                 text = element.text,
                 isChecked = element.isChecked,
                 level = element.level,
-                onCheckedChange = { /* 任务状态切换逻辑 */ }
+                onCheckedChange = { newChecked ->
+                    // 触发任务状态切换回调
+                    onTaskToggle?.invoke(taskIndex, element.text, element.isChecked)
+                }
             )
         }
 

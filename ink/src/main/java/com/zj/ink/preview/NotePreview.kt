@@ -78,7 +78,10 @@ fun NotePreview(
                 .animateContentSize(),
             sharedTransitionScope = sharedTransitionScope,
             animatedContentScope = animatedContentScope,
-            onImageClick = onImageClick
+            onImageClick = onImageClick,
+            onTaskToggle = { taskIndex, taskText, currentChecked ->
+                viewModel.toggleTaskAndSave(taskIndex, taskText, currentChecked)
+            }
         )
     }
 }

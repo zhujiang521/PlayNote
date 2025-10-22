@@ -9,6 +9,7 @@ import androidx.paging.cachedIn
 import com.zj.data.R
 import com.zj.data.model.Note
 import com.zj.data.utils.DataStoreUtils
+import com.zj.ink.md.TaskListHelper
 import com.zj.ink.widget.updateNoteWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -92,6 +93,38 @@ class NoteViewModel @Inject constructor(
                 .collect { pagingData ->
                     _notes.value = pagingData
                 }
+        }
+    }
+
+    /**
+     * 切换任务列表项的完成状态并立即保存（列表页面专用）
+     *
+     * 直接修改数据库中的笔记内容，立即生效
+     *
+     * @param note 要修改的笔记对象
+     * @param taskIndex 任务在所有 TaskList 元素中的索引
+     * @param taskText 任务文本内容（用于验证）
+     * @param currentChecked 当前的选中状态
+     */
+    fun toggleTaskAndSave(note: Note, taskIndex: Int, taskText: String, currentChecked: Boolean) {
+        viewModelScope.launch {
+            // 使用 TaskListHelper 切换任务状态
+            val newContent = TaskListHelper.toggleTaskState(
+                content = note.content,
+                taskIndex = taskIndex,
+                taskText = taskText,
+                currentChecked = currentChecked
+            )
+
+            // 如果内容有变化，则更新数据库
+            if (newContent != note.content) {
+                val updatedNote = note.copy(
+                    content = newContent,
+                    timestamp = System.currentTimeMillis() // 更新时间戳
+                )
+                noteRepository.updateNote(updatedNote)
+                updateNoteWidget(getApplication())
+            }
         }
     }
 

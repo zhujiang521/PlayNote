@@ -174,9 +174,6 @@ fun GlanceRenderMarkdown(content: String) {
             Pair(fallbackElements, true)
         }
     }
-
-    val coroutineScope = rememberCoroutineScope()
-
     // 显示解析错误提示（如果有）
     if (hasError) {
         Column(modifier = GlanceModifier.padding(4.dp)) {
