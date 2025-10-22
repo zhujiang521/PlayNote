@@ -48,13 +48,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -248,47 +248,121 @@ private fun RenderElementsList(
     onImageClick: (String) -> Unit,
     onTaskToggle: ((taskIndex: Int, taskText: String, currentChecked: Boolean) -> Unit)?
 ) {
-    // 大文档优化：使用LazyColumn替代Column+verticalScroll，减少内存占用
-    val isLargeDocument = remember(elements) { elements.size > 100 }
-
-    if (isLargeDocument) {
-        // 大文档使用LazyColumn进行虚拟化渲染
-        LazyColumn(
-            modifier = modifier,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            itemsIndexed(elements) { index, element ->
-                SafeRenderMarkdownElement(
-                    element = element,
-                    elementIndex = index,
-                    allElements = elements,
-                    sharedTransitionScope = sharedTransitionScope,
-                    animatedContentScope = animatedContentScope,
-                    showRoundShape = showRoundShape,
-                    onImageClick = onImageClick,
-                    onTaskToggle = onTaskToggle
-                )
-            }
-        }
-    } else {
-        // 小文档使用传统Column渲染
-        Column(
-            modifier = modifier.verticalScroll(rememberScrollState())
-        ) {
-            elements.forEachIndexed { index, element ->
-                SafeRenderMarkdownElement(
-                    element = element,
-                    elementIndex = index,
-                    allElements = elements,
-                    sharedTransitionScope = sharedTransitionScope,
-                    animatedContentScope = animatedContentScope,
-                    showRoundShape = showRoundShape,
-                    onImageClick = onImageClick,
-                    onTaskToggle = onTaskToggle
-                )
-            }
+    // 注意：由于SubcomposeAsyncImage在LazyColumn中存在intrinsic measurement问题
+    // 暂时禁用LazyColumn优化，统一使用Column渲染以避免崩溃
+    // 未来可考虑使用AsyncImage替代SubcomposeAsyncImage来重新启用LazyColumn优化
+    Column(
+        modifier = modifier.verticalScroll(rememberScrollState())
+    ) {
+        elements.forEachIndexed { index, element ->
+            SafeRenderMarkdownElement(
+                element = element,
+                elementIndex = index,
+                allElements = elements,
+                sharedTransitionScope = sharedTransitionScope,
+                animatedContentScope = animatedContentScope,
+                showRoundShape = showRoundShape,
+                onImageClick = onImageClick,
+                onTaskToggle = onTaskToggle
+            )
         }
     }
+}
+
+/**
+ * 渲染图片元素的独立函数
+ * 用于在LazyColumn中避免intrinsic measurement问题
+ */
+@Composable
+private fun RenderImageElement(
+    element: Image,
+    sharedTransitionScope: SharedTransitionScope?,
+    animatedContentScope: AnimatedContentScope?,
+    showRoundShape: Boolean,
+    onImageClick: (String) -> Unit
+) {
+    if (sharedTransitionScope != null && animatedContentScope != null) {
+        with(sharedTransitionScope) {
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(element.url)
+                    .size(ORIGINAL)
+                    .build(),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(
+                        if (showRoundShape)
+                            RoundedCornerShape(8.dp) else RoundedCornerShape(0.dp)
+                    )
+                    .sharedElement(
+                        sharedTransitionScope.rememberSharedContentState(key = "image-${element.url}"),
+                        animatedVisibilityScope = animatedContentScope,
+                    )
+                    .clickable {
+                        onImageClick(element.url)
+                    },
+                contentDescription = stringResource(R.string.image),
+                contentScale = ContentScale.Fit,
+                loading = {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(30.dp))
+                    }
+                },
+                error = {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Image(
+                            painterResource(R.drawable.ic_placeholder),
+                            contentDescription = stringResource(R.string.down_fail)
+                        )
+                    }
+                },
+            )
+        }
+    } else {
+        SubcomposeAsyncImage(
+            model = ImageRequest.Builder(LocalContext.current)
+                .data(element.url)
+                .size(ORIGINAL)
+                .build(),
+            modifier = Modifier
+                .fillMaxSize()
+                .clip(
+                    if (showRoundShape)
+                        RoundedCornerShape(8.dp) else RoundedCornerShape(0.dp)
+                )
+                .clickable {
+                    onImageClick(element.url)
+                },
+            contentDescription = stringResource(R.string.image),
+            contentScale = ContentScale.Fit,
+            loading = {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(30.dp))
+                }
+            },
+            error = {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Image(
+                        painterResource(R.drawable.ic_placeholder_big),
+                        contentDescription = stringResource(R.string.down_fail)
+                    )
+                }
+            },
+        )
+    }
+    Spacer(modifier = Modifier.height(8.dp))
 }
 
 /**
@@ -417,21 +491,66 @@ private fun RenderMarkdownElement(
         }
 
         is Image -> {
-            if (sharedTransitionScope != null && animatedContentScope != null) {
-                with(sharedTransitionScope) {
+            // 使用Box包裹SubcomposeAsyncImage，避免LazyColumn的intrinsic measurement问题
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+            ) {
+                if (sharedTransitionScope != null && animatedContentScope != null) {
+                    with(sharedTransitionScope) {
+                        SubcomposeAsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(element.url)
+                                .size(ORIGINAL)
+                                .build(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(
+                                    if (showRoundShape)
+                                        RoundedCornerShape(8.dp) else RoundedCornerShape(0.dp)
+                                )
+                                .sharedElement(
+                                    sharedTransitionScope.rememberSharedContentState(key = "image-${element.url}"),
+                                    animatedVisibilityScope = animatedContentScope,
+                                )
+                                .clickable {
+                                    onImageClick(element.url)
+                                },
+                            contentDescription = stringResource(R.string.image),
+                            contentScale = ContentScale.Fit,
+                            loading = {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    CircularProgressIndicator(modifier = Modifier.size(30.dp))
+                                }
+                            },
+                            error = {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier.fillMaxSize()
+                                ) {
+                                    Image(
+                                        painterResource(R.drawable.ic_placeholder),
+                                        contentDescription = stringResource(R.string.down_fail)
+                                    )
+                                }
+                            },
+                        )
+                    }
+                } else {
                     SubcomposeAsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(element.url)
                             .size(ORIGINAL)
                             .build(),
                         modifier = Modifier
+                            .fillMaxSize()
                             .clip(
                                 if (showRoundShape)
                                     RoundedCornerShape(8.dp) else RoundedCornerShape(0.dp)
-                            )
-                            .sharedElement(
-                                sharedTransitionScope.rememberSharedContentState(key = "image-${element.url}"),
-                                animatedVisibilityScope = animatedContentScope,
                             )
                             .clickable {
                                 onImageClick(element.url)
@@ -441,49 +560,24 @@ private fun RenderMarkdownElement(
                         loading = {
                             Box(
                                 contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
                             ) {
                                 CircularProgressIndicator(modifier = Modifier.size(30.dp))
                             }
                         },
                         error = {
-                            Image(
-                                painterResource(R.drawable.ic_placeholder),
-                                contentDescription = stringResource(R.string.down_fail)
-                            )
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Image(
+                                    painterResource(R.drawable.ic_placeholder_big),
+                                    contentDescription = stringResource(R.string.down_fail)
+                                )
+                            }
                         },
                     )
                 }
-            } else {
-                SubcomposeAsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(element.url)
-                        .size(ORIGINAL)
-                        .build(),
-                    modifier = Modifier
-                        .clip(
-                            if (showRoundShape)
-                                RoundedCornerShape(8.dp) else RoundedCornerShape(0.dp)
-                        )
-                        .clickable {
-                            onImageClick(element.url)
-                        },
-                    contentDescription = stringResource(R.string.image),
-                    contentScale = ContentScale.Fit,
-                    loading = {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator(modifier = Modifier.size(30.dp))
-                        }
-                    },
-                    error = {
-                        Image(
-                            painterResource(R.drawable.ic_placeholder_big),
-                            contentDescription = stringResource(R.string.down_fail)
-                        )
-                    },
-                )
-
             }
             Spacer(modifier = Modifier.height(8.dp))
         }
@@ -1291,28 +1385,35 @@ fun MathRenderer(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 8.dp),
+                .padding(vertical = 12.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SelectionContainer {
-                Text(
-                    text = expression,
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .background(
-                            color = mathBackgroundColor,
-                            shape = RoundedCornerShape(6.dp)
-                        )
-                        .border(
-                            width = 1.dp,
-                            color = mathBorderColor,
-                            shape = RoundedCornerShape(6.dp)
-                        )
-                        .padding(16.dp)
-                )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        color = mathBackgroundColor,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .border(
+                        width = 2.dp,
+                        color = mathBorderColor,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                SelectionContainer {
+                    Text(
+                        text = expression,
+                        fontFamily = FontFamily.Monospace,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 24.sp
+                    )
+                }
             }
         }
     }
