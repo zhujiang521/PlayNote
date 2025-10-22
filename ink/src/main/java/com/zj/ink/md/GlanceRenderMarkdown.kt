@@ -7,7 +7,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -194,7 +193,7 @@ fun GlanceRenderMarkdown(content: String) {
 
     Column {
         elements.forEachIndexed { index, element ->
-            SafeRenderGlanceElement(element, index)
+            SafeRenderGlanceElement(element)
         }
     }
 }
@@ -203,7 +202,7 @@ fun GlanceRenderMarkdown(content: String) {
  * 安全渲染单个Glance元素，包含错误处理
  */
 @Composable
-private fun SafeRenderGlanceElement(element: MarkdownElement, index: Int) {
+private fun SafeRenderGlanceElement(element: MarkdownElement) {
     RenderGlanceElement(element)
 }
 
@@ -460,8 +459,8 @@ private fun RenderGlanceElement(element: MarkdownElement) {
                     style = TextStyle(
                         fontSize = 12.sp,
                         color = ColorProvider(
-                            day = androidx.compose.ui.graphics.Color(0xFF757575),
-                            night = androidx.compose.ui.graphics.Color(0xFF9E9E9E)
+                            day = Color(0xFF757575),
+                            night = Color(0xFF9E9E9E)
                         )
                     )
                 )
@@ -471,8 +470,8 @@ private fun RenderGlanceElement(element: MarkdownElement) {
                         fontSize = 12.sp,
                         fontStyle = FontStyle.Italic,
                         color = ColorProvider(
-                            day = androidx.compose.ui.graphics.Color(0xFF424242),
-                            night = androidx.compose.ui.graphics.Color(0xFFBDBDBD)
+                            day = Color(0xFF424242),
+                            night = Color(0xFFBDBDBD)
                         )
                     ),
                     modifier = GlanceModifier.padding(start = 8.dp)
@@ -617,47 +616,5 @@ private fun RenderGlanceElement(element: MarkdownElement) {
                     .background(gray)
             ) {}
         }
-
-
-        is Footnote -> {
-            Text(
-                text = if (element.isReference) "[${element.id}]" else "${element.id}: ${element.text}",
-                style = TextStyle(fontSize = 8.sp, color = textColor)
-            )
-        }
-
-        is Superscript -> {
-            Text(
-                text = "^${element.text}",
-                style = TextStyle(fontSize = 8.sp, color = textColor)
-            )
-        }
-
-        is Subscript -> {
-            Text(
-                text = "_${element.text}",
-                style = TextStyle(fontSize = 8.sp, color = textColor)
-            )
-        }
-
-        is Math -> {
-            Text(
-                text = element.expression,
-                style = TextStyle(
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 10.sp,
-                    color = textColor
-                )
-            )
-        }
-
-        is NestedList -> {
-            // 简化处理嵌套列表
-            Text(
-                text = "• Nested List",
-                style = TextStyle(fontSize = 12.sp, color = textColor)
-            )
-        }
-
     }
 }

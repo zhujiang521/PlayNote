@@ -23,11 +23,11 @@ object MarkdownParser {
 
     /** 匹配脚注定义语法: [^id]: content */
     @JvmStatic
-    private val FOOTNOTE_DEFINITION_REGEX = Regex("""^\[\^([^\]]+)\]:\s*(.*)$""")
+    private val FOOTNOTE_DEFINITION_REGEX = Regex("""^\[\^([^]]+)]:\s*(.*)$""")
 
     /** 匹配脚注引用语法: [^id] */
     @JvmStatic
-    private val FOOTNOTE_REFERENCE_REGEX = Regex("""\[\^([^\]]+)\]""")
+    private val FOOTNOTE_REFERENCE_REGEX = Regex("""\[\^([^]]+)]""")
 
     /** 匹配内联数学公式语法: $formula$ */
     @JvmStatic
@@ -41,9 +41,9 @@ object MarkdownParser {
     @JvmStatic
     private val SUBSCRIPT_REGEX = Regex("""~([^~\s]+)~""")
 
-    /** 匹配任务列表语法: - [ ] 或 - [x] */
+    /** 匹配任务列表语法: - [ ] 或 - [android.R.attr.x] */
     @JvmStatic
-    private val TASK_LIST_REGEX = Regex("""^- \[([ x])\] .*$""")
+    private val TASK_LIST_REGEX = Regex("""^- \[([ x])] .*$""")
 
     /** 匹配有序列表语法: 1. item */
     @JvmStatic
@@ -68,18 +68,6 @@ object MarkdownParser {
     /** 匹配高亮语法: ==text== */
     @JvmStatic
     private val HIGHLIGHT_REGEX = Regex("""==([^=]+)==""")
-
-    /** 匹配行内代码语法: `code` */
-    @JvmStatic
-    private val INLINE_CODE_REGEX = Regex("""`([^`]+)`""")
-
-    /** 匹配链接语法: [text](url) */
-    @JvmStatic
-    private val LINK_REGEX = Regex("""\[([^\]]+)\]\(([^)]+)\)""")
-
-    /** 匹配图片语法: ![alt](src) */
-    @JvmStatic
-    private val IMAGE_REGEX = Regex("""!\[([^\]]*)\]\(([^)]+)\)""")
 
     // 转义字符映射表，提升字符串替换性能
     /** 转义字符映射表，将Markdown转义字符转换为实际字符 */
@@ -114,27 +102,6 @@ object MarkdownParser {
     // 错误计数器，用于调试和监控
     private var parseErrorCount = 0
     private var lastErrorMessage: String? = null
-
-    /**
-     * 获取解析错误统计信息
-     * @return 解析错误次数
-     */
-    fun getParseErrorCount(): Int = parseErrorCount
-
-    /**
-     * 获取最后一次解析错误信息
-     * @return 错误信息字符串，如果没有错误则返回null
-     */
-    fun getLastErrorMessage(): String? = lastErrorMessage
-
-    /**
-     * 重置错误统计信息
-     * 用于清空之前的错误记录，重新开始统计
-     */
-    fun resetErrorStats() {
-        parseErrorCount = 0
-        lastErrorMessage = null
-    }
 
     /**
      * 记录解析错误
@@ -819,254 +786,6 @@ object MarkdownParser {
         }
     }
 
-    // 保持原有的解析逻辑，但移除重复的when分支
-    private fun legacyParseInternal(text: String): List<MarkdownElement> {
-        val lines = text.split("\n")
-        val result = mutableListOf<MarkdownElement>()
-        var i = 0
-
-        while (i < lines.size) {
-            val line = lines[i].trimStart()
-
-            // 标题（优化：使用更高效的字符检查）
-            when {
-                line.startsWith("###### ") -> result.add(
-                    Heading(
-                        6,
-                        unescapeText(line.removePrefix("###### "))
-                    )
-                )
-
-                line.startsWith("##### ") -> result.add(
-                    Heading(
-                        5,
-                        unescapeText(line.removePrefix("##### "))
-                    )
-                )
-
-                line.startsWith("#### ") -> result.add(
-                    Heading(
-                        4,
-                        unescapeText(line.removePrefix("#### "))
-                    )
-                )
-
-                line.startsWith("### ") -> result.add(
-                    Heading(
-                        3,
-                        unescapeText(line.removePrefix("### "))
-                    )
-                )
-
-                line.startsWith("## ") -> result.add(
-                    Heading(
-                        2,
-                        unescapeText(line.removePrefix("## "))
-                    )
-                )
-
-                line.startsWith("# ") -> result.add(
-                    Heading(
-                        1,
-                        unescapeText(line.removePrefix("# "))
-                    )
-                )
-
-                // 脚注定义 (优化：使用预编译正则)
-                FOOTNOTE_DEFINITION_REGEX.matches(line) -> {
-                    val matchResult = FOOTNOTE_DEFINITION_REGEX.find(line)
-                    if (matchResult != null) {
-                        val (id, content) = matchResult.destructured
-                        result.add(Footnote(unescapeText(id), unescapeText(content), false))
-                    }
-                }
-
-                // 脚注引用 (优化：使用预编译正则)
-                FOOTNOTE_REFERENCE_REGEX.containsMatchIn(line) -> {
-                    val matchResult = FOOTNOTE_REFERENCE_REGEX.find(line)
-                    if (matchResult != null) {
-                        val id = matchResult.groupValues[1]
-                        result.add(Footnote(unescapeText(id), "", true))
-                    }
-                }
-
-                // 数学公式块 (优化：减少字符串操作)
-                line.startsWith("$$") && line.endsWith("$$") && line.length > 4 -> {
-                    val expression = line.substring(2, line.length - 2).trim()
-                    result.add(Math(unescapeText(expression), false))
-                }
-
-                // 内联数学公式 (优化：使用预编译正则)
-                line.contains("$") && !line.startsWith("$$") -> {
-                    val matchResult = MATH_INLINE_REGEX.find(line)
-                    if (matchResult != null) {
-                        val expression = matchResult.groupValues[1]
-                        result.add(Math(unescapeText(expression), true))
-                    }
-                }
-
-                // 上标 (优化：使用预编译正则)
-                SUPERSCRIPT_REGEX.containsMatchIn(line) -> {
-                    val matchResult = SUPERSCRIPT_REGEX.find(line)
-                    if (matchResult != null) {
-                        val text = matchResult.groupValues[1]
-                        result.add(Superscript(unescapeText(text)))
-                    }
-                }
-
-                // 下标 (优化：使用预编译正则)
-                SUBSCRIPT_REGEX.containsMatchIn(line) -> {
-                    val matchResult = SUBSCRIPT_REGEX.find(line)
-                    if (matchResult != null) {
-                        val text = matchResult.groupValues[1]
-                        result.add(Subscript(unescapeText(text)))
-                    }
-                }
-
-                // 高亮文本
-                line.contains("==") -> {
-                    result.add(Highlight(unescapeText(line.removePrefix("==").removeSuffix("=="))))
-                }
-
-                // 删除线
-                line.contains("~~") -> {
-                    result.add(
-                        Strikethrough(
-                            unescapeText(
-                                line.removePrefix("~~").removeSuffix("~~")
-                            )
-                        )
-                    )
-                }
-
-                // 加粗
-                line.contains("**") -> {
-                    result.add(Bold(unescapeText(line.removePrefix("**").removeSuffix("**"))))
-                }
-
-                // 斜体
-                line.contains("*") -> {
-                    result.add(Italic(unescapeText(line.removePrefix("*").removeSuffix("*"))))
-                }
-
-                // 图片
-                line.startsWith("!") && line.contains("](") -> {
-                    val url = unescapeText(line.substringAfter("(").substringBefore(")"))
-                    result.add(Image(url))
-                }
-
-                // 链接
-                line.contains("](") -> {
-                    val text = unescapeText(line.substringBefore("]").removePrefix("["))
-                    val url = unescapeText(line.substringAfter("(").substringBefore(")"))
-                    result.add(Link(text, url))
-                }
-
-                // 代码块
-                line.startsWith("```") -> {
-                    val language = line.removePrefix("```").trim()
-                    val codeLines = mutableListOf<String>()
-                    i++
-                    while (i < lines.size && !lines[i].startsWith("```") && !lines[i].startsWith("`")) {
-                        codeLines.add(lines[i])
-                        i++
-                    }
-                    result.add(
-                        CodeBlock(
-                            codeLines.joinToString("\n"),
-                            language
-                        )
-                    )
-                }
-
-                // 行内代码
-                INLINE_CODE_REGEX.containsMatchIn(line) -> {
-                    INLINE_CODE_REGEX.find(line)?.let { match ->
-                        result.add(Code(unescapeText(match.groupValues[1])))
-                    }
-                }
-
-                // 多级引用支持 (优化：使用正则表达式一次性解析)
-                line.startsWith(">") -> {
-                    val matchResult = MULTI_QUOTE_REGEX.find(line)
-                    if (matchResult != null) {
-                        val level = matchResult.groupValues[1].length
-                        val content = matchResult.groupValues[2]
-
-                        // 限制最大层级为6，超过部分作为普通文本处理
-                        if (level > 6) {
-                            result.add(Paragraph(line))
-                        } else {
-                            result.add(BlockQuote(unescapeText(content), level))
-                        }
-                    }
-                }
-
-                // 嵌套列表解析（支持任务列表、无序列表、有序列表的混合嵌套）
-                isListItem(line) -> {
-                    val nestedListItems = parseNestedList(lines, i)
-                    result.addAll(nestedListItems.first)
-                    i = nestedListItems.second - 1 // -1 因为外层循环会 i++
-                }
-
-                // 分割线
-                line == "---" -> {
-                    result.add(Divider)
-                }
-
-                // 表格
-                line.startsWith("|") && line.contains("|") -> {
-                    val tableLines = mutableListOf<String>()
-                    while (i < lines.size && lines[i].trimStart().startsWith("|")) {
-                        tableLines.add(lines[i].trim())
-                        i++
-                    }
-
-                    if (tableLines.size >= 2) {
-                        val headers = parseTableRow(tableLines[0])
-                        val alignments = parseTableAlignment(tableLines[1])
-                        val rows = tableLines.subList(2, tableLines.size).map { parseTableRow(it) }
-
-                        result.add(Table(headers, rows, alignments))
-                    }
-                }
-
-                // 普通段落
-                line.isNotBlank() -> {
-                    result.add(Paragraph(unescapeText(line)))
-                }
-            }
-
-            i++
-        }
-
-        return result
-    }
-
-    private fun parseTableRow(line: String): List<String> {
-        return line
-            .removePrefix("|")
-            .removeSuffix("|")
-            .split("|")
-            .map { it.trim() }
-    }
-
-    private fun parseTableAlignment(line: String): List<TableAlignment> {
-        return line
-            .removePrefix("|")
-            .removeSuffix("|")
-            .split("|")
-            .map { cell ->
-                val trimmed = cell.trim()
-                when {
-                    trimmed.startsWith(":") && trimmed.endsWith(":") -> TableAlignment.CENTER
-                    trimmed.startsWith(":") -> TableAlignment.LEFT
-                    trimmed.endsWith(":") -> TableAlignment.RIGHT
-                    else -> TableAlignment.LEFT // 默认左对齐
-                }
-            }
-    }
-
     /**
      * 判断行是否为列表项（任务列表、无序列表、有序列表）
      * 优化版本：使用预编译正则表达式提升性能
@@ -1099,7 +818,7 @@ object MarkdownParser {
             // 根据列表类型解析
             when {
                 // 任务列表
-                trimmedLine.matches(Regex("""^- \[([ x])\] .*$""")) -> {
+                trimmedLine.matches(Regex("""^- \[([ x])] .*$""")) -> {
                     val (taskItems, nextIndex) = parseTaskListItems(
                         lines,
                         currentIndex,
@@ -1166,7 +885,7 @@ object MarkdownParser {
 
             when {
                 // 同级别任务列表项
-                currentLevel == baseLevel && trimmedLine.matches(Regex("""^- \[([ x])\] .*$""")) -> {
+                currentLevel == baseLevel && trimmedLine.matches(Regex("""^- \[([ x])] .*$""")) -> {
                     val isChecked = trimmedLine.contains("[x]")
                     val content = unescapeText(trimmedLine.substring(6).trimStart())
                     result.add(TaskList(content, isChecked, baseLevel))
@@ -1210,7 +929,7 @@ object MarkdownParser {
             when {
                 // 同级别无序列表项
                 currentLevel == baseLevel && trimmedLine.startsWith("- ") &&
-                        !trimmedLine.matches(Regex("""^- \[([ x])\] .*$""")) -> {
+                        !trimmedLine.matches(Regex("""^- \[([ x])] .*$""")) -> {
                     items.add(unescapeText(trimmedLine.substring(2).trimStart()))
                     currentIndex++
                 }

@@ -7,7 +7,7 @@ package com.zj.ink.md
  *
  * 核心功能：
  * - 精确定位：基于任务索引 + 文本内容 + 缩进层级进行匹配
- * - 状态切换：在原始 content 中替换 `- [ ]` ↔ `- [x]`
+ * - 状态切换：在原始 content 中替换 `- [ ]` ↔ `- []`
  * - 边界保护：避免误修改代码块中的任务标记
  *
  * @author PlayNote开发团队
@@ -94,10 +94,10 @@ object TaskListHelper {
             val line = lines[i]
 
             // 匹配任务列表行：支持缩进
-            val taskMatch = Regex("""^(\s*)- \[([ x])\] (.*)$""").find(line)
+            val taskMatch = Regex("""^(\s*)- \[([ x])] (.*)$""").find(line)
 
             if (taskMatch != null) {
-                val (indent, checkMark, text) = taskMatch.destructured
+                val (indent, _, text) = taskMatch.destructured
 
                 // 判断是否为目标任务
                 if (currentTaskIndex == taskIndex) {
@@ -125,38 +125,4 @@ object TaskListHelper {
         return lines.joinToString("\n")
     }
 
-    /**
-     * 获取内容中所有任务列表项的信息（用于调试）
-     *
-     * @param content Markdown 文本内容
-     * @return 任务列表信息的列表
-     */
-    fun getTaskListInfo(content: String): List<TaskInfo> {
-        if (content.isBlank()) return emptyList()
-
-        val elements = try {
-            MarkdownParser.parse(content)
-        } catch (e: Exception) {
-            return emptyList()
-        }
-
-        return elements.filterIsInstance<TaskList>().mapIndexed { index, task ->
-            TaskInfo(
-                index = index,
-                text = task.text,
-                isChecked = task.isChecked,
-                level = task.level
-            )
-        }
-    }
-
-    /**
-     * 任务列表项信息数据类
-     */
-    data class TaskInfo(
-        val index: Int,
-        val text: String,
-        val isChecked: Boolean,
-        val level: Int
-    )
 }
