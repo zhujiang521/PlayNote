@@ -130,16 +130,28 @@ object MarkdownParser {
     }
 
     /**
-     * 解析结果缓存，避免重复解析相同内容
+     * 解析结果缓存，使用 LRU 策略避免重复解析相同内容
+     * LinkedHashMap 的 accessOrder = true 实现 LRU 访问顺序
      */
-    private val parseCache = mutableMapOf<String, List<MarkdownElement>>()
+    private val parseCache = object : LinkedHashMap<Int, List<MarkdownElement>>(
+        MAX_CACHE_SIZE + 1,
+        0.75f,
+        true // accessOrder = true 启用访问顺序（LRU）
+    ) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<Int, List<MarkdownElement>>?): Boolean {
+            return size > MAX_CACHE_SIZE
+        }
+    }
+
     private const val MAX_CACHE_SIZE = 50 // 限制缓存大小防止内存泄漏
 
     /**
      * 清理缓存，防止内存泄漏
      */
     fun clearCache() {
-        parseCache.clear()
+        synchronized(parseCache) {
+            parseCache.clear()
+        }
     }
 
     /**
@@ -160,8 +172,13 @@ object MarkdownParser {
                 }
             }
 
-            // 检查缓存
-            parseCache[text]?.let { return it }
+            // 使用 hashCode 作为缓存 key，节省内存
+            val cacheKey = text.hashCode()
+
+            // 检查缓存（线程安全）
+            synchronized(parseCache) {
+                parseCache[cacheKey]?.let { return it }
+            }
 
             // 处理大文档的分块解析
             val result = if (text.length > 50000) {
@@ -170,12 +187,10 @@ object MarkdownParser {
                 parseInternal(text)
             }
 
-            // 缓存结果（限制缓存大小）
-            if (parseCache.size >= MAX_CACHE_SIZE) {
-                val oldestKey = parseCache.keys.first()
-                parseCache.remove(oldestKey)
+            // 缓存结果（LRU 自动淘汰最少使用的条目）
+            synchronized(parseCache) {
+                parseCache[cacheKey] = result
             }
-            parseCache[text] = result
 
             return result
         } catch (e: OutOfMemoryError) {

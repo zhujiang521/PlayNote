@@ -9,9 +9,11 @@ import com.zj.ink.data.NoteRepository
 import com.zj.ink.md.TaskListHelper
 import com.zj.ink.widget.updateNoteWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,10 +27,17 @@ class NotePreviewViewModel @Inject constructor(
 
     private val markdownExporter = MarkdownExporter(getApplication())
 
-    // 在 getNoteById 中同步 noteContent
+    /**
+     * 根据ID加载笔记数据
+     * 优化：使用IO线程加载数据，加载完成后立即发射，不等待解析
+     */
     fun getNoteById(id: Int) {
         viewModelScope.launch {
-            val note = noteRepository.getNoteById(id)
+            // 在IO线程加载数据
+            val note = withContext(Dispatchers.IO) {
+                noteRepository.getNoteById(id)
+            }
+            // 立即发射数据，UI层会异步解析
             _note.value = note
         }
     }

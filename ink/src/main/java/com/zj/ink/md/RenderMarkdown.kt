@@ -65,6 +65,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -93,6 +94,9 @@ import androidx.compose.ui.unit.sp
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import com.zj.data.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 /**
  * 渲染 Markdown 内容为 Jetpack Compose UI 组件。
@@ -139,90 +143,103 @@ fun RenderMarkdown(
         return
     }
 
-    // 集中式状态管理
-    data class MarkdownRenderState(
-        val elements: List<MarkdownElement>,
-        val hasError: Boolean,
-        val expandedSections: Set<Int> = emptySet()
-    )
 
-    // 使用remember保存渲染状态（不使用rememberSaveable避免Parcel序列化问题）
-    val renderState = remember(markdown) {
-        try {
-            val parsed = MarkdownParser.parse(markdown)
-            MarkdownRenderState(parsed, false)
+    // 使用 State 管理解析状态
+    var parseState by remember { mutableStateOf<ParseState>(ParseState.Loading) }
+
+    // 异步解析 Markdown
+    LaunchedEffect(markdown) {
+        parseState = ParseState.Loading
+        parseState = try {
+            // 在后台线程执行解析
+            val parsed = withContext(Dispatchers.Default) {
+                MarkdownParser.parse(markdown)
+            }
+            ParseState.Success(parsed)
         } catch (e: Exception) {
             println("RenderMarkdown: Parse error - ${e.message}")
             val fallbackElements = listOf(
                 Paragraph("内容解析出现问题，请检查格式"),
                 Paragraph(markdown.take(500) + if (markdown.length > 500) "..." else "")
             )
-            MarkdownRenderState(fallbackElements, true)
+            ParseState.Error(fallbackElements)
         }
     }
 
-    val (elements, hasError) = renderState
+    // 根据解析状态渲染不同内容
+    when (val state = parseState) {
+        is ParseState.Loading -> {
+            // 显示骨架屏
+            MarkdownLoadingState(modifier = modifier)
+            return
+        }
 
-    // 显示解析错误提示
-    if (hasError) {
-        Column(modifier = modifier) {
-            // 错误提示
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        color = MaterialTheme.colorScheme.errorContainer,
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .padding(12.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = "⚠️",
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(end = 8.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.markdown_parse_error),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onErrorContainer
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // 降级内容渲染
+        is ParseState.Success -> {
+            // 正常渲染
             RenderElementsList(
-                elements = elements,
-                modifier = Modifier,
+                elements = state.elements,
+                modifier = modifier,
                 sharedTransitionScope = sharedTransitionScope,
                 animatedContentScope = animatedContentScope,
                 showRoundShape = showRoundShape,
                 onImageClick = onImageClick,
                 onTaskToggle = onTaskToggle
             )
+            return
         }
-        return
-    }
 
-    // 正常渲染流程
-    RenderElementsList(
-        elements = elements,
-        modifier = modifier,
-        sharedTransitionScope = sharedTransitionScope,
-        animatedContentScope = animatedContentScope,
-        showRoundShape = showRoundShape,
-        onImageClick = onImageClick,
-        onTaskToggle = onTaskToggle
-    )
+        is ParseState.Error -> {
+            // 错误处理
+            val elements = state.elements
+
+            // 显示解析错误提示
+            Column(modifier = modifier) {
+                // 错误提示
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = MaterialTheme.colorScheme.errorContainer,
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(12.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = "⚠️",
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = stringResource(R.string.markdown_parse_error),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // 降级内容渲染
+                RenderElementsList(
+                    elements = elements,
+                    modifier = Modifier,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedContentScope = animatedContentScope,
+                    showRoundShape = showRoundShape,
+                    onImageClick = onImageClick,
+                    onTaskToggle = onTaskToggle
+                )
+            }
+        }
+    }
 }
 
 /**
- * 渲染元素列表的通用函数，支持错误处理
+ * 渲染元素列表的通用函数，支持错误处理和分批渲染
  */
 @Composable
-private fun RenderElementsList(
+fun RenderElementsList(
     elements: List<MarkdownElement>,
     modifier: Modifier,
     sharedTransitionScope: SharedTransitionScope?,
@@ -231,13 +248,74 @@ private fun RenderElementsList(
     onImageClick: (String) -> Unit,
     onTaskToggle: ((taskIndex: Int, taskText: String, currentChecked: Boolean) -> Unit)?
 ) {
-    // 注意：由于SubcomposeAsyncImage在LazyColumn中存在intrinsic measurement问题
-    // 暂时禁用LazyColumn优化，统一使用Column渲染以避免崩溃
-    // 未来可考虑使用AsyncImage替代SubcomposeAsyncImage来重新启用LazyColumn优化
+    // 分批渲染策略：大文档优化
+    val batchSize = 20 // 每批渲染20个元素
+    val shouldUseBatchRendering = elements.size > batchSize
+
+    if (shouldUseBatchRendering) {
+        // 使用分批渲染
+        BatchRenderElementsList(
+            elements = elements,
+            modifier = modifier,
+            batchSize = batchSize,
+            sharedTransitionScope = sharedTransitionScope,
+            animatedContentScope = animatedContentScope,
+            showRoundShape = showRoundShape,
+            onImageClick = onImageClick,
+            onTaskToggle = onTaskToggle
+        )
+    } else {
+        // 小文档直接渲染
+        Column(
+            modifier = modifier.verticalScroll(rememberScrollState())
+        ) {
+            elements.forEachIndexed { index, element ->
+                SafeRenderMarkdownElement(
+                    element = element,
+                    elementIndex = index,
+                    allElements = elements,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedContentScope = animatedContentScope,
+                    showRoundShape = showRoundShape,
+                    onImageClick = onImageClick,
+                    onTaskToggle = onTaskToggle
+                )
+            }
+        }
+    }
+}
+
+/**
+ * 分批渲染元素列表，优化大文档性能
+ * 首屏优先显示前 batchSize 个元素，后续元素逐步加载
+ */
+@Composable
+private fun BatchRenderElementsList(
+    elements: List<MarkdownElement>,
+    modifier: Modifier,
+    batchSize: Int,
+    sharedTransitionScope: SharedTransitionScope?,
+    animatedContentScope: AnimatedContentScope?,
+    showRoundShape: Boolean,
+    onImageClick: (String) -> Unit,
+    onTaskToggle: ((taskIndex: Int, taskText: String, currentChecked: Boolean) -> Unit)?
+) {
+    // 已渲染的元素数量
+    var renderedCount by remember { androidx.compose.runtime.mutableIntStateOf(batchSize) }
+
+    // 逐步加载后续元素
+    LaunchedEffect(elements.size) {
+        while (renderedCount < elements.size) {
+            delay(16) // 等待一帧时间（约16ms）
+            renderedCount = minOf(renderedCount + batchSize, elements.size)
+        }
+    }
+
     Column(
         modifier = modifier.verticalScroll(rememberScrollState())
     ) {
-        elements.forEachIndexed { index, element ->
+        // 渲染已加载的元素
+        elements.take(renderedCount).forEachIndexed { index, element ->
             SafeRenderMarkdownElement(
                 element = element,
                 elementIndex = index,
@@ -248,6 +326,33 @@ private fun RenderElementsList(
                 onImageClick = onImageClick,
                 onTaskToggle = onTaskToggle
             )
+        }
+
+        // 如果还有未加载的元素，显示加载指示器
+        if (renderedCount < elements.size) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "加载中... (${renderedCount}/${elements.size})",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
     }
 }
@@ -632,7 +737,8 @@ private fun RenderMarkdownElement(
                 // 表头
                 Row(modifier = Modifier.fillMaxWidth()) {
                     element.headers.forEachIndexed { index, header ->
-                        val alignment = element.alignments.getOrNull(index) ?: TableAlignment.LEFT
+                        val alignment =
+                            element.alignments.getOrNull(index) ?: TableAlignment.LEFT
                         Text(
                             text = header,
                             fontWeight = FontWeight.Bold,
@@ -842,7 +948,13 @@ private fun applySyntaxHighlighting(
 
             when (language.lowercase()) {
                 "kotlin", "java", "scala" -> {
-                    highlightJvmLanguage(line, keywordColor, stringColor, commentColor, numberColor)
+                    highlightJvmLanguage(
+                        line,
+                        keywordColor,
+                        stringColor,
+                        commentColor,
+                        numberColor
+                    )
                 }
 
                 "python" -> {
@@ -850,7 +962,13 @@ private fun applySyntaxHighlighting(
                 }
 
                 "javascript", "typescript", "js", "ts" -> {
-                    highlightJavaScript(line, keywordColor, stringColor, commentColor, numberColor)
+                    highlightJavaScript(
+                        line,
+                        keywordColor,
+                        stringColor,
+                        commentColor,
+                        numberColor
+                    )
                 }
 
                 "html", "xml" -> {
@@ -1023,7 +1141,14 @@ private fun androidx.compose.ui.text.AnnotatedString.Builder.highlightGeneric(
     commentColor: Color,
     numberColor: Color
 ) {
-    highlightWithKeywords(line, emptySet(), keywordColor, stringColor, commentColor, numberColor)
+    highlightWithKeywords(
+        line,
+        emptySet(),
+        keywordColor,
+        stringColor,
+        commentColor,
+        numberColor
+    )
 }
 
 /**
@@ -1346,4 +1471,11 @@ fun MathRenderer(
             }
         }
     }
+}
+
+// 解析状态管理
+sealed class ParseState {
+    object Loading : ParseState()
+    data class Success(val elements: List<MarkdownElement>) : ParseState()
+    data class Error(val elements: List<MarkdownElement>) : ParseState()
 }
