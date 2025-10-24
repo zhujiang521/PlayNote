@@ -3,6 +3,7 @@ package com.zj.ink.data
 import android.content.Context
 import androidx.room.Room
 import com.zj.data.room.AppDatabase
+import com.zj.data.room.AppDatabase.Companion.MIGRATION_1_2
 import com.zj.data.room.NoteDao
 import dagger.Module
 import dagger.Provides
@@ -35,5 +36,5 @@ fun databaseBuilder(context: Context): AppDatabase {
         context,
         AppDatabase::class.java,
         CONVERSATION_DATABASE
-    ).build()
+    ).addMigrations(MIGRATION_1_2).build()
 }

@@ -16,7 +16,9 @@ data class Note(
     val title: String,
     val content: String,
     val timestamp: Long = System.currentTimeMillis(),
-)
+) {
+    fun toFts(): NoteFts = NoteFts(id, title, content)
+}
 
 fun Note?.isValid(): Boolean {
     if (this == null) return false

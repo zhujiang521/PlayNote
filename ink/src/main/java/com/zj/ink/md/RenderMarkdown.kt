@@ -92,7 +92,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
-import coil3.size.Size.Companion.ORIGINAL
 import com.zj.data.R
 
 /**
@@ -379,7 +378,7 @@ private fun RenderMarkdownElement(
         }
 
         is Image -> {
-            // 使用Box包裹SubcomposeAsyncImage，避免LazyColumn的intrinsic measurement问题
+            // 使用Box包裹AsyncImage，提供加载状态和错误处理
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -390,7 +389,7 @@ private fun RenderMarkdownElement(
                         SubcomposeAsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(element.url)
-                                .size(ORIGINAL)
+                                .size(300, 300) // 使用缩略图尺寸
                                 .build(),
                             modifier = Modifier
                                 .fillMaxSize()
@@ -409,30 +408,51 @@ private fun RenderMarkdownElement(
                             contentScale = ContentScale.Fit,
                             loading = {
                                 Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.LightGray.copy(alpha = 0.3f)),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    CircularProgressIndicator(modifier = Modifier.size(30.dp))
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(40.dp),
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
                                 }
                             },
                             error = {
                                 Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.LightGray.copy(alpha = 0.2f))
+                                        .clickable {
+                                            onImageClick(element.url)
+                                        },
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Image(
-                                        painterResource(R.drawable.ic_placeholder),
-                                        contentDescription = stringResource(R.string.down_fail)
-                                    )
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Image(
+                                            painter = painterResource(R.drawable.ic_placeholder_big),
+                                            contentDescription = stringResource(R.string.down_fail),
+                                            modifier = Modifier.size(80.dp)
+                                        )
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            text = stringResource(R.string.down_fail),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
-                            },
+                            }
                         )
                     }
                 } else {
                     SubcomposeAsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(element.url)
-                            .size(ORIGINAL)
+                            .size(300, 300) // 使用缩略图尺寸
                             .build(),
                         modifier = Modifier
                             .fillMaxSize()
@@ -447,23 +467,44 @@ private fun RenderMarkdownElement(
                         contentScale = ContentScale.Fit,
                         loading = {
                             Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.LightGray.copy(alpha = 0.3f)),
+                                contentAlignment = Alignment.Center
                             ) {
-                                CircularProgressIndicator(modifier = Modifier.size(30.dp))
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(40.dp),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
                             }
                         },
                         error = {
                             Box(
-                                contentAlignment = Alignment.Center,
-                                modifier = Modifier.fillMaxSize()
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(Color.LightGray.copy(alpha = 0.2f))
+                                    .clickable {
+                                        onImageClick(element.url)
+                                    },
+                                contentAlignment = Alignment.Center
                             ) {
-                                Image(
-                                    painterResource(R.drawable.ic_placeholder_big),
-                                    contentDescription = stringResource(R.string.down_fail)
-                                )
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Image(
+                                        painter = painterResource(R.drawable.ic_placeholder_big),
+                                        contentDescription = stringResource(R.string.down_fail),
+                                        modifier = Modifier.size(80.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = stringResource(R.string.down_fail),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
-                        },
+                        }
                     )
                 }
             }

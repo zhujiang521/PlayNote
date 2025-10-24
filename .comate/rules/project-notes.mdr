@@ -1,0 +1,636 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# 以下内容是为理解此项目所做笔记（永远是最新状态,可能存在错误）
+
+## 项目总览
+PlayNote是一个功能强大的Android便签应用，支持完整的Markdown解析展示和手绘画图功能。项目采用现代化的Android开发技术栈，使用Jetpack Compose构建UI，Room数据库进行本地存储，Hilt进行依赖注入。
+
+## 基本信息
+- **项目名称**: PlayNote
+- **应用ID**: com.zj.note
+- **当前版本**: 1.1.1.9999-2025.09.01
+- **最低SDK**: API 31 (Android 12)
+- **目标SDK**: API 36 (Android 14+)
+- **编译SDK**: API 36
+- **开发语言**: Kotlin 2.2.20
+- **Java版本**: Java 11
+- **构建工具**: Android Gradle Plugin 8.12.2
+
+## 背景详情
+
+### 核心功能特性
+1. **Markdown支持**
+   - 标准语法：标题(H1-H6)、段落、加粗、斜体、删除线、链接、图片、代码、代码块、引用、表格、列表
+   - 扩展语法：任务列表(支持交互)、高亮文本、脚注、上下标、数学公式(LaTeX)、嵌套列表、多级引用、表格对齐
+   - 支持9种编程语言的语法高亮：Kotlin、Java、Scala、Python、JavaScript、TypeScript、HTML、CSS、JSON
+
+2. **画图功能**
+   - 手绘笔记支持
+   - 多种画笔工具
+   - 颜色选择器
+   - 橡皮擦功能
+
+3. **双渲染引擎**
+   - Jetpack Compose：主应用内的完整Markdown渲染
+   - Jetpack Glance：小组件中的优化Markdown显示
+
+4. **文件操作**
+   - 支持打开本地和外部存储中的MD文件
+   - 支持通过SEND动作分享Markdown内容和图片到应用
+   - 支持导出为PDF、ZIP、Markdown格式
+
+### 性能优化机制
+1. **解析缓存**: LRU缓存机制，重复解析性能提升90%+
+2. **虚拟化渲染**: 大文档使用LazyColumn，内存占用优化
+3. **分块处理**: 大文档自动分块，支持最大1MB文档
+4. **预编译正则**: 常用正则表达式预编译，性能提升20-30%
+
+### 性能限制
+- 文本长度：最大1MB (1,000,000字符)
+- 嵌套层级：最大10级嵌套
+- 表格列数：最大50列
+- 列表项数：最大1000个列表项
+- 缓存大小：最多50个解析结果
+- Glance内容长度：最大5KB文本，最多10个元素
+
+## 技术架构
+
+### 整体架构模式
+采用MVVM (Model-View-ViewModel)架构模式，结合Clean Architecture思想：
+- **View层**: Jetpack Compose UI组件
+- **ViewModel层**: 管理UI状态和业务逻辑
+- **Repository层**: 数据访问抽象层
+- **Data层**: Room数据库、DataStore配置存储
+
+### 模块划分
+项目采用多模块架构，分为3个主要模块：
+
+1. **app模块** (主应用模块)
+   - 应用入口：MainActivity、NoteApplication
+   - 导航管理：Navigation.kt
+   - 主题配置：ui/theme/
+   - 依赖注入配置
+
+2. **data模块** (数据层)
+   - Room数据库：AppDatabase、NoteDao
+   - 数据模型：Note
+   - 通用UI组件：common/
+   - 导出功能：export/
+   - 工具类：utils/
+   - LCE状态组件：lce/
+
+3. **ink模块** (笔记功能模块)
+   - Markdown解析：md/MarkdownParser.kt
+   - Markdown渲染：md/RenderMarkdown.kt、md/GlanceRenderMarkdown.kt
+   - 编辑功能：edit/
+   - 预览功能：preview/
+   - 画图功能：edit/DrawingSurface.kt
+   - 小组件：widget/
+   - 数据管理：NoteViewModel、NoteRepository、EditNoteViewModel
+
+### 核心技术栈
+
+#### UI框架
+- **Jetpack Compose** (2025.10.01 BOM)
+  - androidx.compose.ui
+  - androidx.compose.material3
+  - androidx.compose.ui-tooling
+- **Jetpack Glance** (1.1.1) - 小组件框架
+- **Lottie** (6.6.10) - 动画支持
+
+#### 数据持久化
+- **Room** (2.8.3)
+  - room-runtime
+  - room-ktx
+  - room-paging
+  - room-compiler (KSP)
+- **DataStore Preferences** (1.1.7) - 轻量级配置存储
+
+#### 依赖注入
+- **Hilt** (2.57.2)
+  - hilt-android
+  - hilt-android-compiler (KSP)
+  - hilt-navigation-compose (1.2.0)
+
+#### 图片加载
+- **Coil3** (3.3.0)
+  - coil-compose
+  - coil-network-okhttp
+  - coil-gif (2.7.0)
+
+#### Markdown解析
+- **CommonMark** (0.27.0)
+  - commonmark
+  - commonmark-ext-gfm-tables
+  - commonmark-ext-footnotes
+  - commonmark-ext-heading-anchor
+  - commonmark-ext-gfm-strikethrough
+  - commonmark-ext-task-list-items
+  - commonmark-ext-autolink
+
+#### 画图功能
+- **Androidx Ink** (1.0.0-beta01)
+  - ink-strokes
+  - ink-rendering
+  - ink-nativeloader
+  - ink-geometry
+  - ink-brush
+  - ink-authoring
+- **Input Motion Prediction** (1.0.0-beta06)
+
+#### 导出功能
+- **iText HTML2PDF** (6.2.1) - PDF导出
+
+#### 其他库
+- **Kotlinx Coroutines** (1.10.2) - 异步处理
+- **Kotlinx Serialization JSON** (1.9.0) - JSON序列化
+- **Navigation Compose** (2.9.3) - 导航管理
+- **Paging** (3.3.5) - 分页加载
+- **Lifecycle** (2.9.4) - 生命周期管理
+- **Activity Compose** (1.10.1)
+- **Core Splashscreen** (1.2.0-rc01) - 启动屏
+- **Zoomable** (2.8.2) - 图片缩放
+- **UltraSwipeRefresh** (1.4.2) - 下拉刷新
+
+#### 编译工具
+- **KSP** (2.2.20-2.0.2) - Kotlin Symbol Processing
+- **Kotlin Compose Compiler Plugin** - Compose编译器
+- **Kotlin Serialization Plugin** - 序列化支持
+
+## 目录结构
+
+```
+PlayNote/
+├── app/                           # 主应用模块
+│   ├── src/main/
+│   │   ├── java/com/zj/note/
+│   │   │   ├── di/               # 依赖注入配置
+│   │   │   ├── ui/theme/         # 主题配置
+│   │   │   ├── MainActivity.kt   # 应用入口Activity
+│   │   │   ├── Navigation.kt     # 导航配置
+│   │   │   ├── NoteApplication.kt # Application类
+│   │   │   └── SendNoteViewModel.kt # 分享笔记ViewModel
+│   │   ├── res/                  # 资源文件
+│   │   └── AndroidManifest.xml   # 清单文件
+│   └── build.gradle.kts          # 构建配置
+│
+├── data/                          # 数据层模块
+│   ├── src/main/
+│   │   ├── assets/               # 字体资源
+│   │   │   └── HYQiHei-50S.otf  # 自定义字体
+│   │   ├── java/com/zj/data/
+│   │   │   ├── common/          # 通用UI组件
+│   │   │   │   ├── DeleteDialog.kt
+│   │   │   │   ├── DialogX.kt
+│   │   │   │   ├── HighlightedText.kt
+│   │   │   │   ├── InputTextField.kt
+│   │   │   │   ├── LazyPagingStates.kt
+│   │   │   │   ├── SearchTextField.kt
+│   │   │   │   └── SwipeBox.kt
+│   │   │   ├── export/          # 导出功能
+│   │   │   │   ├── GlanceImageLoader.kt
+│   │   │   │   ├── HtmlRender.kt
+│   │   │   │   ├── MarkdownExporter.kt
+│   │   │   │   ├── PdfExportManager.kt
+│   │   │   │   └── ZipExportManager.kt
+│   │   │   ├── lce/             # Loading/Content/Error状态组件
+│   │   │   │   ├── ErrorContent.kt
+│   │   │   │   ├── LoadingContent.kt
+│   │   │   │   └── NoContent.kt
+│   │   │   ├── model/           # 数据模型
+│   │   │   │   └── Note.kt
+│   │   │   ├── room/            # Room数据库
+│   │   │   │   ├── AppDatabase.kt
+│   │   │   │   └── NoteDao.kt
+│   │   │   └── utils/           # 工具类
+│   │   │       ├── DataStoreUtils.kt
+│   │   │       ├── DateUtils.kt
+│   │   │       ├── FileEx.kt
+│   │   │       ├── ShareUtils.kt
+│   │   │       ├── ToastUtil.kt
+│   │   │       └── UrlUtils.kt
+│   │   └── res/                 # 资源文件
+│   ├── schemas/                 # Room数据库Schema
+│   │   └── com.zj.data.room.AppDatabase/1.json
+│   └── build.gradle.kts
+│
+├── ink/                           # 笔记功能模块
+│   ├── src/main/
+│   │   ├── java/com/zj/ink/
+│   │   │   ├── commemorative/   # 纪念功能
+│   │   │   ├── data/            # 数据层
+│   │   │   │   ├── BaseShareViewModel.kt
+│   │   │   │   ├── DatabaseModule.kt  # Hilt数据库模块
+│   │   │   │   ├── EditNoteViewModel.kt
+│   │   │   │   ├── ExampleMarkDown.kt
+│   │   │   │   ├── NoteRepository.kt
+│   │   │   │   └── NoteViewModel.kt
+│   │   │   ├── edit/            # 编辑功能
+│   │   │   │   ├── DrawingSurface.kt
+│   │   │   │   ├── EditNoteScreen.kt
+│   │   │   │   ├── EditNoteTopBar.kt
+│   │   │   │   ├── EraseUtils.kt
+│   │   │   │   ├── MarkdownToolbar.kt
+│   │   │   │   ├── NoteDrawDialog.kt
+│   │   │   │   └── ShareOptionsDialog.kt
+│   │   │   ├── md/              # Markdown解析和渲染
+│   │   │   │   ├── GlanceRenderMarkdown.kt  # Glance渲染器
+│   │   │   │   ├── ImagePreview.kt
+│   │   │   │   ├── ImageViewModel.kt
+│   │   │   │   ├── MarkdownElement.kt       # 数据模型
+│   │   │   │   ├── MarkdownParser.kt        # 解析器
+│   │   │   │   ├── RenderMarkdown.kt        # Compose渲染器
+│   │   │   │   └── TaskListHelper.kt
+│   │   │   ├── picker/          # 画图工具选择器
+│   │   │   │   ├── ColorPicker.kt
+│   │   │   │   ├── EraserSizePicker.kt
+│   │   │   │   ├── PenPicker.kt
+│   │   │   │   ├── PenSizePicker.kt
+│   │   │   │   └── TablePicker.kt
+│   │   │   ├── preview/         # 预览功能
+│   │   │   │   ├── NotePreview.kt
+│   │   │   │   └── NotePreviewViewModel.kt
+│   │   │   ├── widget/          # 小组件
+│   │   │   │   ├── Color.kt
+│   │   │   │   ├── NoteAppWidget.kt
+│   │   │   │   ├── NoteAppWidgetReceiver.kt
+│   │   │   │   ├── NoteDataStore.kt
+│   │   │   │   ├── ShareIconButton.kt
+│   │   │   │   └── SwipeRefresh.kt
+│   │   │   ├── NoteItem.kt      # 笔记列表项
+│   │   │   └── NoteScreen.kt    # 笔记列表页面
+│   │   └── res/
+│   └── build.gradle.kts
+│
+├── gradle/
+│   ├── wrapper/
+│   └── libs.versions.toml        # 依赖版本管理
+├── docs/                         # 项目文档
+├── .comate/rules/               # Comate配置
+├── build.gradle.kts             # 根级构建配置
+├── settings.gradle.kts          # 项目设置
+├── gradle.properties            # Gradle配置
+└── README.md                    # 项目说明文档
+```
+
+## 配置与依赖
+
+### Gradle配置
+- **compileSdk**: 36
+- **targetSdk**: 36
+- **minSdk**: 31
+- **Java兼容性**: Java 11
+- **Kotlin JVM目标**: JVM 11
+- **代码混淆**: Release版本启用ProGuard
+
+### 依赖注入配置
+使用Hilt进行依赖注入，主要模块：
+- **DatabaseModule**: 提供AppDatabase和NoteDao实例
+  - 作用域：ActivityRetainedScoped
+  - 数据库名称：conversation-database
+  - 安装在：ActivityRetainedComponent
+
+### Room数据库配置
+- **数据库版本**: 1
+- **实体**: Note
+- **DAO**: NoteDao
+- **Schema导出路径**: data/schemas/
+
+## 关键文件
+
+### 应用入口
+1. **NoteApplication.kt**
+   - 继承Application类，使用@HiltAndroidApp注解
+   - 初始化DataStoreUtils和GlanceImageLoader
+
+2. **MainActivity.kt**
+   - 应用主Activity，使用@AndroidEntryPoint注解
+   - 处理Intent：ACTION_SEND、ACTION_VIEW
+   - 支持打开Markdown文件和分享图片/文本
+   - 启用Edge-to-Edge显示
+
+### 数据模型
+**Note.kt** - 笔记数据实体
+```kotlin
+@Entity(
+    tableName = "note",
+    indices = [
+        Index(value = ["timestamp"], name = "idx_note_timestamp"),
+        Index(value = ["title", "content"], name = "idx_note_search")
+    ]
+)
+data class Note(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val title: String,
+    val content: String,
+    val timestamp: Long = System.currentTimeMillis(),
+)
+```
+- 索引优化：timestamp索引用于排序，title+content复合索引用于搜索
+
+### 数据访问层
+**NoteDao.kt** - Room DAO接口
+- 支持分页查询：getAllNotes()、getNotesWithSearch()
+- 返回PagingSource用于Paging3集成
+- 模糊搜索：支持标题和内容的LIKE查询
+- CRUD操作：insertNote、updateNote、deleteNote、deleteNotes
+- 统计查询：getNoteCount()
+- 最近笔记：getRecentNotes() 返回Flow<List<Note>>
+
+### 数据仓库层
+**NoteRepository.kt** - 数据仓库
+- 作用域：@ActivityRetainedScoped
+- 分页配置：pageSize = 20
+- 所有数据库操作在Dispatchers.IO执行
+- 提供Flow<PagingData<Note>>用于UI层订阅
+
+### ViewModel层
+1. **NoteViewModel.kt** - 笔记列表ViewModel
+   - 管理笔记列表的分页数据流
+   - 搜索功能：支持实时搜索过滤
+   - 任务列表交互：toggleTaskAndSave()
+   - 缓存：使用cachedIn(viewModelScope)
+   - 默认笔记插入：首次启动插入示例笔记
+
+2. **EditNoteViewModel.kt** - 编辑笔记ViewModel
+   - 管理笔记编辑状态
+   - 撤销/重做功能
+   - 自动保存机制
+
+### Markdown核心
+1. **MarkdownParser.kt** - Markdown解析器
+   - 预编译正则表达式（性能优化）
+   - LRU缓存机制（最多50个结果）
+   - 大文档分块处理（>50000字符）
+   - 错误处理和优雅降级
+   - 支持26种元素类型
+   - 性能指标：
+     * 小文档 <50ms
+     * 中等文档 <200ms
+     * 大文档 <1000ms
+     * 缓存命中率 >90%
+
+2. **MarkdownElement.kt** - 数据模型
+   - 密封类设计，类型安全
+   - 26种元素类型：Heading、Paragraph、Bold、Italic、Strikethrough、Highlight、Link、Image、Code、CodeBlock、BlockQuote、Table、OrderedList、UnorderedList、TaskList、Divider、Footnote、Math、Superscript、Subscript等
+
+3. **RenderMarkdown.kt** - Compose渲染器
+   - 主应用内的完整Markdown渲染
+   - 支持主题适配（日间/夜间）
+   - 图片点击预览
+   - 任务列表交互
+   - 错误处理和降级显示
+   - 性能优化：使用Column+verticalScroll（避免SubcomposeAsyncImage在LazyColumn中的问题）
+
+4. **GlanceRenderMarkdown.kt** - Glance渲染器
+   - 小组件中的优化显示
+   - 功能简化以适应Glance限制
+   - 最大5KB文本，最多10个元素
+
+### UI页面
+1. **NoteScreen.kt** - 笔记列表页面
+   - LazyVerticalStaggeredGrid瀑布流布局
+   - StaggeredGridCells.Adaptive自适应列数
+   - 搜索功能集成
+   - 下拉刷新
+   - 分页加载
+
+2. **NoteItem.kt** - 笔记列表项
+   - SwipeBox滑动删除
+   - 高度限制：min=100dp, max=300dp
+   - 搜索关键词高亮
+   - Markdown预览渲染
+   - 任务列表交互
+
+3. **EditNoteScreen.kt** - 编辑页面
+   - Markdown工具栏
+   - 画图功能集成
+   - 实时预览
+   - 分享选项
+
+## 功能全貌
+
+### 笔记管理
+1. **CRUD操作**
+   - 创建：点击FAB创建新笔记
+   - 读取：分页加载笔记列表
+   - 更新：编辑页面修改笔记
+   - 删除：滑动删除或批量删除
+
+2. **搜索功能**
+   - 实时搜索：输入时即时过滤
+   - 搜索范围：标题和内容
+   - 关键词高亮：搜索结果中高亮显示
+
+3. **分页加载**
+   - Paging3集成
+   - 每页20条数据
+   - 支持上拉加载更多
+
+### Markdown编辑
+1. **工具栏功能**
+   - 文本格式：加粗、斜体、删除线
+   - 标题：H1-H6
+   - 列表：有序、无序、任务列表
+   - 插入：链接、图片、代码块、表格、引用
+   - 撤销/重做
+
+2. **实时预览**
+   - 编辑和预览分屏
+   - 支持切换预览/编辑模式
+
+3. **任务列表交互**
+   - 列表页面：点击复选框直接切换状态
+   - 编辑页面：支持添加和编辑任务
+
+### 画图功能
+1. **画笔工具**
+   - 多种笔触类型
+   - 颜色选择器
+   - 笔触大小调节
+
+2. **橡皮擦**
+   - 橡皮擦大小调节
+   - 精确擦除
+
+### 导出分享
+1. **导出格式**
+   - Markdown文件
+   - PDF文档
+   - ZIP压缩包
+
+2. **分享方式**
+   - 系统分享
+   - 文件分享
+   - 图片分享
+
+### 小组件
+1. **NoteAppWidget**
+   - 显示最近笔记
+   - 点击跳转到笔记详情
+   - 支持刷新
+
+2. **Glance渲染**
+   - 简化的Markdown显示
+   - 性能优化
+
+## 逻辑关系
+
+### 数据流
+```
+用户输入 → ViewModel → Repository → DAO → Room数据库
+                ↓
+            UI更新 ← StateFlow/Flow ← PagingData
+```
+
+### 导航流程
+```
+NoteScreen (列表) → NotePreview (预览) → EditNoteScreen (编辑)
+                ↓
+            NoteItem (列表项)
+```
+
+### Markdown处理流程
+```
+原始文本 → MarkdownParser.parse() → List<MarkdownElement>
+                                          ↓
+                                    RenderMarkdown
+                                          ↓
+                                    Compose UI组件
+```
+
+### 依赖注入流程
+```
+@HiltAndroidApp (NoteApplication)
+        ↓
+DatabaseModule (@InstallIn ActivityRetainedComponent)
+        ↓
+AppDatabase → NoteDao
+        ↓
+NoteRepository (@ActivityRetainedScoped)
+        ↓
+NoteViewModel (@HiltViewModel)
+        ↓
+UI (@AndroidEntryPoint)
+```
+
+## 数据流
+
+### 笔记列表数据流
+```
+Room Database
+    ↓
+NoteDao.getAllNotes() → PagingSource<Int, Note>
+    ↓
+NoteRepository.getAllNotes() → Flow<PagingData<Note>>
+    ↓
+.cachedIn(viewModelScope)
+    ↓
+NoteViewModel.notes → StateFlow<PagingData<Note>>
+    ↓
+collectAsLazyPagingItems()
+    ↓
+LazyVerticalStaggeredGrid渲染
+```
+
+### 搜索数据流
+```
+用户输入 → SearchTextField
+    ↓
+NoteViewModel.setSearchQuery(query)
+    ↓
+_searchQuery.collect { query -> loadSearchNotes(query) }
+    ↓
+NoteDao.getNotesWithSearch(query) → PagingSource
+    ↓
+更新 _notes.value
+    ↓
+UI自动刷新
+```
+
+### 编辑保存数据流
+```
+用户编辑 → EditNoteViewModel
+    ↓
+NoteRepository.updateNote(note)
+    ↓
+withContext(Dispatchers.IO) { noteDao.updateNote(note) }
+    ↓
+Room数据库更新
+    ↓
+updateNoteWidget() 触发小组件刷新
+```
+
+### 任务列表交互数据流
+```
+用户点击复选框 → NoteItem
+    ↓
+viewModel.toggleTaskAndSave(note, taskIndex, taskText, currentChecked)
+    ↓
+TaskListHelper.toggleTaskState() 修改Markdown文本
+    ↓
+noteRepository.updateNote(updatedNote)
+    ↓
+数据库更新 + 小组件刷新
+```
+
+## 补充信息
+
+### 性能相关问题分析（用户反馈）
+用户反馈：启动时加载缓慢，列表显示延迟较大
+
+#### 可能的性能瓶颈点
+1. **Markdown解析性能**
+   - MarkdownParser在列表项中实时解析可能导致卡顿
+   - 虽有LRU缓存，但首次加载时仍需解析所有可见项
+   - 复杂Markdown内容（大量嵌套、表格、代码块）解析耗时
+
+2. **列表渲染性能**
+   - NoteItem中使用RenderMarkdown完整渲染预览
+   - 瀑布流布局（LazyVerticalStaggeredGrid）计算复杂
+   - 每个列表项高度不固定（heightIn(min=100dp, max=300dp)）
+   - SubcomposeAsyncImage图片加载可能阻塞
+
+3. **数据库查询**
+   - 分页加载pageSize=20可能不够优化
+   - 搜索时的LIKE查询可能较慢
+   - 虽有索引但复合LIKE查询仍有性能开销
+
+4. **启动性能**
+   - 首次启动需初始化Room数据库
+   - 插入默认示例笔记
+   - Hilt依赖注入初始化
+   - Compose UI首次渲染
+
+5. **内存管理**
+   - 解析缓存最多50个结果，可能不足
+   - 图片加载可能占用大量内存
+   - Paging缓存策略需优化
+
+### 关键代码位置（性能优化相关）
+- 列表渲染：`ink/src/main/java/com/zj/ink/NoteScreen.kt`
+- 列表项渲染：`ink/src/main/java/com/zj/ink/NoteItem.kt`
+- Markdown解析：`ink/src/main/java/com/zj/ink/md/MarkdownParser.kt`
+- Markdown渲染：`ink/src/main/java/com/zj/ink/md/RenderMarkdown.kt`
+- 数据库查询：`data/src/main/java/com/zj/data/room/NoteDao.kt`
+- 分页配置：`ink/src/main/java/com/zj/ink/data/NoteRepository.kt`
+
+### 已知技术限制
+1. RenderMarkdown.kt中注释说明：
+   - 由于SubcomposeAsyncImage在LazyColumn中存在intrinsic measurement问题
+   - 暂时禁用LazyColumn优化，使用Column+verticalScroll
+   - 未来可考虑使用AsyncImage替代以重新启用LazyColumn优化
+
+2. Glance小组件限制：
+   - 最大5KB文本
+   - 最多10个元素
+   - 部分复杂功能简化显示
+
+### 技术债务
+1. MarkdownParser缓存策略可能需要优化
+2. 列表项预览渲染可以考虑简化或延迟加载
+3. 图片加载策略需要优化
+4. 数据库查询性能可以进一步提升
