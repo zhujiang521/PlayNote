@@ -54,11 +54,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -95,7 +95,6 @@ import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
 import com.zj.data.R
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 /**
@@ -248,74 +247,11 @@ fun RenderElementsList(
     onImageClick: (String) -> Unit,
     onTaskToggle: ((taskIndex: Int, taskText: String, currentChecked: Boolean) -> Unit)?
 ) {
-    // 分批渲染策略：大文档优化
-    val batchSize = 20 // 每批渲染20个元素
-    val shouldUseBatchRendering = elements.size > batchSize
-
-    if (shouldUseBatchRendering) {
-        // 使用分批渲染
-        BatchRenderElementsList(
-            elements = elements,
-            modifier = modifier,
-            batchSize = batchSize,
-            sharedTransitionScope = sharedTransitionScope,
-            animatedContentScope = animatedContentScope,
-            showRoundShape = showRoundShape,
-            onImageClick = onImageClick,
-            onTaskToggle = onTaskToggle
-        )
-    } else {
-        // 小文档直接渲染
-        Column(
-            modifier = modifier.verticalScroll(rememberScrollState())
-        ) {
-            elements.forEachIndexed { index, element ->
-                SafeRenderMarkdownElement(
-                    element = element,
-                    elementIndex = index,
-                    allElements = elements,
-                    sharedTransitionScope = sharedTransitionScope,
-                    animatedContentScope = animatedContentScope,
-                    showRoundShape = showRoundShape,
-                    onImageClick = onImageClick,
-                    onTaskToggle = onTaskToggle
-                )
-            }
-        }
-    }
-}
-
-/**
- * 分批渲染元素列表，优化大文档性能
- * 首屏优先显示前 batchSize 个元素，后续元素逐步加载
- */
-@Composable
-private fun BatchRenderElementsList(
-    elements: List<MarkdownElement>,
-    modifier: Modifier,
-    batchSize: Int,
-    sharedTransitionScope: SharedTransitionScope?,
-    animatedContentScope: AnimatedContentScope?,
-    showRoundShape: Boolean,
-    onImageClick: (String) -> Unit,
-    onTaskToggle: ((taskIndex: Int, taskText: String, currentChecked: Boolean) -> Unit)?
-) {
-    // 已渲染的元素数量
-    var renderedCount by remember { androidx.compose.runtime.mutableIntStateOf(batchSize) }
-
-    // 逐步加载后续元素
-    LaunchedEffect(elements.size) {
-        while (renderedCount < elements.size) {
-            delay(16) // 等待一帧时间（约16ms）
-            renderedCount = minOf(renderedCount + batchSize, elements.size)
-        }
-    }
-
-    Column(
-        modifier = modifier.verticalScroll(rememberScrollState())
+    // 使用 LazyColumn 优化大文档性能
+    LazyColumn(
+        modifier = modifier
     ) {
-        // 渲染已加载的元素
-        elements.take(renderedCount).forEachIndexed { index, element ->
+        itemsIndexed(elements) { index, element ->
             SafeRenderMarkdownElement(
                 element = element,
                 elementIndex = index,
@@ -326,33 +262,6 @@ private fun BatchRenderElementsList(
                 onImageClick = onImageClick,
                 onTaskToggle = onTaskToggle
             )
-        }
-
-        // 如果还有未加载的元素，显示加载指示器
-        if (renderedCount < elements.size) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(16.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "加载中... (${renderedCount}/${elements.size})",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
         }
     }
 }
