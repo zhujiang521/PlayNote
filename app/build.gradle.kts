@@ -23,6 +23,11 @@ android {
         versionName = getVerName()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // 启用矢量 drawable 优化
+        vectorDrawables {
+            useSupportLibrary = true
+        }
     }
 
     buildTypes {
@@ -35,6 +40,7 @@ android {
         }
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -48,18 +54,41 @@ android {
     kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
+            
+            // 启用 Kotlin 编译器优化选项
+            freeCompilerArgs.addAll(
+                "-Xopt-in=kotlin.RequiresOptIn",
+                "-Xjvm-default=all"
+            )
         }
     }
     buildFeatures {
         compose = true
         buildConfig = true
     }
+    
     packaging {
         resources {
             excludes += "META-INF/LICENSE*"
             excludes += "META-INF/NOTICE*"
             excludes.add("META-INF/DEPENDENCIES")
+            
+            // 优化 APK 大小
+            excludes += "META-INF/AL2.0"
+            excludes += "META-INF/LGPL2.1"
         }
+        
+        // 启用 JNI 库打包优化
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
+    
+    // 启用 dex 预处理优化
+    dexOptions {
+        preDexLibraries = true
+        maxProcessCount = 8
+        javaMaxHeapSize = "4g"
     }
 }
 
@@ -97,6 +126,9 @@ dependencies {
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
+    
+    // 添加 startup runtime 用于优化应用启动
+    implementation(libs.androidx.startup.runtime)
 }
 
 fun getVerCode(): Int {

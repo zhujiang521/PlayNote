@@ -8,10 +8,10 @@ html2pdf = "6.2.1"
 ink = "1.0.0-beta01"
 coreSplashscreen = "1.2.0-rc01"
 inputMotionprediction = "1.0.0-beta06"
-kotlin = "2.2.20"
+kotlin = "2.2.21"
 kotlinxCoroutinesRx3 = "1.10.2"
 kotlinxSerializationJson = "1.9.0"
-ksp = "2.2.20-2.0.2"
+ksp = "2.3.0"
 coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.3.0"
@@ -21,7 +21,7 @@ lifecycleViewmodelCompose = "2.9.4"
 activityCompose = "1.10.1"
 composeBom = "2025.10.01"
 googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
-lottieCompose = "6.6.10"
+lottieCompose = "6.7.0"
 navigationCompose = "2.9.3"
 pagingRuntimeKtx = "3.3.5"
 refresh = "1.4.2"
@@ -30,6 +30,7 @@ hilt = "2.57.2"
 gifCoil = "2.7.0"
 glanceVersion = "1.1.1"
 zoomable = "2.8.2"
+startupRuntime = "1.2.0"
 
 # 编译常量值
 compile-sdk = "36"
@@ -92,6 +93,7 @@ glance = { module = "androidx.glance:glance", version.ref = "glanceVersion" }
 glance-preview = { module = "androidx.glance:glance-preview", version.ref = "glanceVersion" }
 refresh = { module = "com.github.jenly1314.UltraSwipeRefresh:refresh", version.ref = "refresh" }
 zoomable = { module = "net.engawapg.lib:zoomable", version.ref = "zoomable" }
+androidx-startup-runtime = { group = "androidx.startup", name = "startup-runtime", version.ref = "startupRuntime" }
 
 [bundles]
 ink = ["androidx-ink-strokes", "androidx-ink-rendering", "androidx-ink-nativeloader", "androidx-ink-geometry", "androidx-ink-brush", "androidx-ink-authoring"]

@@ -44,8 +44,25 @@ android {
     kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
+            
+            // 启用 Kotlin 编译器优化选项
+            freeCompilerArgs.addAll(
+                "-Xopt-in=kotlin.RequiresOptIn",
+                "-Xjvm-default=all"
+            )
         }
     }
+    
+    packaging {
+        resources {
+            excludes.add("META-INF/DEPENDENCIES")
+            
+            // 优化库大小
+            excludes += "META-INF/AL2.0"
+            excludes += "META-INF/LGPL2.1"
+        }
+    }
+
 }
 
 dependencies {

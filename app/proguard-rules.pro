@@ -207,6 +207,24 @@
 # 优化级别
 -optimizationpasses 5
 
+# 启用更激进的优化
+-allowaccessmodification
+-mergeinterfacesaggressively
+-optimizationpasses 10
+
+# 移除未使用的代码
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+    public static *** i(...);
+    public static *** w(...);
+    public static *** e(...);
+    public static *** wtf(...);
+}
+
+# 优化字符串使用
+-converttoresourcesclassmembers
+
 -dontwarn com.fasterxml.jackson.annotation.JsonInclude$Include
 -dontwarn com.fasterxml.jackson.core.JsonGenerator$Feature
 -dontwarn com.fasterxml.jackson.core.JsonProcessingException
