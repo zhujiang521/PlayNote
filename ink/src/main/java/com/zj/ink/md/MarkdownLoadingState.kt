@@ -53,7 +53,7 @@ fun MarkdownLoadingState(
             .padding(16.dp)
     ) {
         // 标题骨架
-        Box(
+        ShimmerBox(
             modifier = Modifier
                 .fillMaxWidth(0.6f)
                 .height(32.dp)
@@ -68,7 +68,7 @@ fun MarkdownLoadingState(
 
         // 段落骨架 1
         repeat(3) {
-            Box(
+            ShimmerBox(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(16.dp)
@@ -82,7 +82,7 @@ fun MarkdownLoadingState(
         }
 
         // 最后一行短一些
-        Box(
+        ShimmerBox(
             modifier = Modifier
                 .fillMaxWidth(0.7f)
                 .height(16.dp)
@@ -96,7 +96,7 @@ fun MarkdownLoadingState(
         Spacer(modifier = Modifier.height(24.dp))
 
         // 图片占位符
-        Box(
+        ShimmerBox(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(200.dp)
@@ -111,7 +111,7 @@ fun MarkdownLoadingState(
 
         // 段落骨架 2
         repeat(2) {
-            Box(
+            ShimmerBox(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(16.dp)
@@ -124,7 +124,7 @@ fun MarkdownLoadingState(
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        Box(
+        ShimmerBox(
             modifier = Modifier
                 .fillMaxWidth(0.5f)
                 .height(16.dp)
@@ -135,4 +135,14 @@ fun MarkdownLoadingState(
                 )
         )
     }
+}
+
+/**
+ * 可复用的 Shimmer 动画 Box 组件
+ *
+ * @param modifier 修饰符
+ */
+@Composable
+private fun ShimmerBox(modifier: Modifier = Modifier) {
+    Box(modifier = modifier)
 }

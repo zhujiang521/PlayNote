@@ -173,6 +173,7 @@ fun GlanceRenderMarkdown(content: String) {
             Pair(fallbackElements, true)
         }
     }
+    
     // 显示解析错误提示（如果有）
     if (hasError) {
         Column(modifier = GlanceModifier.padding(4.dp)) {
@@ -192,18 +193,10 @@ fun GlanceRenderMarkdown(content: String) {
     }
 
     Column {
-        elements.forEachIndexed { index, element ->
-            SafeRenderGlanceElement(element)
+        elements.forEach { element ->
+            RenderGlanceElement(element)
         }
     }
-}
-
-/**
- * 安全渲染单个Glance元素，包含错误处理
- */
-@Composable
-private fun SafeRenderGlanceElement(element: MarkdownElement) {
-    RenderGlanceElement(element)
 }
 
 /**

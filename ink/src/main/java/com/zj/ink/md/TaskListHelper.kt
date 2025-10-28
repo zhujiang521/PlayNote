@@ -89,12 +89,15 @@ object TaskListHelper {
         val lines = content.lines().toMutableList()
         var currentTaskIndex = 0
         var modified = false
+        
+        // 预编译正则表达式以提高性能
+        val taskRegex = Regex("""^(\s*)- \[([ x])] (.*)$""")
 
         for (i in lines.indices) {
             val line = lines[i]
 
             // 匹配任务列表行：支持缩进
-            val taskMatch = Regex("""^(\s*)- \[([ x])] (.*)$""").find(line)
+            val taskMatch = taskRegex.find(line)
 
             if (taskMatch != null) {
                 val (indent, _, text) = taskMatch.destructured
@@ -124,5 +127,4 @@ object TaskListHelper {
 
         return lines.joinToString("\n")
     }
-
 }

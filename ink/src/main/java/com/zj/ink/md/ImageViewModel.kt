@@ -12,11 +12,11 @@ import androidx.lifecycle.viewModelScope
 import com.zj.data.R
 import com.zj.data.utils.ToastUtil
 import com.zj.data.utils.extractFileNameFromUrl
-import com.zj.data.utils.saveBitmapToFile
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import javax.inject.Inject
 
 /**
@@ -34,9 +34,11 @@ class ImageViewModel @Inject constructor(private val application: Application) :
      */
     fun downloadImage(imageUrl: String, bitmap: Bitmap) {
         viewModelScope.launch(Dispatchers.IO) {
-            addBitmapToAlbum(application, bitmap, imageUrl.extractFileNameFromUrl())
-            withContext(Dispatchers.Main.immediate) {
+            try {
+                addBitmapToAlbum(application, bitmap, imageUrl.extractFileNameFromUrl())
                 showToast(R.string.down_success)
+            } catch (_: Exception) {
+                showToast(R.string.down_fail)
             }
         }
     }
@@ -44,45 +46,38 @@ class ImageViewModel @Inject constructor(private val application: Application) :
     /**
      * 将图片设置为壁纸。
      *
-     * @param imageUrl 图片的URL地址
      * @param bitmap 要设置为壁纸的图片的Bitmap对象
      */
-    fun setAsWallpaper(imageUrl: String, bitmap: Bitmap) {
+    fun setAsWallpaper(bitmap: Bitmap) {
         viewModelScope.launch(Dispatchers.IO) {
-            val file = saveBitmapToFile(application, bitmap, imageUrl.extractFileNameFromUrl())
-            if (file != null) {
+            try {
                 val wallpaperManager = WallpaperManager.getInstance(application)
-                try {
-                    wallpaperManager.setBitmap(bitmap)
-                    withContext(Dispatchers.Main.immediate) {
-                        showToast(R.string.wallpaper_success)
-                    }
-                } catch (_: Exception) {
-                    withContext(Dispatchers.Main.immediate) {
-                        showToast(R.string.wallpaper_fail)
-                    }
-                }
-            } else {
-                withContext(Dispatchers.Main.immediate) {
-                    showToast(R.string.down_fail)
-                }
+                wallpaperManager.setBitmap(bitmap)
+                showToast(R.string.wallpaper_success)
+            } catch (_: IOException) {
+                showToast(R.string.wallpaper_fail)
+            } catch (_: Exception) {
+                showToast(R.string.down_fail)
             }
         }
     }
 
-    private fun showToast(resId: Int) {
-        ToastUtil.showToast(application, application.getString(resId))
+    private suspend fun showToast(resId: Int) {
+        withContext(Dispatchers.Main.immediate) {
+            ToastUtil.showToast(application, application.getString(resId))
+        }
     }
 
     /**
      * 将Bitmap保存到相册。
      *
+     * @param context 上下文对象
      * @param bitmap 要保存的图片的Bitmap对象
      * @param displayName 图片的显示名称
      * @param mimeType 图片的MIME类型，默认为"image/jpeg"
      * @param compressFormat 图片的压缩格式，默认为JPEG
      */
-    suspend fun addBitmapToAlbum(
+    private suspend fun addBitmapToAlbum(
         context: Context,
         bitmap: Bitmap,
         displayName: String,
@@ -90,19 +85,24 @@ class ImageViewModel @Inject constructor(private val application: Application) :
         compressFormat: Bitmap.CompressFormat = Bitmap.CompressFormat.JPEG
     ) {
         withContext(Dispatchers.IO) {
-            val values = ContentValues().apply {
-                put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
-                put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
-                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DCIM)
-            }
-            val contentResolver = context.contentResolver
-            val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-            uri?.let {
-                contentResolver.openOutputStream(it)?.use { outputStream ->
-                    bitmap.compress(compressFormat, 100, outputStream)
+            try {
+                val values = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, displayName)
+                    put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DCIM)
                 }
+                
+                val contentResolver = context.contentResolver
+                val uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+                
+                uri?.let {
+                    contentResolver.openOutputStream(it)?.use { outputStream ->
+                        bitmap.compress(compressFormat, 100, outputStream)
+                    }
+                } ?: throw IOException("Failed to insert image into MediaStore")
+            } catch (e: Exception) {
+                throw IOException("Failed to save image to album", e)
             }
         }
     }
-
 }

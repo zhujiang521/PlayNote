@@ -46,6 +46,8 @@
     <string name="table_picker_cols">请输入表格列数</string>
     <string name="table_picker_rows_name">行数：</string>
     <string name="table_picker_cols_name">列数：</string>
+    <string name="table_picker_rows_error">行数至少为1</string>
+    <string name="table_picker_cols_error">列数至少为1</string>
     <string name="eraser_size_title">橡皮擦</string>
     <string name="eraser_size_content">当前尺寸：%1$s</string>
     <string name="clear_canvas">清空画布</string>

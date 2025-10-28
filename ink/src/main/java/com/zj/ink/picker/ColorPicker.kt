@@ -16,6 +16,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderColors
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +40,7 @@ fun ColorPicker(
     onColorChange: (Int) -> Unit,
 ) {
     if (!expanded.value) return
+    
     val currentArgb = selectedColor.intValue
     val composeColor = Color(currentArgb)
     val red = (composeColor.red * 255).toInt()
@@ -91,81 +93,79 @@ fun ColorPicker(
                 Spacer(modifier = Modifier.height(dimensionResource(R.dimen.image_screen_horizontal_margin)))
 
                 // 红色滑块
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("R: $red")
-                    Slider(
-                        modifier = Modifier.width(220.dp),
-                        value = red.toFloat(),
-                        onValueChange = { newRed ->
-                            val newColor = Color(
-                                red = newRed.toInt(),
-                                green = green,
-                                blue = blue,
-                                alpha = 255
-                            )
-                            onColorChange(newColor.toArgb())
-                        },
-                        colors = sliderColors,
-                        valueRange = 0f..255f,
-                        steps = 255
-                    )
-                }
+                ColorSlider(
+                    label = "R",
+                    value = red,
+                    sliderColors = sliderColors,
+                    onValueChange = { newRed ->
+                        val newColor = Color(
+                            red = newRed,
+                            green = green,
+                            blue = blue,
+                            alpha = 255
+                        )
+                        onColorChange(newColor.toArgb())
+                    }
+                )
 
                 // 绿色滑块
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("G: $green")
-                    Slider(
-                        modifier = Modifier.width(220.dp),
-                        value = green.toFloat(),
-                        onValueChange = { newGreen ->
-                            val newColor = Color(
-                                red = red,
-                                green = newGreen.toInt(),
-                                blue = blue,
-                                alpha = 255
-                            )
-                            onColorChange(newColor.toArgb())
-                        },
-                        colors = sliderColors,
-                        valueRange = 0f..255f,
-                        steps = 255
-                    )
-                }
+                ColorSlider(
+                    label = "G",
+                    value = green,
+                    sliderColors = sliderColors,
+                    onValueChange = { newGreen ->
+                        val newColor = Color(
+                            red = red,
+                            green = newGreen,
+                            blue = blue,
+                            alpha = 255
+                        )
+                        onColorChange(newColor.toArgb())
+                    }
+                )
 
                 // 蓝色滑块
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("B: $blue")
-                    Slider(
-                        modifier = Modifier.width(220.dp),
-                        value = blue.toFloat(),
-                        onValueChange = { newBlue ->
-                            val newColor = Color(
-                                red = red,
-                                green = green,
-                                blue = newBlue.toInt(),
-                                alpha = 255
-                            )
-                            onColorChange(newColor.toArgb())
-                        },
-                        colors = sliderColors,
-                        valueRange = 0f..255f,
-                        steps = 255,
-                    )
-                }
+                ColorSlider(
+                    label = "B",
+                    value = blue,
+                    sliderColors = sliderColors,
+                    onValueChange = { newBlue ->
+                        val newColor = Color(
+                            red = red,
+                            green = green,
+                            blue = newBlue,
+                            alpha = 255
+                        )
+                        onColorChange(newColor.toArgb())
+                    }
+                )
             }
         }
     }
+}
 
+@Composable
+private fun ColorSlider(
+    label: String,
+    value: Int,
+    sliderColors: SliderColors,
+    onValueChange: (Int) -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("$label: $value")
+        Slider(
+            modifier = Modifier.width(220.dp),
+            value = value.toFloat(),
+            onValueChange = { newValue ->
+                onValueChange(newValue.toInt())
+            },
+            colors = sliderColors,
+            valueRange = 0f..255f,
+            steps = 255
+        )
+    }
 }

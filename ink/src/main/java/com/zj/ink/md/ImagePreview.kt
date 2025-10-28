@@ -79,9 +79,11 @@ fun ImagePreview(
     val coroutineScope = rememberCoroutineScope()
 
     BottomSheetScaffold(
-        scaffoldState = bottomSheetScaffoldState, sheetContent = {
-            BottomSheet(viewModel, imageUrl, bitmap, bottomSheetScaffoldState)
-        }, sheetPeekHeight = 0.dp
+        scaffoldState = bottomSheetScaffoldState, 
+        sheetContent = {
+            BottomSheet(viewModel, imageUrl, bitmap, bottomSheetScaffoldState, coroutineScope)
+        }, 
+        sheetPeekHeight = 0.dp
     ) { padding ->
         Surface(
             modifier = Modifier
@@ -147,46 +149,59 @@ private fun BottomSheet(
     viewModel: ImageViewModel,
     imageUrl: String,
     bitmap: Bitmap?,
-    bottomSheetScaffoldState: BottomSheetScaffoldState
+    bottomSheetScaffoldState: BottomSheetScaffoldState,
+    coroutineScope: CoroutineScope
 ) {
     val context = LocalContext.current
 
     Row(modifier = Modifier.padding(dimensionResource(R.dimen.screen_horizontal_margin))) {
-
         BottomSheetItem(
-            bitmap, bottomSheetScaffoldState, R.string.download, R.drawable.baseline_download
+            bitmap = bitmap,
+            bottomSheetScaffoldState = bottomSheetScaffoldState,
+            textRes = R.string.download,
+            iconRes = R.drawable.baseline_download,
+            coroutineScope = coroutineScope
         ) {
             bitmap?.let { viewModel.downloadImage(imageUrl, it) }
         }
 
         BottomSheetItem(
-            bitmap, bottomSheetScaffoldState, R.string.share, R.drawable.baseline_share
+            bitmap = bitmap,
+            bottomSheetScaffoldState = bottomSheetScaffoldState,
+            textRes = R.string.share,
+            iconRes = R.drawable.baseline_share,
+            coroutineScope = coroutineScope
         ) {
-            launch {
-                bitmap?.let { shareImage(context, imageUrl, it) }
+            bitmap?.let { 
+                coroutineScope.launch {
+                    shareImage(context, imageUrl, it)
+                }
             }
         }
 
         BottomSheetItem(
-            bitmap, bottomSheetScaffoldState, R.string.set_wallpaper, R.drawable.baseline_image
+            bitmap = bitmap,
+            bottomSheetScaffoldState = bottomSheetScaffoldState,
+            textRes = R.string.set_wallpaper,
+            iconRes = R.drawable.baseline_image,
+            coroutineScope = coroutineScope
         ) {
-            bitmap?.let { viewModel.setAsWallpaper(imageUrl, it) }
+            bitmap?.let { viewModel.setAsWallpaper(it) }
         }
-
     }
 }
 
 @Composable
-fun BottomSheetItem(
+private fun BottomSheetItem(
     bitmap: Bitmap?,
     bottomSheetScaffoldState: BottomSheetScaffoldState,
     @StringRes textRes: Int,
     @DrawableRes iconRes: Int,
-    onClick: CoroutineScope.() -> Unit = {}
+    coroutineScope: CoroutineScope,
+    onClick: () -> Unit = {}
 ) {
     val imageToast = stringResource(R.string.image_toast)
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         IconButton(
@@ -195,22 +210,26 @@ fun BottomSheetItem(
                     color = colorResource(R.color.item_background),
                     shape = MaterialTheme.shapes.large
                 )
-                .size(60.dp), onClick = {
+                .size(60.dp), 
+            onClick = {
                 if (bitmap == null) {
                     ToastUtil.showToast(context, imageToast)
                     return@IconButton
                 }
+                
                 coroutineScope.launch(Dispatchers.IO) {
                     bottomSheetScaffoldState.bottomSheetState.partialExpand()
                     onClick()
                 }
             }) {
             Icon(
-                painter = painterResource(iconRes), contentDescription = stringResource(textRes)
+                painter = painterResource(iconRes), 
+                contentDescription = stringResource(textRes)
             )
         }
+        
         Text(
-            stringResource(textRes),
+            text = stringResource(textRes),
             modifier = Modifier.padding(vertical = 5.dp),
             fontSize = dimensionResource(R.dimen.subtitle_text).value.sp
         )

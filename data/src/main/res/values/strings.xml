@@ -46,6 +46,8 @@
     <string name="table_picker_cols">Please enter the number of columns in the table</string>
     <string name="table_picker_rows_name">Rows:</string>
     <string name="table_picker_cols_name">Columns:</string>
+    <string name="table_picker_rows_error">Rows must be at least 1</string>
+    <string name="table_picker_cols_error">Columns must be at least 1</string>
     <string name="eraser_size_title" translatable="false">Eraser</string>
     <string name="eraser_size_content" translatable="false">Current Size: %1$s</string>
     <string name="clear_canvas" translatable="false">Clear Canvas</string>

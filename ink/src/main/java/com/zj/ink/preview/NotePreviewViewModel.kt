@@ -3,7 +3,6 @@ package com.zj.ink.preview
 import android.app.Application
 import androidx.lifecycle.viewModelScope
 import com.zj.data.model.Note
-import com.zj.data.export.MarkdownExporter
 import com.zj.ink.data.BaseShareViewModel
 import com.zj.ink.data.NoteRepository
 import com.zj.ink.md.TaskListHelper
@@ -24,8 +23,6 @@ class NotePreviewViewModel @Inject constructor(
 
     private val _note = MutableStateFlow(Note(title = "", content = ""))
     val note: StateFlow<Note> get() = _note
-
-    private val markdownExporter = MarkdownExporter(getApplication())
 
     /**
      * 根据ID加载笔记数据

@@ -41,7 +41,7 @@ object MarkdownParser {
     @JvmStatic
     private val SUBSCRIPT_REGEX = Regex("""~([^~\s]+)~""")
 
-    /** 匹配任务列表语法: - [ ] 或 - [android.R.attr.x] */
+    /** 匹配任务列表语法: - [ ] 或 */
     @JvmStatic
     private val TASK_LIST_REGEX = Regex("""^- \[([ x])] .*$""")
 
@@ -95,9 +95,6 @@ object MarkdownParser {
 
     /** 最大表格列数，防止表格过大影响渲染 */
     private const val MAX_TABLE_COLUMNS = 50 // 最大表格列数
-
-    /** 最大列表项数，防止列表过长影响性能 */
-    private const val MAX_LIST_ITEMS = 1000 // 最大列表项数
 
     // 错误计数器，用于调试和监控
     private var parseErrorCount = 0
@@ -362,7 +359,7 @@ object MarkdownParser {
 
                     // 嵌套列表解析（增强错误处理）
                     if (isListItem(line)) {
-                        val (nestedListItems, nextIndex) = parseNestedListSafe(lines, i)
+                        val (nestedListItems, nextIndex) = parseNestedList(lines, i)
                         result.addAll(nestedListItems)
                         processedElements += nestedListItems.size
                         i = nextIndex
@@ -379,7 +376,7 @@ object MarkdownParser {
 
                     // 表格解析（增强错误处理）
                     if (line.startsWith("|") && line.contains("|")) {
-                        val (tableResult, nextIndex) = parseTableSafe(lines, i)
+                        val (tableResult, nextIndex) = parseTable(lines, i)
                         if (tableResult != null) {
                             result.add(tableResult)
                             processedElements++
@@ -699,120 +696,6 @@ object MarkdownParser {
     }
 
     /**
-     * 安全的嵌套列表解析
-     */
-    private fun parseNestedListSafe(
-        lines: List<String>,
-        startIndex: Int
-    ): Pair<List<MarkdownElement>, Int> {
-        return try {
-            val (elements, nextIndex) = parseNestedList(lines, startIndex)
-
-            // 限制列表项数量
-            if (elements.size > MAX_LIST_ITEMS) {
-                logParseError("Too many list items: ${elements.size}")
-                Pair(elements.take(MAX_LIST_ITEMS), nextIndex)
-            } else {
-                Pair(elements, nextIndex)
-            }
-        } catch (e: Exception) {
-            logParseError("Error parsing nested list", e)
-            Pair(emptyList(), startIndex + 1)
-        }
-    }
-
-    /**
-     * 安全的表格解析
-     */
-    private fun parseTableSafe(lines: List<String>, startIndex: Int): Pair<Table?, Int> {
-        return try {
-            val tableLines = mutableListOf<String>()
-            var i = startIndex
-
-            while (i < lines.size && lines[i].trimStart()
-                    .startsWith("|") && tableLines.size < 100
-            ) {
-                tableLines.add(lines[i].trim().take(2000)) // 限制行长度
-                i++
-            }
-
-            if (tableLines.size >= 2) {
-                val headers = parseTableRowSafe(tableLines[0])
-                val alignments = parseTableAlignmentSafe(tableLines[1])
-
-                // 限制列数
-                if (headers == null || headers.size > MAX_TABLE_COLUMNS) {
-                    logParseError("Too many table columns: ${headers?.size}")
-                    return Pair(null, i)
-                }
-
-                val rows =
-                    tableLines.subList(2, tableLines.size).mapNotNull { parseTableRowSafe(it) }
-                Pair(Table(headers, rows, alignments), i)
-            } else {
-                Pair(null, i)
-            }
-        } catch (e: Exception) {
-            logParseError("Error parsing table", e)
-            Pair(null, startIndex + 1)
-        }
-    }
-
-    /**
-     * 安全的表格行解析
-     */
-    private fun parseTableRowSafe(line: String): List<String>? {
-        return try {
-            val cells = line
-                .removePrefix("|")
-                .removeSuffix("|")
-                .split("|")
-                .map { it.trim().take(500) } // 限制单元格内容长度
-
-            if (cells.size <= MAX_TABLE_COLUMNS) cells else null
-        } catch (e: Exception) {
-            logParseError("Error parsing table row", e)
-            null
-        }
-    }
-
-    /**
-     * 安全的表格对齐解析
-     */
-    private fun parseTableAlignmentSafe(line: String): List<TableAlignment> {
-        return try {
-            line
-                .removePrefix("|")
-                .removeSuffix("|")
-                .split("|")
-                .take(MAX_TABLE_COLUMNS) // 限制列数
-                .map { cell ->
-                    val trimmed = cell.trim()
-                    when {
-                        trimmed.startsWith(":") && trimmed.endsWith(":") -> TableAlignment.CENTER
-                        trimmed.startsWith(":") -> TableAlignment.LEFT
-                        trimmed.endsWith(":") -> TableAlignment.RIGHT
-                        else -> TableAlignment.LEFT // 默认左对齐
-                    }
-                }
-        } catch (e: Exception) {
-            logParseError("Error parsing table alignment", e)
-            emptyList()
-        }
-    }
-
-    /**
-     * 判断行是否为列表项（任务列表、无序列表、有序列表）
-     * 优化版本：使用预编译正则表达式提升性能
-     */
-    private fun isListItem(line: String): Boolean {
-        val trimmed = line.trimStart()
-        return TASK_LIST_REGEX.matches(trimmed) || // 任务列表
-                trimmed.startsWith("- ") || // 无序列表
-                ORDERED_LIST_REGEX.matches(trimmed) // 有序列表
-    }
-
-    /**
      * 解析嵌套列表结构
      * 返回 Pair(解析的元素列表, 下一个处理的行索引)
      */
@@ -1017,4 +900,82 @@ object MarkdownParser {
         return Pair(result, currentIndex)
     }
 
+    /**
+     * 判断行是否为列表项（任务列表、无序列表、有序列表）
+     * 优化版本：使用预编译正则表达式提升性能
+     */
+    private fun isListItem(line: String): Boolean {
+        val trimmed = line.trimStart()
+        return TASK_LIST_REGEX.matches(trimmed) || // 任务列表
+                trimmed.startsWith("- ") || // 无序列表
+                ORDERED_LIST_REGEX.matches(trimmed) // 有序列表
+    }
+
+    /**
+     * 解析表格
+     */
+    private fun parseTable(lines: List<String>, startIndex: Int): Pair<Table?, Int> {
+        return try {
+            val tableLines = mutableListOf<String>()
+            var i = startIndex
+
+            // 收集表格行
+            while (i < lines.size && lines[i].trimStart()
+                    .startsWith("|") && tableLines.size < 100
+            ) {
+                tableLines.add(lines[i].trim().take(2000)) // 限制行长度
+                i++
+            }
+
+            if (tableLines.size >= 2) {
+                val headers = parseTableRow(tableLines[0])
+                val alignments = parseTableAlignment(tableLines[1])
+
+                // 限制列数
+                if (headers.size > MAX_TABLE_COLUMNS) {
+                    logParseError("Too many table columns: ${headers.size}")
+                    return Pair(null, i)
+                }
+
+                val rows = tableLines.subList(2, tableLines.size).map { parseTableRow(it) }
+                Pair(Table(headers, rows, alignments), i)
+            } else {
+                Pair(null, i)
+            }
+        } catch (e: Exception) {
+            logParseError("Error parsing table", e)
+            Pair(null, startIndex + 1)
+        }
+    }
+
+    /**
+     * 解析表格行
+     */
+    private fun parseTableRow(line: String): List<String> {
+        return line
+            .removePrefix("|")
+            .removeSuffix("|")
+            .split("|")
+            .map { it.trim().take(500) } // 限制单元格内容长度
+    }
+
+    /**
+     * 解析表格对齐方式
+     */
+    private fun parseTableAlignment(line: String): List<TableAlignment> {
+        return line
+            .removePrefix("|")
+            .removeSuffix("|")
+            .split("|")
+            .take(MAX_TABLE_COLUMNS) // 限制列数
+            .map { cell ->
+                val trimmed = cell.trim()
+                when {
+                    trimmed.startsWith(":") && trimmed.endsWith(":") -> TableAlignment.CENTER
+                    trimmed.startsWith(":") -> TableAlignment.LEFT
+                    trimmed.endsWith(":") -> TableAlignment.RIGHT
+                    else -> TableAlignment.LEFT // 默认左对齐
+                }
+            }
+    }
 }
