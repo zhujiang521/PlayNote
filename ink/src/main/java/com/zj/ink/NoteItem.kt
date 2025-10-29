@@ -49,7 +49,7 @@ import com.zj.data.common.rememberSwipeBoxControl
 import com.zj.data.model.Note
 import com.zj.data.utils.DateUtils
 
-private val MIN_HEIGHT = 50.dp
+private val MIN_HEIGHT = 30.dp
 private val MAX_HEIGHT = 300.dp
 private val ACTION_WIDTH = 100.dp
 
@@ -69,8 +69,8 @@ fun NoteItem(
         control = control,
         modifier = Modifier
             .padding(
-                top = 8.dp,
-                bottom = 8.dp,
+                top = dimensionResource(R.dimen.image_screen_horizontal_margin),
+                bottom = dimensionResource(R.dimen.image_screen_horizontal_margin),
                 end = dimensionResource(R.dimen.screen_horizontal_margin)
             )
             .fillMaxWidth()
@@ -82,7 +82,7 @@ fun NoteItem(
                     .fillMaxSize()
                     .align(Alignment.Center)
                     .heightIn(min = MIN_HEIGHT, max = MAX_HEIGHT)
-                    .padding(horizontal = 8.dp)
+                    .padding(horizontal = dimensionResource(R.dimen.image_screen_horizontal_margin))
                     .background(MaterialTheme.colorScheme.error, shape = MaterialTheme.shapes.large)
                     .clickable {
                         showDialog.value = true
