@@ -117,7 +117,6 @@ fun EditNoteScreen(
                 .padding(paddingValues)
                 .padding(horizontal = dimensionResource(R.dimen.screen_horizontal_margin))
                 .background(MaterialTheme.colorScheme.background)
-                .imePadding()
         ) {
             InputTextField(
                 value = note.title,
@@ -141,6 +140,7 @@ fun EditNoteScreen(
                         .fillMaxSize()
                         .weight(1f) // 将weight移到这里
                         .padding(dimensionResource(R.dimen.image_screen_horizontal_margin))
+                        .imePadding()
                 ) {
                     NoteEditView(Modifier.weight(1f), viewModel)
 
@@ -155,6 +155,7 @@ fun EditNoteScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .weight(1f) // 使用weight分配剩余空间
+                        .imePadding()
                 ) {
                     NoteEditView(Modifier.weight(1f), viewModel)
 

@@ -36,7 +36,7 @@ startupRuntime = "1.2.0"
 compile-sdk = "36"
 target-sdk = "36"
 min-sdk = "31"
-major-version = "1.1.1"
+major-version = "1.2.0"
 minor-version = "9999"
 
 [libraries]

@@ -83,13 +83,6 @@ android {
             useLegacyPackaging = false
         }
     }
-    
-    // 启用 dex 预处理优化
-    dexOptions {
-        preDexLibraries = true
-        maxProcessCount = 8
-        javaMaxHeapSize = "4g"
-    }
 }
 
 androidComponents {

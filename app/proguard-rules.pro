@@ -223,8 +223,6 @@
 }
 
 # 优化字符串使用
--converttoresourcesclassmembers
-
 -dontwarn com.fasterxml.jackson.annotation.JsonInclude$Include
 -dontwarn com.fasterxml.jackson.core.JsonGenerator$Feature
 -dontwarn com.fasterxml.jackson.core.JsonProcessingException
@@ -247,3 +245,7 @@
 -dontwarn java.awt.image.ColorModel
 -dontwarn java.awt.image.PixelGrabber
 -dontwarn javax.imageio.ImageIO
+
+-dontwarn sharpen.config.MappingConfigurator
+-dontwarn sharpen.config.MemberKind
+-dontwarn sharpen.config.ModuleOption
