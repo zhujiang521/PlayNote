@@ -1,3 +1,5 @@
+@file:OptIn(FlowPreview::class)
+
 package com.zj.ink.data
 
 import android.app.Application
@@ -9,12 +11,13 @@ import androidx.paging.cachedIn
 import com.zj.data.R
 import com.zj.data.model.Note
 import com.zj.data.utils.DataStoreUtils
-import com.zj.ink.md.TaskListHelper
 import com.zj.ink.widget.updateNoteWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -41,11 +44,15 @@ class NoteViewModel @Inject constructor(
 
     // 同步 noteContent 和 note 的 content
     init {
+        // 使用 debounce 优化搜索，避免频繁触发
         viewModelScope.launch {
-            _searchQuery.collect { query ->
-                loadSearchNotes(query) // 根据搜索词加载数据
-            }
+            _searchQuery
+                .debounce(300)
+                .collect { query ->
+                    loadNotes(query) // 根据搜索词加载数据
+                }
         }
+        
         viewModelScope.launch {
             val hasInserted = DataStoreUtils.readBooleanData(KEY_HAS_INSERTED, false)
             if (!hasInserted) {
@@ -60,24 +67,28 @@ class NoteViewModel @Inject constructor(
                     DataStoreUtils.saveBooleanData(KEY_HAS_INSERTED, true)
                 }
             }
-            noteRepository.getAllNotes()
-                .cachedIn(viewModelScope)
-                .collect { pagingData ->
-                    _notes.value = pagingData
-                }
+            
+            // 默认加载所有笔记
+            if (_searchQuery.value.isEmpty()) {
+                loadNotes()
+            }
         }
     }
 
-    private fun loadSearchNotes(query: String) {
+    private fun loadNotes(query: String = "") {
         viewModelScope.launch {
-            noteRepository.getNotesWithSearch(query)
-                .cachedIn(viewModelScope)
+            val flow = if (query.isEmpty()) {
+                noteRepository.getAllNotes()
+            } else {
+                noteRepository.getNotesWithSearch(query)
+            }
+            
+            flow.cachedIn(viewModelScope)
                 .collect { pagingData ->
                     _notes.value = pagingData
                 }
         }
     }
-
 
     fun deleteNote(note: Note) {
         viewModelScope.launch {
@@ -87,45 +98,7 @@ class NoteViewModel @Inject constructor(
     }
 
     fun refreshData() {
-        viewModelScope.launch {
-            noteRepository.getAllNotes()
-                .cachedIn(viewModelScope)
-                .collect { pagingData ->
-                    _notes.value = pagingData
-                }
-        }
-    }
-
-    /**
-     * 切换任务列表项的完成状态并立即保存（列表页面专用）
-     *
-     * 直接修改数据库中的笔记内容，立即生效
-     *
-     * @param note 要修改的笔记对象
-     * @param taskIndex 任务在所有 TaskList 元素中的索引
-     * @param taskText 任务文本内容（用于验证）
-     * @param currentChecked 当前的选中状态
-     */
-    fun toggleTaskAndSave(note: Note, taskIndex: Int, taskText: String, currentChecked: Boolean) {
-        viewModelScope.launch {
-            // 使用 TaskListHelper 切换任务状态
-            val newContent = TaskListHelper.toggleTaskState(
-                content = note.content,
-                taskIndex = taskIndex,
-                taskText = taskText,
-                currentChecked = currentChecked
-            )
-
-            // 如果内容有变化，则更新数据库
-            if (newContent != note.content) {
-                val updatedNote = note.copy(
-                    content = newContent,
-                    timestamp = System.currentTimeMillis() // 更新时间戳
-                )
-                noteRepository.updateNote(updatedNote)
-                updateNoteWidget(getApplication())
-            }
-        }
+        loadNotes(_searchQuery.value)
     }
 
     companion object {

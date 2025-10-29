@@ -23,6 +23,13 @@ import com.zj.data.model.Note
 import com.zj.ink.data.BaseShareViewModel
 import com.zj.ink.widget.LoadingDialog
 
+/**
+ * 分享选项对话框，提供多种导出格式选项
+ *
+ * @param viewModel 处理导出逻辑的 ViewModel
+ * @param note 需要导出的笔记
+ * @param onDismissRequest 关闭对话框的回调函数
+ */
 @Composable
 fun ShareOptionsDialog(
     viewModel: BaseShareViewModel,
@@ -48,7 +55,6 @@ fun ShareOptionsDialog(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 TextButton(
                     onClick = {
                         viewModel.exportMarkdownToText(note) {

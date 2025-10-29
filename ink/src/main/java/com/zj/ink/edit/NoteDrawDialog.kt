@@ -25,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
@@ -42,6 +41,7 @@ import com.zj.ink.picker.PenPicker
 import com.zj.ink.picker.PenSizePicker
 import com.zj.data.R
 import java.io.File
+import androidx.compose.ui.platform.LocalResources
 
 private const val TAG = "NoteDrawDialog"
 
@@ -53,8 +53,7 @@ fun NoteDrawDialog(
 ) {
     if (!viewModel.showDialog.value) return
 
-    val context = LocalContext.current
-    val displayMetrics = context.resources.displayMetrics
+    val displayMetrics = LocalResources.current.displayMetrics
     val screenWidthPx = displayMetrics.widthPixels
     val screenWidthDp = with(LocalDensity.current) { screenWidthPx.toDp() }
     val screenHeightPx = displayMetrics.heightPixels
@@ -88,7 +87,7 @@ fun NoteDrawDialog(
     val canErase by remember { derivedStateOf { finishedStrokesState.value.isNotEmpty() } }
 
     Dialog(onDismissRequest = {
-        viewModel.showDialog.value = false
+        viewModel.setShowDialog(false)
     }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Card(
             shape = MaterialTheme.shapes.medium,
@@ -159,9 +158,9 @@ fun NoteDrawDialog(
                             enable = canErase || viewModel.isEraserMode.value
                         ) {
                             if (viewModel.isEraserMode.value) {
-                                viewModel.isEraserMode.value = false
+                                viewModel.setIsEraserMode(false)
                             } else {
-                                viewModel.showEraserSizePicker.value = true
+                                viewModel.setShowEraserSizePicker(true)
                             }
                         }
 
@@ -169,14 +168,14 @@ fun NoteDrawDialog(
                             drawableRes = R.drawable.baseline_draw,
                             descriptionRes = R.string.draw,
                         ) {
-                            viewModel.showPenPicker.value = true
+                            viewModel.setShowPenPicker(true)
                         }
 
                         actionIconButton(
                             drawableRes = R.drawable.baseline_format_size,
                             descriptionRes = R.string.size,
                         ) {
-                            viewModel.showPenSizePicker.value = true
+                            viewModel.setShowPenSizePicker(true)
                         }
 
                         actionIconButton(
@@ -184,13 +183,13 @@ fun NoteDrawDialog(
                             descriptionRes = R.string.pen_color_select,
                             tintColor = Color(selectedColor.intValue)
                         ) {
-                            viewModel.showColorPicker.value = true
+                            viewModel.setShowColorPicker(true)
                         }
                     }
 
                     IconButton(onClick = {
                         if (finishedStrokesState.value.isNotEmpty()) {
-                            viewModel.saveBitmap.value = true
+                            viewModel.setSaveBitmap(true)
                         } else {
                             viewModel.clearDrawState()
                         }
@@ -227,7 +226,7 @@ fun NoteDrawDialog(
                         },
                         onSaveCompleted = { file ->
                             Log.d(TAG, "NoteDrawDialog: file:${file}")
-                            viewModel.saveBitmap.value = false
+                            viewModel.setSaveBitmap(false)
                             onFinished(file)
                             viewModel.clearDrawState()
                         }

@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridScope
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -29,52 +28,6 @@ import com.zj.data.lce.NoContent
  *
  * @param items LazyPagingItems对象，用于获取Paging数据和加载状态
  */
-fun <T : Any> LazyListScope.lazyPagingStates(
-    items: LazyPagingItems<T>
-) {
-    val loadStates = items.loadState
-    when {
-        loadStates.refresh is LoadState.Error -> {
-            item {
-                ErrorContent(modifier = Modifier.fillParentMaxSize()) {
-                    items.retry()
-                }
-            }
-        }
-
-        loadStates.append is LoadState.Error -> {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center,
-                ) {
-                    Button(
-                        onClick = { items.retry() }) {
-                        Text("Retry")
-                    }
-                }
-            }
-        }
-
-        items.itemCount == 0 && loadStates.refresh is LoadState.NotLoading -> {
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(dimensionResource(R.dimen.screen_horizontal_margin)),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    NoContent()
-                }
-            }
-        }
-    }
-}
-
-
 fun <T : Any> LazyStaggeredGridScope.lazyPagingStates(items: LazyPagingItems<T>) {
     val loadStates = items.loadState
     when {

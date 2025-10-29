@@ -29,12 +29,19 @@ import com.zj.data.R
 import com.zj.data.model.Note
 import com.zj.ink.data.BaseShareViewModel
 
+/**
+ * 分享按钮组件，提供多种导出选项
+ *
+ * @param viewModel 用于处理导出逻辑的 ViewModel
+ * @param note 需要导出的笔记
+ */
 @Composable
 fun ShareIconButton(viewModel: BaseShareViewModel, note: Note) {
     var expanded by remember { mutableStateOf(false) }
     // 监听 ViewModel 中的加载状态
     val isLoading by viewModel.isExporting.collectAsState()
     val loadingMessage by viewModel.exportMessage.collectAsState()
+    
     IconButton(
         onClick = { expanded = true },
         enabled = note.title.isNotBlank() && note.content.isNotBlank()
@@ -43,6 +50,7 @@ fun ShareIconButton(viewModel: BaseShareViewModel, note: Note) {
             painter = painterResource(R.drawable.baseline_share),
             contentDescription = stringResource(R.string.share)
         )
+        
         DropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
@@ -90,12 +98,18 @@ fun ShareIconButton(viewModel: BaseShareViewModel, note: Note) {
             )
         }
     }
+    
     // 显示加载对话框
     if (isLoading) {
         LoadingDialog(loadingMessage)
     }
 }
 
+/**
+ * 加载对话框组件，用于显示导出过程中的加载状态
+ *
+ * @param message 加载提示信息
+ */
 @Composable
 fun LoadingDialog(message: String) {
     Dialog(onDismissRequest = { }) {

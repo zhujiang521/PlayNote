@@ -34,28 +34,22 @@ open class BaseShareViewModel(private val application: Application) :
      * 将笔记导出为文本
      *
      * @param note 要导出的笔记对象
-     */
-    fun exportMarkdownToText(note: Note) {
-        exportMarkdownToText(note) {}
-    }
-
-    /**
-     * 将笔记导出为文本
-     *
-     * @param note 要导出的笔记对象
      * @param onFinishedListener 导出完成后的回调函数
      */
-    fun exportMarkdownToText(note: Note, onFinishedListener: () -> Unit) {
+    fun exportMarkdownToText(note: Note, onFinishedListener: () -> Unit = {}) {
         viewModelScope.launch {
             // 设置导出状态为正在进行，并显示相应消息
             _isExporting.value = true
             _exportMessage.value = application.getString(R.string.exporting_text)
             try {
-                // 执行实际的 PDF 导出操作
+                // 执行实际的文本导出操作
                 markdownExporter.exportMarkdownToText(
-                    markdownContent = note.content,
                     title = note.title,
+                    markdownContent = note.content,
                 )
+            } catch (e: Exception) {
+                // 错误处理可以在这里添加
+                e.printStackTrace()
             } finally {
                 // 无论导出成功与否，都重置导出状态
                 _isExporting.value = false
@@ -69,28 +63,22 @@ open class BaseShareViewModel(private val application: Application) :
      * 将笔记导出为图片
      *
      * @param note 要导出的笔记对象
-     */
-    fun exportMarkdownToImage(note: Note) {
-        exportMarkdownToImage(note) {}
-    }
-
-    /**
-     * 将笔记导出为图片
-     *
-     * @param note 要导出的笔记对象
      * @param onFinishedListener 导出完成后的回调函数
      */
-    fun exportMarkdownToImage(note: Note, onFinishedListener: () -> Unit) {
+    fun exportMarkdownToImage(note: Note, onFinishedListener: () -> Unit = {}) {
         viewModelScope.launch {
             // 设置导出状态为正在进行，并显示相应消息
             _isExporting.value = true
             _exportMessage.value = application.getString(R.string.exporting_image)
             try {
-                // 执行实际的 PDF 导出操作
+                // 执行实际的图片导出操作
                 markdownExporter.exportMarkdownToImage(
-                    markdownContent = note.content,
                     title = note.title,
+                    markdownContent = note.content,
                 )
+            } catch (e: Exception) {
+                // 错误处理可以在这里添加
+                e.printStackTrace()
             } finally {
                 // 无论导出成功与否，都重置导出状态
                 _isExporting.value = false
@@ -104,18 +92,9 @@ open class BaseShareViewModel(private val application: Application) :
      * 将笔记导出为 PDF 格式
      *
      * @param note 要导出的笔记对象
-     */
-    fun exportMarkdownToPdf(note: Note) {
-        exportMarkdownToPdf(note) {}
-    }
-
-    /**
-     * 将笔记导出为 PDF 格式
-     *
-     * @param note 要导出的笔记对象
      * @param onFinishedListener 导出完成后的回调函数
      */
-    fun exportMarkdownToPdf(note: Note, onFinishedListener: () -> Unit) {
+    fun exportMarkdownToPdf(note: Note, onFinishedListener: () -> Unit = {}) {
         viewModelScope.launch {
             // 设置导出状态为正在进行，并显示相应消息
             _isExporting.value = true
@@ -123,9 +102,12 @@ open class BaseShareViewModel(private val application: Application) :
             try {
                 // 执行实际的 PDF 导出操作
                 markdownExporter.exportMarkdownToPdf(
-                    markdownContent = note.content,
                     title = note.title,
+                    markdownContent = note.content,
                 )
+            } catch (e: Exception) {
+                // 错误处理可以在这里添加
+                e.printStackTrace()
             } finally {
                 // 无论导出成功与否，都重置导出状态
                 _isExporting.value = false
@@ -139,17 +121,9 @@ open class BaseShareViewModel(private val application: Application) :
      * 将笔记导出为 HTML 格式
      *
      * @param note 要导出的笔记对象
+     * @param onFinishedListener 导出完成后的回调函数
      */
-    fun exportMarkdownToHtml(note: Note) {
-        exportMarkdownToHtml(note) {}
-    }
-
-    /**
-     * 将笔记导出为 HTML 格式
-     *
-     * @param note 要导出的笔记对象
-     */
-    fun exportMarkdownToHtml(note: Note, onFinishedListener: () -> Unit) {
+    fun exportMarkdownToHtml(note: Note, onFinishedListener: () -> Unit = {}) {
         viewModelScope.launch {
             // 设置导出状态为正在进行，并显示相应消息
             _isExporting.value = true
@@ -157,9 +131,12 @@ open class BaseShareViewModel(private val application: Application) :
             try {
                 // 执行实际的 HTML 导出操作
                 markdownExporter.exportMarkdownToHtml(
-                    markdownContent = note.content,
                     title = note.title,
+                    markdownContent = note.content,
                 )
+            } catch (e: Exception) {
+                // 错误处理可以在这里添加
+                e.printStackTrace()
             } finally {
                 // 无论导出成功与否，都重置导出状态
                 _isExporting.value = false
@@ -173,17 +150,9 @@ open class BaseShareViewModel(private val application: Application) :
      * 将笔记导出为 Markdown 格式文件
      *
      * @param note 要导出的笔记对象
+     * @param onFinishedListener 导出完成后的回调函数
      */
-    fun exportMarkdownToFile(note: Note) {
-        exportMarkdownToFile(note) {}
-    }
-
-    /**
-     * 将笔记导出为 Markdown 格式文件
-     *
-     * @param note 要导出的笔记对象
-     */
-    fun exportMarkdownToFile(note: Note, onFinishedListener: () -> Unit) {
+    fun exportMarkdownToFile(note: Note, onFinishedListener: () -> Unit = {}) {
         viewModelScope.launch {
             // 设置导出状态为正在进行，并显示相应消息
             _isExporting.value = true
@@ -191,9 +160,12 @@ open class BaseShareViewModel(private val application: Application) :
             try {
                 // 执行实际的 Markdown 文件导出操作
                 markdownExporter.exportMarkdownToFile(
-                    markdownContent = note.content,
                     title = note.title,
+                    markdownContent = note.content,
                 )
+            } catch (e: Exception) {
+                // 错误处理可以在这里添加
+                e.printStackTrace()
             } finally {
                 // 无论导出成功与否，都重置导出状态
                 _isExporting.value = false

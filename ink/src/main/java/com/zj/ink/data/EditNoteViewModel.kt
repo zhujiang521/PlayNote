@@ -2,6 +2,8 @@ package com.zj.ink.data
 
 import android.annotation.SuppressLint
 import android.app.Application
+import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -11,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.ink.brush.BrushFamily
 import androidx.ink.brush.StockBrushes
 import androidx.ink.strokes.Stroke
 import androidx.lifecycle.viewModelScope
@@ -21,6 +24,7 @@ import com.zj.ink.widget.updateNoteWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -39,54 +43,84 @@ class EditNoteViewModel @Inject constructor(
 
     // 同步 Note 对象的 content
     private val _note = MutableStateFlow(Note(title = "", content = _noteContent.value.text))
-    val note: StateFlow<Note> get() = _note
+    val note: StateFlow<Note> = _note.asStateFlow()
 
     // 将原来的 Note 列表改为 EditState 列表
     private val noteUndoStack = mutableListOf<EditState>()
     private val noteRedoStack = mutableListOf<EditState>()
 
     private val _undoEnabled = MutableStateFlow(false)
-    val undoEnabled: StateFlow<Boolean> get() = _undoEnabled
+    val undoEnabled: StateFlow<Boolean> = _undoEnabled.asStateFlow()
 
     private val _redoEnabled = MutableStateFlow(false)
-    val redoEnabled: StateFlow<Boolean> get() = _redoEnabled
+    val redoEnabled: StateFlow<Boolean> = _redoEnabled.asStateFlow()
 
     // 新增：标记是否有未保存的修改
     private val _isDirty = MutableStateFlow(false)
-    val isDirty: StateFlow<Boolean> get() = _isDirty
+    val isDirty: StateFlow<Boolean> = _isDirty.asStateFlow()
 
     // 绘图状态
-    val finishedStrokes = mutableStateOf<Set<Stroke>>(emptySet())
-    val selectedColor = mutableIntStateOf(Color.Black.toArgb())
-    val selectedBrushFamily = mutableStateOf(StockBrushes.pressurePen())
+    private val _finishedStrokes = mutableStateOf<Set<Stroke>>(emptySet())
+    val finishedStrokes: MutableState<Set<Stroke>> = _finishedStrokes
+
+    private val _selectedColor = mutableIntStateOf(Color.Black.toArgb())
+    val selectedColor: MutableIntState = _selectedColor
+
+    private val _selectedBrushFamily = mutableStateOf(StockBrushes.pressurePen())
+    val selectedBrushFamily: MutableState<BrushFamily> = _selectedBrushFamily
 
     @SuppressLint("MutableCollectionMutableState")
-    val drawUndoStack = mutableStateOf(mutableListOf(finishedStrokes.value))
+    private val _drawUndoStack = mutableStateOf(mutableListOf(_finishedStrokes.value))
+    val drawUndoStack: MutableState<MutableList<Set<Stroke>>> = _drawUndoStack
 
     @SuppressLint("MutableCollectionMutableState")
-    val drawRedoStack = mutableStateOf(mutableListOf<Set<Stroke>>())
-    val selectedBrushSize = mutableFloatStateOf(5f)
-    val showDialog = mutableStateOf(false) // 控制对话框显示
-    val showColorPicker = mutableStateOf(false)
-    val showPenPicker = mutableStateOf(false)
-    val saveBitmap = mutableStateOf(false)
-    val showPenSizePicker = mutableStateOf(false)
-    val showEraserSizePicker = mutableStateOf(false)
-    val showClearDraw = mutableStateOf(false)
-    val showPreview = mutableStateOf(true)
+    private val _drawRedoStack = mutableStateOf(mutableListOf<Set<Stroke>>())
+    val drawRedoStack: MutableState<MutableList<Set<Stroke>>> = _drawRedoStack
 
-    var showTablePicker = mutableStateOf(false)
+    private val _selectedBrushSize = mutableFloatStateOf(5f)
+    val selectedBrushSize: MutableFloatState = _selectedBrushSize
 
-    val isEraserMode = mutableStateOf(false)
+    // UI 状态控制
+    private val _showDialog = mutableStateOf(false)
+    val showDialog: MutableState<Boolean> = _showDialog
+
+    private val _showColorPicker = mutableStateOf(false)
+    val showColorPicker: MutableState<Boolean> = _showColorPicker
+
+    private val _showPenPicker = mutableStateOf(false)
+    val showPenPicker: MutableState<Boolean> = _showPenPicker
+
+    private val _saveBitmap = mutableStateOf(false)
+    val saveBitmap: MutableState<Boolean> = _saveBitmap
+
+    private val _showPenSizePicker = mutableStateOf(false)
+    val showPenSizePicker: MutableState<Boolean> = _showPenSizePicker
+
+    private val _showEraserSizePicker = mutableStateOf(false)
+    val showEraserSizePicker: MutableState<Boolean> = _showEraserSizePicker
+
+    private val _showClearDraw = mutableStateOf(false)
+    val showClearDraw: MutableState<Boolean> = _showClearDraw
+
+    private val _showPreview = mutableStateOf(true)
+    val showPreview: MutableState<Boolean> = _showPreview
+
+    private val _showTablePicker = mutableStateOf(false)
+    val showTablePicker: MutableState<Boolean> = _showTablePicker
+
+    private val _isEraserMode = mutableStateOf(false)
+    val isEraserMode: MutableState<Boolean> = _isEraserMode
 
     // 橡皮擦半径（默认25）
-    val eraserRadius = mutableFloatStateOf(25f)
+    private val _eraserRadius = mutableFloatStateOf(25f)
+    val eraserRadius: MutableFloatState = _eraserRadius
 
-    // 行数输入
-    var rows = mutableStateOf("2")
+    // 表格行列数输入
+    private val _rows = mutableStateOf("2")
+    val rows: MutableState<String> = _rows
 
-    // 列数输入
-    var cols = mutableStateOf("2")
+    private val _cols = mutableStateOf("2")
+    val cols: MutableState<String> = _cols
 
     // 同步 noteContent 和 note 的 content
     init {
@@ -101,48 +135,48 @@ class EditNoteViewModel @Inject constructor(
 
     fun saveNote() {
         viewModelScope.launch {
-            if (_note.value.title.isBlank() || _note.value.content.isBlank()) {
-                if (_note.value.title.isBlank()) {
-                    // 使用 updateNoteTitle 来更新标题，而不是直接修改 _note.value.title
-                    updateNoteTitle(getApplication<Application>().getString(R.string.note))
+            val noteToSave = if (_note.value.title.isBlank() || _note.value.content.isBlank()) {
+                val title = _note.value.title.ifBlank {
+                    getApplication<Application>().getString(R.string.note)
                 }
-                if (_note.value.content.isBlank()) {
-                    val updatedNote = _note.value // 获取更新后的 note
-                    _note.value = updatedNote.copy(content = updatedNote.title)
-                    updateNoteContent(
-                        TextFieldValue(
-                            _note.value.content,
-                            TextRange(_note.value.content.length)
-                        )
-                    )
+                
+                val content = _note.value.content.ifBlank {
+                    title
                 }
-            }
-            if (_note.value.id > 0) {
-                noteRepository.updateNote(_note.value)
+                
+                _note.value.copy(title = title, content = content)
             } else {
-                noteRepository.insertNote(_note.value)
+                _note.value
             }
-            _isDirty.value = false // 保存后标记为已保存
+            
+            if (noteToSave.id > 0) {
+                noteRepository.updateNote(noteToSave)
+            } else {
+                noteRepository.insertNote(noteToSave)
+            }
+            
+            // 更新内部状态
+            _note.value = noteToSave
+            _isDirty.value = false
             updateNoteWidget(getApplication())
         }
     }
 
     // 更新方法
     fun updateNoteTitle(newTitle: String) {
-        val currentState = _note.value // 记录修改前的状态
+        val currentState = _note.value
         noteUndoStack.add(EditState(currentState, newTitle.length))
         noteRedoStack.clear()
+        
         _note.value = currentState.copy(title = newTitle)
-        _note.update {
-            it.copy(title = newTitle)
-        }
         _undoEnabled.value = noteUndoStack.isNotEmpty()
+        _redoEnabled.value = noteRedoStack.isNotEmpty()
         _isDirty.value = true
     }
 
     fun updateNoteContent(newValue: TextFieldValue) {
         val currentState = _note.value
-        val currentCursorPosition = newValue.selection.min // 获取当前光标位置
+        val currentCursorPosition = newValue.selection.min
         noteUndoStack.add(EditState(currentState, currentCursorPosition))
         noteRedoStack.clear()
 
@@ -187,7 +221,6 @@ class EditNoteViewModel @Inject constructor(
         }
     }
 
-
     // 修改后的 insertTemplate
     fun insertTemplate(template: String) {
         val current = _noteContent.value
@@ -210,9 +243,10 @@ class EditNoteViewModel @Inject constructor(
         )
     }
 
+    @SuppressLint("NewApi")
     fun undo() {
         if (noteUndoStack.isEmpty()) return
-        val previousState = noteUndoStack.last()
+        val previousState = noteUndoStack.removeLast()
         val currentState = _note.value
         val currentCursorPosition = _noteContent.value.selection.min
 
@@ -224,14 +258,14 @@ class EditNoteViewModel @Inject constructor(
             TextRange(previousState.cursorPosition)
         )
 
-        noteUndoStack.removeAt(noteUndoStack.lastIndex)
         _undoEnabled.value = noteUndoStack.isNotEmpty()
         _redoEnabled.value = noteRedoStack.isNotEmpty()
     }
 
+    @SuppressLint("NewApi")
     fun redo() {
         if (noteRedoStack.isEmpty()) return
-        val nextState = noteRedoStack.last()
+        val nextState = noteRedoStack.removeLast()
         val currentState = _note.value
         val currentCursorPosition = _noteContent.value.selection.min
 
@@ -243,7 +277,6 @@ class EditNoteViewModel @Inject constructor(
             TextRange(nextState.cursorPosition)
         )
 
-        noteRedoStack.removeAt(noteRedoStack.lastIndex)
         _undoEnabled.value = noteUndoStack.isNotEmpty()
         _redoEnabled.value = noteRedoStack.isNotEmpty()
     }
@@ -284,25 +317,58 @@ class EditNoteViewModel @Inject constructor(
 
     fun clearDrawState() {
         // 重置绘图状态
-        finishedStrokes.value = emptySet()
-        selectedColor.intValue = Color.Black.toArgb()
-        selectedBrushFamily.value = StockBrushes.pressurePen()
-        drawUndoStack.value.clear()
-        drawRedoStack.value.clear()
-        selectedBrushSize.floatValue = 5f
-        eraserRadius.floatValue = 25f
+        _finishedStrokes.value = emptySet()
+        _selectedColor.intValue = Color.Black.toArgb()
+        _selectedBrushFamily.value = StockBrushes.pressurePen()
+        _drawUndoStack.value.clear()
+        _drawRedoStack.value.clear()
+        _selectedBrushSize.floatValue = 5f
+        _eraserRadius.floatValue = 25f
 
         // 重置对话框显示状态
-        showDialog.value = false
-        showColorPicker.value = false
-        showPenPicker.value = false
-        saveBitmap.value = false
-        showPenSizePicker.value = false
-        showEraserSizePicker.value = false
-        showClearDraw.value = false
+        _showDialog.value = false
+        _showColorPicker.value = false
+        _showPenPicker.value = false
+        _saveBitmap.value = false
+        _showPenSizePicker.value = false
+        _showEraserSizePicker.value = false
+        _showClearDraw.value = false
 
         // 重置其他状态
-        isEraserMode.value = false
+        _isEraserMode.value = false
+    }
+    
+    // UI 状态控制方法
+    fun setShowDialog(show: Boolean) {
+        _showDialog.value = show
+    }
+    
+    fun setShowColorPicker(show: Boolean) {
+        _showColorPicker.value = show
+    }
+    
+    fun setShowPenPicker(show: Boolean) {
+        _showPenPicker.value = show
+    }
+    
+    fun setSaveBitmap(save: Boolean) {
+        _saveBitmap.value = save
+    }
+    
+    fun setShowPenSizePicker(show: Boolean) {
+        _showPenSizePicker.value = show
+    }
+    
+    fun setShowEraserSizePicker(show: Boolean) {
+        _showEraserSizePicker.value = show
+    }
+
+    fun setShowPreview(show: Boolean) {
+        _showPreview.value = show
+    }
+
+    fun setIsEraserMode(isEraser: Boolean) {
+        _isEraserMode.value = isEraser
     }
 
 }

@@ -9,16 +9,20 @@ import androidx.ink.geometry.Intersection.intersects
 import androidx.ink.strokes.MutableStrokeInputBatch
 import androidx.ink.strokes.Stroke
 import androidx.ink.strokes.StrokeInput
-import kotlin.collections.forEach
 
 /**
- * 清空画布
+ * 全部擦除 - 删除与橡皮擦区域相交的完整笔画
+ *
+ * @param eraserBox 橡皮擦矩形区域
+ * @param finishedStrokesState 已完成的笔画状态
+ * @param undoStack 撤销栈
+ * @param redoStack 重做栈
  */
 fun eraseWholeStrokes(
     eraserBox: ImmutableBox,
     finishedStrokesState: MutableState<Set<Stroke>>,
-    undoStack: MutableState<MutableList<Set<Stroke>>>, // 新增参数
-    redoStack: MutableState<MutableList<Set<Stroke>>>, // 新增参数
+    undoStack: MutableState<MutableList<Set<Stroke>>>,
+    redoStack: MutableState<MutableList<Set<Stroke>>>,
 ) {
     val threshold = 0.1f
 
@@ -28,6 +32,7 @@ fun eraseWholeStrokes(
             coverageThreshold = threshold,
         )
     }
+    
     if (strokesToErase.isNotEmpty()) {
         Snapshot.withMutableSnapshot {
             val newStrokes = finishedStrokesState.value - strokesToErase.toSet()
@@ -43,7 +48,12 @@ fun eraseWholeStrokes(
 }
 
 /**
- * 橡皮擦
+ * 部分擦除 - 只删除笔画与橡皮擦区域相交的部分
+ *
+ * @param eraserBox 橡皮擦矩形区域
+ * @param finishedStrokesState 已完成的笔画状态
+ * @param undoStack 撤销栈
+ * @param redoStack 重做栈
  */
 fun erasePartialStrokes(
     eraserBox: ImmutableBox,
@@ -85,6 +95,7 @@ fun erasePartialStrokes(
                     currentSegment.add(input)
                 }
             }
+            
             if (currentSegment.isNotEmpty()) {
                 segments.add(currentSegment.toList())
             }

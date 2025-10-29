@@ -33,36 +33,24 @@ fun HighlightedText(
         return
     }
 
-    val parts = text.split(highlight, ignoreCase = true)
-    val indexes = mutableListOf<Int>()
-    var index = text.indexOf(highlight, ignoreCase = true)
-
-    while (index >= 0) {
-        indexes.add(index)
-        index = text.indexOf(highlight, index + 1, ignoreCase = true)
-    }
-
     val annotatedString = buildAnnotatedString {
-        append(parts[0])
-        var previousIndex = 0
-
-        for (i in indexes.indices) {
-            val matchStart = indexes[i]
-            val matchEnd = matchStart + highlight.length
-
-            append(text.substring(previousIndex + parts[i].length, matchEnd))
+        append(text)
+        
+        var startIndex = 0
+        while (startIndex < text.length) {
+            val index = text.indexOf(highlight, startIndex, ignoreCase = true)
+            if (index < 0) break
+            
             addStyle(
                 style = SpanStyle(
                     color = colorResource(R.color.primary),
                     fontWeight = FontWeight.Bold
                 ),
-                start = length - highlight.length,
-                end = length
+                start = index,
+                end = index + highlight.length
             )
-            previousIndex = matchEnd
-            if (i + 1 < parts.size) {
-                append(parts[i + 1])
-            }
+            
+            startIndex = index + highlight.length
         }
     }
 

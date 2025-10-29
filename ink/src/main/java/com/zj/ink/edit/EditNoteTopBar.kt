@@ -86,7 +86,7 @@ fun EditNoteTopBar(
             }
             if (isPad()) {
                 IconButton(onClick = {
-                    viewModel.showPreview.value = !viewModel.showPreview.value
+                    viewModel.setShowPreview(!viewModel.showPreview.value)
                 }) {
                     Icon(
                         painter = painterResource(
@@ -97,7 +97,7 @@ fun EditNoteTopBar(
                     )
                 }
                 IconButton(onClick = {
-                    viewModel.showDialog.value = true
+                    viewModel.setShowDialog(true)
                 }) {
                     Icon(
                         painter = painterResource(R.drawable.baseline_draw),
