@@ -48,6 +48,9 @@ import com.zj.data.common.rememberSwipeBoxControl
 import com.zj.data.model.Note
 import com.zj.data.utils.DateUtils
 
+private val MIN_HEIGHT = 50.dp
+private val MAX_HEIGHT = 300.dp
+private val ACTION_WIDTH = 100.dp
 
 /**
  * 笔记列表项
@@ -71,20 +74,21 @@ fun NoteItem(
             )
             .fillMaxWidth()
             .wrapContentHeight(),
-        actionWidth = 100.dp,
+        actionWidth = ACTION_WIDTH,
         endAction = listOf {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .heightIn(min = 100.dp, max = 300.dp) // 限制高度范围
                     .align(Alignment.Center)
+                    .heightIn(min = MIN_HEIGHT, max = MAX_HEIGHT)
                     .padding(8.dp)
                     .background(MaterialTheme.colorScheme.error, shape = MaterialTheme.shapes.large)
                     .clickable {
                         showDialog.value = true
                         control.center()
-                    }) {
+                    }
+            ) {
                 Text(
                     text = stringResource(R.string.delete),
                     modifier = Modifier.align(Alignment.Center),
@@ -100,7 +104,7 @@ fun NoteItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(IntrinsicSize.Min) // 根据内容高度自动调整
-                .heightIn(min = 100.dp, max = 300.dp), // 限制高度范围 ,
+                .heightIn(min = MIN_HEIGHT, max = MAX_HEIGHT), // 限制高度范围 ,
             shape = MaterialTheme.shapes.large,
             colors = CardDefaults.cardColors(
                 containerColor = colorResource(R.color.item_background)
@@ -134,7 +138,7 @@ fun NoteItem(
                     content = note.content,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(min = 100.dp, max = 300.dp)
+                        .heightIn(min = MIN_HEIGHT, max = MAX_HEIGHT)
                         .clickable { onClick() }
                 )
             }
@@ -178,6 +182,44 @@ private fun LightweightMarkdownPreview(
                             index++
                         }
                     }
+                    // 表格：显示提示
+                    previewContent.startsWith("|", index) && index + 1 < previewContent.length -> {
+                        // 查找表格行
+                        val lineEnd = previewContent.indexOf("\n", index)
+                        val tableRow = if (lineEnd != -1) {
+                            previewContent.substring(index, lineEnd)
+                        } else {
+                            previewContent.substring(index)
+                        }
+
+                        // 确定是否为表格（包含至少一个|分隔符且不是列表）
+                        if (tableRow.count { it == '|' } >= 2 && !tableRow.startsWith("|-")) {
+                            append("📊 ")
+                            // 跳过整行
+                            index = if (lineEnd != -1) lineEnd + 1 else previewContent.length
+
+                            // 检查并跳过表头分隔行（如 |-|-|）
+                            if (index < previewContent.length && previewContent.startsWith(
+                                    "|-",
+                                    index
+                                )
+                            ) {
+                                val separatorLineEnd = previewContent.indexOf("\n", index)
+                                index =
+                                    if (separatorLineEnd != -1) separatorLineEnd + 1 else previewContent.length
+                            }
+
+                            // 跳过剩余的表格行
+                            while (index < previewContent.length && previewContent[index] == '|') {
+                                val nextLineEnd = previewContent.indexOf("\n", index)
+                                index =
+                                    if (nextLineEnd != -1) nextLineEnd + 1 else previewContent.length
+                            }
+                        } else {
+                            append(previewContent[index])
+                            index++
+                        }
+                    }
                     // 加粗
                     previewContent.startsWith("**", index) -> {
                         val endIndex = previewContent.indexOf("**", index + 2)
@@ -192,8 +234,11 @@ private fun LightweightMarkdownPreview(
                         }
                     }
                     // 斜体（单星号或下划线）
-                    (previewContent.startsWith("*", index) && !previewContent.startsWith("**", index)) ||
-                    previewContent.startsWith("_", index) -> {
+                    (previewContent.startsWith("*", index) && !previewContent.startsWith(
+                        "**",
+                        index
+                    )) ||
+                            previewContent.startsWith("_", index) -> {
                         val delimiter = if (previewContent[index] == '*') "*" else "_"
                         val endIndex = previewContent.indexOf(delimiter, index + 1)
                         if (endIndex != -1) {
@@ -223,10 +268,12 @@ private fun LightweightMarkdownPreview(
                     previewContent.startsWith("`", index) -> {
                         val endIndex = previewContent.indexOf("`", index + 1)
                         if (endIndex != -1) {
-                            pushStyle(SpanStyle(
-                                fontFamily = FontFamily.Monospace,
-                                background = Color.LightGray.copy(alpha = 0.3f)
-                            ))
+                            pushStyle(
+                                SpanStyle(
+                                    fontFamily = FontFamily.Monospace,
+                                    background = Color.LightGray.copy(alpha = 0.3f)
+                                )
+                            )
                             append(previewContent.substring(index + 1, endIndex))
                             pop()
                             index = endIndex + 1
@@ -240,7 +287,12 @@ private fun LightweightMarkdownPreview(
                         val textEnd = previewContent.indexOf("]", index)
                         val urlEnd = previewContent.indexOf(")", textEnd)
                         if (textEnd != -1 && urlEnd != -1 && previewContent[textEnd + 1] == '(') {
-                            pushStyle(SpanStyle(color = Color.Blue, textDecoration = TextDecoration.Underline))
+                            pushStyle(
+                                SpanStyle(
+                                    color = Color.Blue,
+                                    textDecoration = TextDecoration.Underline
+                                )
+                            )
                             append(previewContent.substring(index + 1, textEnd))
                             pop()
                             index = urlEnd + 1
@@ -250,7 +302,10 @@ private fun LightweightMarkdownPreview(
                         }
                     }
                     // 标题标记：移除
-                    previewContent.startsWith("#", index) && (index == 0 || previewContent[index - 1] == '\n') -> {
+                    previewContent.startsWith(
+                        "#",
+                        index
+                    ) && (index == 0 || previewContent[index - 1] == '\n') -> {
                         var hashCount = 0
                         while (index + hashCount < previewContent.length && previewContent[index + hashCount] == '#') {
                             hashCount++
@@ -261,8 +316,11 @@ private fun LightweightMarkdownPreview(
                         }
                     }
                     // 无序列表
-                    (previewContent.startsWith("- ", index) || previewContent.startsWith("* ", index)) &&
-                    (index == 0 || previewContent[index - 1] == '\n') -> {
+                    (previewContent.startsWith("- ", index) || previewContent.startsWith(
+                        "* ",
+                        index
+                    )) &&
+                            (index == 0 || previewContent[index - 1] == '\n') -> {
                         append("• ")
                         index += 2
                     }
@@ -273,7 +331,8 @@ private fun LightweightMarkdownPreview(
                             numEnd++
                         }
                         if (numEnd < previewContent.length && previewContent[numEnd] == '.' &&
-                            numEnd + 1 < previewContent.length && previewContent[numEnd + 1] == ' ') {
+                            numEnd + 1 < previewContent.length && previewContent[numEnd + 1] == ' '
+                        ) {
                             append(previewContent.substring(index, numEnd + 1))
                             append(" ")
                             index = numEnd + 2
@@ -283,11 +342,16 @@ private fun LightweightMarkdownPreview(
                         }
                     }
                     // 引用块
-                    previewContent.startsWith("> ", index) && (index == 0 || previewContent[index - 1] == '\n') -> {
-                        pushStyle(SpanStyle(
-                            color = Color.Gray,
-                            fontStyle = FontStyle.Italic
-                        ))
+                    previewContent.startsWith(
+                        "> ",
+                        index
+                    ) && (index == 0 || previewContent[index - 1] == '\n') -> {
+                        pushStyle(
+                            SpanStyle(
+                                color = Color.Gray,
+                                fontStyle = FontStyle.Italic
+                            )
+                        )
                         append("┃ ")
                         index += 2
                         // 读取到行尾
