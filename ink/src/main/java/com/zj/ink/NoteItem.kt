@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -78,11 +79,10 @@ fun NoteItem(
         endAction = listOf {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight()
+                    .fillMaxSize()
                     .align(Alignment.Center)
                     .heightIn(min = MIN_HEIGHT, max = MAX_HEIGHT)
-                    .padding(8.dp)
+                    .padding(horizontal = 8.dp)
                     .background(MaterialTheme.colorScheme.error, shape = MaterialTheme.shapes.large)
                     .clickable {
                         showDialog.value = true
