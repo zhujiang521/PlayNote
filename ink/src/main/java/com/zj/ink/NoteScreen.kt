@@ -20,6 +20,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
@@ -37,6 +38,7 @@ import com.zj.data.model.INVALID_ID
 import com.zj.ink.data.NoteViewModel
 import com.zj.data.common.SearchTextField
 import com.zj.data.common.lazyPagingStates
+import com.zj.data.common.rememberSwipeBoxControl
 import com.zj.data.lce.LoadingContent
 import com.zj.data.lce.NoContent
 import com.zj.ink.widget.SwipeRefresh
@@ -128,10 +130,12 @@ fun NoteScreen(
                 ) {
                     items(
                         count = notes.itemCount,
-                        key = notes.itemKey(),
+                        key = notes.itemKey { it.id }, // 使用唯一的ID作为key
                         contentType = notes.itemContentType()
                     ) { index -> 
                         val item = notes[index] ?: return@items
+                        // 为每个NoteItem创建独立的SwipeBoxControl
+                        val swipeControl = rememberSwipeBoxControl()
                         NoteItem(
                             note = item,
                             onClick = {
@@ -139,6 +143,7 @@ fun NoteScreen(
                             },
                             searchQuery = viewModel.searchQuery.value,
                             onDelete = { viewModel.deleteNote(item) },
+                            control = swipeControl
                         )
                     }
                     lazyPagingStates(notes)

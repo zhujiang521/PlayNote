@@ -155,7 +155,7 @@ private fun LightweightMarkdownPreview(
 ) {
     val annotatedText = remember(content) {
         buildAnnotatedString {
-            val previewContent = content.take(800) // 大幅增加预览长度，显示更多内容
+            val previewContent = content.take(600) // 减少预览长度以提高性能
             var index = 0
 
             while (index < previewContent.length) {
@@ -164,7 +164,7 @@ private fun LightweightMarkdownPreview(
                     previewContent.startsWith("```", index) -> {
                         val endIndex = previewContent.indexOf("```", index + 3)
                         if (endIndex != -1) {
-                            append("💻 代码块 ")
+                            append("💻 ")
                             index = endIndex + 3
                         } else {
                             append(previewContent[index])
@@ -379,7 +379,7 @@ private fun LightweightMarkdownPreview(
     Text(
         text = annotatedText,
         style = MaterialTheme.typography.bodyMedium,
-        maxLines = 8, // 增加最大行数，显示更多内容
+        maxLines = 6, // 减少最大行数以提高性能
         overflow = TextOverflow.Ellipsis,
         modifier = modifier
     )

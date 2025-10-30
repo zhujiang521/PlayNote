@@ -85,7 +85,7 @@ fun SwipeBox(
                 } * 0.5f
             },
             velocityThreshold = { with(density) { 100.dp.toPx() } },
-            snapAnimationSpec = TweenSpec(durationMillis = 350),
+            snapAnimationSpec = TweenSpec(durationMillis = 200), // 减少动画时间以提高响应性
             decayAnimationSpec = exponentialDecay(10f),
         )
     }
@@ -254,7 +254,7 @@ class SwipeBoxControl(
         onEnd: () -> Unit = {},
         onEndFill: () -> Unit = {},
     ) = withContext(Dispatchers.Main) {
-        controlEvents.debounce(350).collect { event ->
+        controlEvents.debounce(100).collect { event -> // 减少防抖时间以提高响应性
             when (event) {
                 ControlEvent.Start -> onStart()
                 ControlEvent.StartFill -> onStartFill()
