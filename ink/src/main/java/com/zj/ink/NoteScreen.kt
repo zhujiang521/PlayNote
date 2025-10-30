@@ -18,6 +18,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
@@ -35,6 +37,7 @@ import com.zj.data.model.INVALID_ID
 import com.zj.ink.data.NoteViewModel
 import com.zj.data.common.SearchTextField
 import com.zj.data.common.lazyPagingStates
+import com.zj.data.lce.LoadingContent
 import com.zj.data.lce.NoContent
 import com.zj.ink.widget.SwipeRefresh
 
@@ -45,6 +48,7 @@ fun NoteScreen(
     previewNote: (Int) -> Unit = {},
 ) {
     val notes = viewModel.notes.collectAsLazyPagingItems()
+    val isLoading by viewModel.isLoading.collectAsState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -101,7 +105,10 @@ fun NoteScreen(
                 )
             }
         }) { paddingValues ->
-        if (notes.itemCount == 0) {
+        // 显示加载状态
+        if (isLoading) {
+            LoadingContent()
+        } else if (notes.itemCount == 0) {
             NoContent()
         } else {
             val state: LazyStaggeredGridState = rememberLazyStaggeredGridState()
@@ -123,7 +130,7 @@ fun NoteScreen(
                         count = notes.itemCount,
                         key = notes.itemKey(),
                         contentType = notes.itemContentType()
-                    ) { index ->
+                    ) { index -> 
                         val item = notes[index] ?: return@items
                         NoteItem(
                             note = item,

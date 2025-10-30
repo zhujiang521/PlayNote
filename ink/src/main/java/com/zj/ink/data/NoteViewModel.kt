@@ -32,6 +32,9 @@ class NoteViewModel @Inject constructor(
 
     val notes: StateFlow<PagingData<Note>> = _notes.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
     val searchExpanded = mutableStateOf(false)
 
     // 在 NoteViewModel 中添加
@@ -52,7 +55,7 @@ class NoteViewModel @Inject constructor(
                     loadNotes(query) // 根据搜索词加载数据
                 }
         }
-        
+
         viewModelScope.launch {
             val hasInserted = DataStoreUtils.readBooleanData(KEY_HAS_INSERTED, false)
             if (!hasInserted) {
@@ -67,7 +70,7 @@ class NoteViewModel @Inject constructor(
                     DataStoreUtils.saveBooleanData(KEY_HAS_INSERTED, true)
                 }
             }
-            
+
             // 默认加载所有笔记
             if (_searchQuery.value.isEmpty()) {
                 loadNotes()
@@ -77,16 +80,22 @@ class NoteViewModel @Inject constructor(
 
     private fun loadNotes(query: String = "") {
         viewModelScope.launch {
-            val flow = if (query.isEmpty()) {
-                noteRepository.getAllNotes()
-            } else {
-                noteRepository.getNotesWithSearch(query)
-            }
-            
-            flow.cachedIn(viewModelScope)
-                .collect { pagingData ->
-                    _notes.value = pagingData
+            try {
+                _isLoading.value = true
+                val flow = if (query.isEmpty()) {
+                    noteRepository.getAllNotes()
+                } else {
+                    noteRepository.getNotesWithSearch(query)
                 }
+
+                flow.cachedIn(viewModelScope)
+                    .collect { pagingData ->
+                        _notes.value = pagingData
+                        _isLoading.value = false
+                    }
+            } finally {
+                _isLoading.value = false
+            }
         }
     }
 
