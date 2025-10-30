@@ -106,10 +106,6 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun refreshData() {
-        loadNotes(_searchQuery.value)
-    }
-
     companion object {
         private const val KEY_HAS_INSERTED = "has_inserted_default_note"
     }

@@ -24,7 +24,6 @@ googleAndroidLibrariesMapsplatformSecretsGradlePlugin = "2.0.1"
 lottieCompose = "6.7.0"
 navigationCompose = "2.9.3"
 pagingRuntimeKtx = "3.3.5"
-refresh = "1.4.2"
 roomVersion = "2.8.3"
 hilt = "2.57.2"
 gifCoil = "2.7.0"
@@ -36,7 +35,7 @@ startupRuntime = "1.2.0"
 compile-sdk = "36"
 target-sdk = "36"
 min-sdk = "31"
-major-version = "1.2.0"
+major-version = "1.2.1"
 minor-version = "9999"
 
 [libraries]
@@ -91,7 +90,6 @@ glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = 
 glance-appwidget-preview = { module = "androidx.glance:glance-appwidget-preview", version.ref = "glanceVersion" }
 glance = { module = "androidx.glance:glance", version.ref = "glanceVersion" }
 glance-preview = { module = "androidx.glance:glance-preview", version.ref = "glanceVersion" }
-refresh = { module = "com.github.jenly1314.UltraSwipeRefresh:refresh", version.ref = "refresh" }
 zoomable = { module = "net.engawapg.lib:zoomable", version.ref = "zoomable" }
 androidx-startup-runtime = { group = "androidx.startup", name = "startup-runtime", version.ref = "startupRuntime" }
 

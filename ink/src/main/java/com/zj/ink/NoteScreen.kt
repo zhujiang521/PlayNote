@@ -20,7 +20,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
@@ -41,7 +40,6 @@ import com.zj.data.common.lazyPagingStates
 import com.zj.data.common.rememberSwipeBoxControl
 import com.zj.data.lce.LoadingContent
 import com.zj.data.lce.NoContent
-import com.zj.ink.widget.SwipeRefresh
 
 @Composable
 fun NoteScreen(
@@ -114,40 +112,33 @@ fun NoteScreen(
             NoContent()
         } else {
             val state: LazyStaggeredGridState = rememberLazyStaggeredGridState()
-            SwipeRefresh(
+            LazyVerticalStaggeredGrid(
                 modifier = Modifier
+                    .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = dimensionResource(R.dimen.screen_horizontal_margin)),
-                lazyListState = state,
-                refresh = {
-                    viewModel.refreshData()
-                }) {
-                LazyVerticalStaggeredGrid(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    state = state,
-                    columns = StaggeredGridCells.Adaptive(dimensionResource(R.dimen.note_card_width)),
-                ) {
-                    items(
-                        count = notes.itemCount,
-                        key = notes.itemKey { it.id }, // 使用唯一的ID作为key
-                        contentType = notes.itemContentType()
-                    ) { index -> 
-                        val item = notes[index] ?: return@items
-                        // 为每个NoteItem创建独立的SwipeBoxControl
-                        val swipeControl = rememberSwipeBoxControl()
-                        NoteItem(
-                            note = item,
-                            onClick = {
-                                previewNote(item.id)
-                            },
-                            searchQuery = viewModel.searchQuery.value,
-                            onDelete = { viewModel.deleteNote(item) },
-                            control = swipeControl
-                        )
-                    }
-                    lazyPagingStates(notes)
+                    .padding(start = dimensionResource(R.dimen.screen_horizontal_margin)),
+                state = state,
+                columns = StaggeredGridCells.Adaptive(dimensionResource(R.dimen.note_card_width)),
+            ) {
+                items(
+                    count = notes.itemCount,
+                    key = notes.itemKey { it.id }, // 使用唯一的ID作为key
+                    contentType = notes.itemContentType()
+                ) { index ->
+                    val item = notes[index] ?: return@items
+                    // 为每个NoteItem创建独立的SwipeBoxControl
+                    val swipeControl = rememberSwipeBoxControl()
+                    NoteItem(
+                        note = item,
+                        onClick = {
+                            previewNote(item.id)
+                        },
+                        searchQuery = viewModel.searchQuery.value,
+                        onDelete = { viewModel.deleteNote(item) },
+                        control = swipeControl
+                    )
                 }
+                lazyPagingStates(notes)
             }
         }
     }

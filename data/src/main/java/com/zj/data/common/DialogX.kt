@@ -93,7 +93,7 @@ fun DialogX(
             )
         ) {
             Column(
-                modifier = Modifier.padding(top = dimensionResource(R.dimen.screen_horizontal_margin))
+                modifier = Modifier.padding(top = dimensionResource(R.dimen.item_margin))
             ) {
                 Text(
                     text = title,
@@ -105,7 +105,7 @@ fun DialogX(
                         .align(Alignment.CenterHorizontally)
                 )
                 HorizontalDivider(
-                    modifier = Modifier.padding(top = dimensionResource(R.dimen.screen_horizontal_margin)),
+                    modifier = Modifier.padding(top = dimensionResource(R.dimen.item_margin)),
                     color = colorResource(R.color.divider)
                 )
                 content()
