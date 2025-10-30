@@ -53,6 +53,10 @@ fun DrawingSurface(
     val selectedBrushFamily = viewModel.selectedBrushFamily
     val selectedBrushSize = viewModel.selectedBrushSize
 
+    // 新增：使用新的画笔系统
+    val currentBrushProperties = viewModel.currentBrushProperties
+    val selectedBrushType = viewModel.selectedBrushType
+
     val context = LocalContext.current
     val rootViewState = remember { mutableStateOf<FrameLayout?>(null) }
     val scope = rememberCoroutineScope()
@@ -60,20 +64,20 @@ fun DrawingSurface(
     val canvasStrokeRenderer = CanvasStrokeRenderer.create()
     val currentPointerId = remember { mutableStateOf<Int?>(null) }
     val currentStrokeId = remember { mutableStateOf<InProgressStrokeId?>(null) }
+
+    // 修改：使用新的画笔工厂创建画笔
     val defaultBrush = remember {
-        mutableStateOf(
-            Brush.createWithColorIntArgb(
-                family = selectedBrushFamily.value,
-                colorIntArgb = selectedColor.intValue,
-                size = selectedBrushSize.floatValue,
-                epsilon = 0.1F
-            )
-        )
+        mutableStateOf(viewModel.getCurrentBrush())
     }
-    defaultBrush.value = defaultBrush.value.copyWithColorIntArgb(
-        family = selectedBrushFamily.value, colorIntArgb = selectedColor.intValue,
-        size = selectedBrushSize.floatValue
-    )
+
+    // 当画笔属性变化时更新画笔实例
+    LaunchedEffect(
+        currentBrushProperties.value,
+        selectedBrushType.value,
+        selectedColor.intValue
+    ) {
+        defaultBrush.value = viewModel.getCurrentBrush()
+    }
 
     val color = colorResource(R.color.dialog_background)
     Box(modifier = Modifier.fillMaxSize()) {

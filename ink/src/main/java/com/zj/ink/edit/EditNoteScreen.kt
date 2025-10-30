@@ -67,6 +67,7 @@ import com.zj.data.model.Note
 import com.zj.data.model.isValid
 import com.zj.ink.data.EditNoteViewModel
 import com.zj.ink.md.RenderMarkdown
+import com.zj.ink.picker.BrushPropertyPanel
 import kotlinx.coroutines.delay
 
 @SuppressLint("ConfigurationScreenWidthHeight")
@@ -170,6 +171,16 @@ fun EditNoteScreen(
             }
         }
     }
+
+    // 画笔属性面板
+    BrushPropertyPanel(
+        brushProperties = viewModel.currentBrushProperties.value,
+        visible = viewModel.showBrushPropertyPanel,
+        onPropertiesChanged = { properties ->
+            viewModel.updateBrushProperties(properties)
+        }
+    )
+
     DialogX(
         alertDialog = exitDialogShown,
         title = stringResource(R.string.save_dialog_title),

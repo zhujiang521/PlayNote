@@ -19,6 +19,10 @@ import androidx.ink.strokes.Stroke
 import androidx.lifecycle.viewModelScope
 import com.zj.data.R
 import com.zj.data.model.Note
+import com.zj.ink.brush.BrushFactory
+import com.zj.ink.brush.BrushPresetManager
+import com.zj.ink.brush.BrushProperties
+import com.zj.ink.brush.BrushType
 import com.zj.ink.md.TaskListHelper
 import com.zj.ink.widget.updateNoteWidget
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -69,6 +73,13 @@ class EditNoteViewModel @Inject constructor(
     private val _selectedBrushFamily = mutableStateOf(StockBrushes.pressurePen())
     val selectedBrushFamily: MutableState<BrushFamily> = _selectedBrushFamily
 
+    // 新增画笔系统状态
+    private val _selectedBrushType = mutableStateOf(BrushType.PEN)
+    val selectedBrushType: MutableState<BrushType> = _selectedBrushType
+
+    private val _currentBrushProperties = mutableStateOf(BrushProperties.fromBrushType(BrushType.PEN))
+    val currentBrushProperties: MutableState<BrushProperties> = _currentBrushProperties
+
     @SuppressLint("MutableCollectionMutableState")
     private val _drawUndoStack = mutableStateOf(mutableListOf(_finishedStrokes.value))
     val drawUndoStack: MutableState<MutableList<Set<Stroke>>> = _drawUndoStack
@@ -108,6 +119,12 @@ class EditNoteViewModel @Inject constructor(
     private val _showTablePicker = mutableStateOf(false)
     val showTablePicker: MutableState<Boolean> = _showTablePicker
 
+    private val _showBrushPropertyPanel = mutableStateOf(false)
+    val showBrushPropertyPanel: MutableState<Boolean> = _showBrushPropertyPanel
+
+    // 画笔预设管理器
+    val brushPresetManager = BrushPresetManager(getApplication())
+
     private val _isEraserMode = mutableStateOf(false)
     val isEraserMode: MutableState<Boolean> = _isEraserMode
 
@@ -139,22 +156,22 @@ class EditNoteViewModel @Inject constructor(
                 val title = _note.value.title.ifBlank {
                     getApplication<Application>().getString(R.string.note)
                 }
-                
+
                 val content = _note.value.content.ifBlank {
                     title
                 }
-                
+
                 _note.value.copy(title = title, content = content)
             } else {
                 _note.value
             }
-            
+
             if (noteToSave.id > 0) {
                 noteRepository.updateNote(noteToSave)
             } else {
                 noteRepository.insertNote(noteToSave)
             }
-            
+
             // 更新内部状态
             _note.value = noteToSave
             _isDirty.value = false
@@ -167,7 +184,7 @@ class EditNoteViewModel @Inject constructor(
         val currentState = _note.value
         noteUndoStack.add(EditState(currentState, newTitle.length))
         noteRedoStack.clear()
-        
+
         _note.value = currentState.copy(title = newTitle)
         _undoEnabled.value = noteUndoStack.isNotEmpty()
         _redoEnabled.value = noteRedoStack.isNotEmpty()
@@ -337,28 +354,28 @@ class EditNoteViewModel @Inject constructor(
         // 重置其他状态
         _isEraserMode.value = false
     }
-    
+
     // UI 状态控制方法
     fun setShowDialog(show: Boolean) {
         _showDialog.value = show
     }
-    
+
     fun setShowColorPicker(show: Boolean) {
         _showColorPicker.value = show
     }
-    
+
     fun setShowPenPicker(show: Boolean) {
         _showPenPicker.value = show
     }
-    
+
     fun setSaveBitmap(save: Boolean) {
         _saveBitmap.value = save
     }
-    
+
     fun setShowPenSizePicker(show: Boolean) {
         _showPenSizePicker.value = show
     }
-    
+
     fun setShowEraserSizePicker(show: Boolean) {
         _showEraserSizePicker.value = show
     }
@@ -369,6 +386,133 @@ class EditNoteViewModel @Inject constructor(
 
     fun setIsEraserMode(isEraser: Boolean) {
         _isEraserMode.value = isEraser
+    }
+
+    // 新增画笔系统相关方法
+
+    /**
+     * 切换画笔类型
+     */
+    fun setBrushType(brushType: BrushType) {
+        _selectedBrushType.value = brushType
+        _currentBrushProperties.value = BrushProperties.fromBrushType(brushType)
+            .copy(color = Color(_selectedColor.intValue))
+
+        // 更新传统画笔系统的兼容性
+        _selectedBrushFamily.value = brushType.defaultFamily
+        _selectedBrushSize.floatValue = brushType.defaultSize
+
+        // 添加到最近使用的画笔预设
+        viewModelScope.launch {
+            val preset = com.zj.ink.brush.BrushPreset.fromBrushProperties(
+                id = "${brushType.name}_recent",
+                name = brushType.displayName,
+                properties = _currentBrushProperties.value
+            )
+            brushPresetManager.addToRecentPresets(preset)
+        }
+    }
+
+    /**
+     * 更新画笔属性
+     */
+    fun updateBrushProperties(properties: BrushProperties) {
+        _currentBrushProperties.value = properties.validate()
+
+        // 同步到传统系统
+        _selectedColor.intValue = properties.color.toArgb()
+        _selectedBrushSize.floatValue = properties.size
+        _selectedBrushFamily.value = properties.brushType.defaultFamily
+    }
+
+    /**
+     * 设置画笔颜色
+     */
+    fun setBrushColor(color: Color) {
+        _selectedColor.intValue = color.toArgb()
+        _currentBrushProperties.value = _currentBrushProperties.value.copy(color = color)
+    }
+
+    /**
+     * 设置画笔大小
+     */
+    fun setBrushSize(size: Float) {
+        _selectedBrushSize.floatValue = size
+        _currentBrushProperties.value = _currentBrushProperties.value.copy(size = size)
+    }
+
+    /**
+     * 获取当前画笔实例
+     */
+    fun getCurrentBrush(): androidx.ink.brush.Brush {
+        return BrushFactory.createBrush(
+            brushType = _selectedBrushType.value,
+            color = _currentBrushProperties.value.color,
+            size = _currentBrushProperties.value.size,
+            opacity = _currentBrushProperties.value.opacity
+        )
+    }
+
+    /**
+     * 显示/隐藏画笔属性面板
+     */
+    fun setShowBrushPropertyPanel(show: Boolean) {
+        _showBrushPropertyPanel.value = show
+    }
+
+    /**
+     * 重置画笔到默认状态
+     */
+    fun resetBrushToDefault() {
+        val defaultType = BrushType.PEN
+        setBrushType(defaultType)
+    }
+
+    /**
+     * 检查画笔是否支持压感
+     */
+    fun isBrushPressureEnabled(): Boolean {
+        return _currentBrushProperties.value.pressureEnabled &&
+               _selectedBrushType.value.supportsPressure
+    }
+
+    /**
+     * 检查画笔是否支持纹理
+     */
+    fun isBrushTextureEnabled(): Boolean {
+        return _currentBrushProperties.value.textureEnabled &&
+               _selectedBrushType.value.supportsTexture
+    }
+
+
+    /**
+     * 保存当前画笔设置为预设
+     */
+    fun saveCurrentBrushAsPreset(name: String) {
+        viewModelScope.launch {
+            val preset = com.zj.ink.brush.BrushPreset.fromBrushProperties(
+                id = java.util.UUID.randomUUID().toString(),
+                name = name,
+                properties = _currentBrushProperties.value
+            )
+            brushPresetManager.saveUserPreset(preset)
+        }
+    }
+
+    /**
+     * 应用画笔预设
+     */
+    fun applyBrushPreset(presetId: String) {
+        viewModelScope.launch {
+            val preset = brushPresetManager.findPresetById(presetId)
+            preset?.toBrushProperties()?.let { properties ->
+                updateBrushProperties(properties)
+                setBrushType(properties.brushType)
+
+                // 添加到最近使用
+                brushPresetManager.addToRecentPresets(preset)
+            }
+        }
     }
 
 }

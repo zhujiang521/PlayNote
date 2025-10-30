@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.ksp)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -44,7 +45,7 @@ android {
     kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_11)
-            
+
             // 启用 Kotlin 编译器优化选项
             freeCompilerArgs.addAll(
                 "-Xopt-in=kotlin.RequiresOptIn",
@@ -52,11 +53,11 @@ android {
             )
         }
     }
-    
+
     packaging {
         resources {
             excludes.add("META-INF/DEPENDENCIES")
-            
+
             // 优化库大小
             excludes += "META-INF/AL2.0"
             excludes += "META-INF/LGPL2.1"
@@ -85,6 +86,9 @@ dependencies {
     api(project(":data"))
 
     implementation(libs.androidx.input.motionprediction)
+
+    // 添加序列化支持
+    implementation(libs.kotlinx.serialization.json)
 
     debugImplementation(libs.androidx.ui.tooling)
     testImplementation(libs.junit)

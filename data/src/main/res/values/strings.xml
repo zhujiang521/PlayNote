@@ -103,4 +103,51 @@
     <string name="markdown_stack_overflow">Content structure is too complex</string>
     <string name="markdown_element_error">Error rendering element</string>
     <string name="markdown_fallback_mode">Using simplified parsing mode</string>
+
+    <!-- 画笔系统相关字符串 -->
+    <string name="brush_type">Brush Type</string>
+    <string name="quick_presets">Quick Presets</string>
+    <string name="my_presets">My Presets</string>
+    <string name="recent_used">Recently Used</string>
+    <string name="system_presets">System Presets</string>
+    <string name="brush_properties">Brush Properties</string>
+
+    <!-- 画笔类型 -->
+    <string name="pen">Pen</string>
+    <string name="pencil">Pencil</string>
+    <string name="brush">Brush</string>
+    <string name="highlighter">Highlighter</string>
+    <string name="marker">Marker</string>
+    <string name="watercolor">Watercolor</string>
+    <string name="chalk">Chalk</string>
+    <string name="crayon">Crayon</string>
+
+    <!-- 画笔类型描述 -->
+    <string name="pen_description">Precise lines, suitable for writing and detailed drawing</string>
+    <string name="pencil_description">Adjustable hardness, suitable for sketching and drafts</string>
+    <string name="brush_description">Soft brush strokes, suitable for artistic creation</string>
+    <string name="highlighter_description">Semi-transparent highlighting, suitable for marking key points</string>
+    <string name="marker_description">Saturated colors, suitable for coloring and filling</string>
+    <string name="watercolor_description">Flowing effects, suitable for artistic painting</string>
+    <string name="chalk_description">Rough texture, suitable for chalkboard effects</string>
+    <string name="crayon_description">Heavy texture, suitable for children\'s drawing</string>
+
+    <!-- 快速预设描述 -->
+    <string name="daily_writing">Daily Writing</string>
+    <string name="key_marking">Key Marking</string>
+    <string name="sketch_drawing">Sketch Drawing</string>
+    <string name="artistic_creation">Artistic Creation</string>
+    <string name="fill_coloring">Fill Coloring</string>
+
+    <!-- 画笔属性 -->
+    <string name="opacity">Opacity</string>
+    <string name="flow">Flow</string>
+    <string name="hardness">Hardness</string>
+    <string name="scatter">Scatter</string>
+    <string name="pressure_sensitivity">Pressure Sensitivity</string>
+    <string name="texture_intensity">Texture Intensity</string>
+    <string name="enable_pressure">Enable Pressure</string>
+    <string name="enable_texture">Enable Texture</string>
+    <string name="reset">Reset</string>
+    <string name="done">Done</string>
 </resources>

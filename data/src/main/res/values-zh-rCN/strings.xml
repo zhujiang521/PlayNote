@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">玩 Note</string>
+    <string name="app_name">Play Note</string>
     <string name="bad_network_view_tip">点击屏幕重新加载</string>
     <string name="back">返回</string>
     <string name="cancel">取消</string>
@@ -8,19 +8,19 @@
     <string name="share">分享</string>
     <string name="confirm">确定</string>
     <string name="model_name">模型名称</string>
-    <string name="no_content">当前无内容</string>
-    <string name="delete_confirm">确定要删除%1$s吗？</string>
-    <string name="note">便签</string>
-    <string name="add_note">添加便签</string>
-    <string name="edit_note">编辑便签</string>
+    <string name="no_content">当前暂无内容。</string>
+    <string name="delete_confirm">确定要删除 %1s 吗？</string>
+    <string name="note">笔记</string>
+    <string name="add_note">新建笔记</string>
+    <string name="edit_note">编辑笔记</string>
     <string name="save">保存</string>
     <string name="undo">撤销</string>
     <string name="redo">重做</string>
-    <string name="draw">绘制</string>
+    <string name="draw">绘图</string>
     <string name="title_placeholder">请输入标题</string>
     <string name="content_placeholder">请输入内容</string>
     <string name="pen_type_select">选择画笔类型</string>
-    <string name="pen_marker">记号笔</string>
+    <string name="pen_marker">马克笔</string>
     <string name="pen_pressure">压感笔</string>
     <string name="pen_highlighter">荧光笔</string>
     <string name="pen_dashed_line">虚线笔</string>
@@ -28,17 +28,17 @@
     <string name="pen_select">选择</string>
     <string name="pen_color_select">选择画笔颜色</string>
     <string name="save_dialog_title">保存提醒</string>
-    <string name="save_dialog_content">已有内容修改，是否进行舍弃？</string>
+    <string name="save_dialog_content">现有内容已修改，是否要丢弃？</string>
     <string name="bold">加粗</string>
     <string name="italic">斜体</string>
-    <string name="bullet_list">项目符号列表</string>
+    <string name="bullet_list">项目列表</string>
     <string name="header">标题</string>
     <string name="code">代码</string>
     <string name="link">链接</string>
     <string name="quote">引用</string>
     <string name="table">表格</string>
     <string name="image">图片</string>
-    <string name="size">笔迹尺寸</string>
+    <string name="size">大小</string>
     <string name="size_title">选择笔迹粗细</string>
     <string name="size_content">当前粗细：%1$spx</string>
     <string name="table_picker_title">表格大小</string>
@@ -48,33 +48,33 @@
     <string name="table_picker_cols_name">列数：</string>
     <string name="table_picker_rows_error">行数至少为1</string>
     <string name="table_picker_cols_error">列数至少为1</string>
-    <string name="eraser_size_title">橡皮擦</string>
-    <string name="eraser_size_content">当前尺寸：%1$s</string>
-    <string name="clear_canvas">清空画布</string>
-    <string name="clear_canvas_title">确认清空画布？</string>
-    <string name="clear_canvas_content">是否要清空当前画布？所有内容将被删除。</string>
+    <string name="eraser_size_title" translatable="false">橡皮擦</string>
+    <string name="eraser_size_content" translatable="false">当前大小：%1$s</string>
+    <string name="clear_canvas" translatable="false">清空画布</string>
+    <string name="clear_canvas_title" translatable="false">确认清空画布？</string>
+    <string name="clear_canvas_content" translatable="false">确定要清空画布吗？所有内容将被删除。</string>
     <string name="search">搜索</string>
     <string name="preview">预览</string>
     <string name="more">更多</string>
     <string name="markdown_default_title">Markdown格式预览</string>
-    <string name="search_hint">搜索便签</string>
+    <string name="search_hint">搜索笔记</string>
     <string name="file_not_found">文件未找到</string>
     <string name="share_file_via">分享文件</string>
     <string name="share_failed">分享失败</string>
     <string name="down_fail">下载失败</string>
     <string name="download">下载</string>
     <string name="set_wallpaper">设置壁纸</string>
-    <string name="image_toast">图片还没有下载完成</string>
-    <string name="share_image_via">分享图片</string>
-    <string name="down_success">下载成功</string>
-    <string name="wallpaper_success">设置壁纸成功</string>
-    <string name="wallpaper_fail">设置壁纸失败</string>
+    <string name="image_toast">图片尚未下载完成。</string>
+    <string name="share_image_via">分享图片。</string>
+    <string name="down_success">下载成功。</string>
+    <string name="wallpaper_success">设置壁纸成功。</string>
+    <string name="wallpaper_fail">设置壁纸失败。</string>
     <string name="export_text">导出为文本</string>
     <string name="export_image">导出为图片</string>
     <string name="export_pdf">导出为PDF</string>
     <string name="export_html">导出为HTML</string>
     <string name="export_md">导出为MarkDown</string>
-    <string name="exporting_text" tools:ignore="TypographyEllipsis">正在导出文字...</string>
+    <string name="exporting_text" tools:ignore="TypographyEllipsis">正在导出文本...</string>
     <string name="exporting_image" tools:ignore="TypographyEllipsis">正在导出图片...</string>
     <string name="exporting_pdf" tools:ignore="TypographyEllipsis">正在导出PDF...</string>
     <string name="exporting_html" tools:ignore="TypographyEllipsis">正在导出HTML...</string>
@@ -91,16 +91,63 @@
     <string name="table_alignment">表格对齐</string>
     <string name="nested_list">嵌套列表</string>
     <string name="task_completed">任务已完成</string>
-    <string name="task_pending">任务待办</string>
+    <string name="task_pending">任务待完成</string>
     <string name="syntax_highlighting">语法高亮</string>
 
     <!-- 错误处理和边界情况字符串 -->
     <string name="markdown_empty_content">没有内容可显示</string>
     <string name="markdown_parse_error">内容解析错误，请检查格式</string>
     <string name="markdown_render_error">渲染时发生错误</string>
-    <string name="markdown_content_too_large">内容过大无法处理</string>
-    <string name="markdown_memory_error">解析内存不足</string>
+    <string name="markdown_content_too_large">内容过大，无法处理</string>
+    <string name="markdown_memory_error">解析时内存不足</string>
     <string name="markdown_stack_overflow">内容结构过于复杂</string>
     <string name="markdown_element_error">元素渲染错误</string>
     <string name="markdown_fallback_mode">使用简化解析模式</string>
+
+    <!-- 画笔系统相关字符串 -->
+    <string name="brush_type">画笔类型</string>
+    <string name="quick_presets">快速预设</string>
+    <string name="my_presets">我的预设</string>
+    <string name="recent_used">最近使用</string>
+    <string name="system_presets">系统预设</string>
+    <string name="brush_properties">画笔属性</string>
+
+    <!-- 画笔类型 -->
+    <string name="pen">钢笔</string>
+    <string name="pencil">铅笔</string>
+    <string name="brush">毛笔</string>
+    <string name="highlighter">荧光笔</string>
+    <string name="marker">马克笔</string>
+    <string name="watercolor">水彩笔</string>
+    <string name="chalk">粉笔</string>
+    <string name="crayon">蜡笔</string>
+
+    <!-- 画笔类型描述 -->
+    <string name="pen_description">精确线条，适合书写和细节绘制</string>
+    <string name="pencil_description">可调硬度，适合素描和草图</string>
+    <string name="brush_description">柔软笔触，适合艺术创作</string>
+    <string name="highlighter_description">半透明高亮，适合标记重点</string>
+    <string name="marker_description">饱和色彩，适合涂色和填充</string>
+    <string name="watercolor_description">流动效果，适合艺术绘画</string>
+    <string name="chalk_description">粗糙质感，适合黑板效果</string>
+    <string name="crayon_description">厚重质感，适合儿童绘画</string>
+
+    <!-- 快速预设描述 -->
+    <string name="daily_writing">日常书写</string>
+    <string name="key_marking">重点标记</string>
+    <string name="sketch_drawing">草图绘制</string>
+    <string name="artistic_creation">艺术创作</string>
+    <string name="fill_coloring">填充涂色</string>
+
+    <!-- 画笔属性 -->
+    <string name="opacity">透明度</string>
+    <string name="flow">流量</string>
+    <string name="hardness">硬度</string>
+    <string name="scatter">散布</string>
+    <string name="pressure_sensitivity">压感灵敏度</string>
+    <string name="texture_intensity">纹理强度</string>
+    <string name="enable_pressure">启用压感</string>
+    <string name="enable_texture">启用纹理</string>
+    <string name="reset">重置</string>
+    <string name="done">完成</string>
 </resources>

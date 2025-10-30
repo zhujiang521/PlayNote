@@ -170,20 +170,20 @@ fun NoteDrawDialog(
                         ) {
                             viewModel.setShowPenPicker(true)
                         }
-
-                        actionIconButton(
-                            drawableRes = R.drawable.baseline_format_size,
-                            descriptionRes = R.string.size,
-                        ) {
-                            viewModel.setShowPenSizePicker(true)
-                        }
-
                         actionIconButton(
                             drawableRes = R.drawable.baseline_color_lens,
                             descriptionRes = R.string.pen_color_select,
                             tintColor = Color(selectedColor.intValue)
                         ) {
                             viewModel.setShowColorPicker(true)
+                        }
+
+                        // 添加画笔属性面板按钮
+                        actionIconButton(
+                            drawableRes = R.drawable.baseline_settings,
+                            descriptionRes = R.string.size,
+                        ) {
+                            viewModel.setShowBrushPropertyPanel(true)
                         }
                     }
 
@@ -241,7 +241,17 @@ fun NoteDrawDialog(
         expanded = viewModel.showPenPicker,
         onBrushSelected = { newBrush ->
             selectedBrushFamily.value = newBrush
-        }
+        },
+        // 新增：传递画笔类型相关参数
+        selectedBrushType = viewModel.selectedBrushType,
+        onBrushTypeSelected = { brushType ->
+            viewModel.setBrushType(brushType)
+        },
+        onBrushPropertiesChanged = { properties ->
+            viewModel.updateBrushProperties(properties)
+        },
+        // 传递画笔预设管理器
+        brushPresetManager = viewModel.brushPresetManager
     )
     // 添加颜色选择器
     ColorPicker(
@@ -249,12 +259,9 @@ fun NoteDrawDialog(
         expanded = viewModel.showColorPicker,
         onColorChange = { newArgb ->
             selectedColor.intValue = newArgb
+            // 同步到画笔属性系统
+            viewModel.setBrushColor(Color(newArgb))
         }
-    )
-    // 添加笔迹大小选择器
-    PenSizePicker(
-        selectedSize = selectedBrushSize,
-        expanded = viewModel.showPenSizePicker,
     )
     // 在 Dialog 结尾处添加 EraserSizePicker：
     EraserSizePicker(
