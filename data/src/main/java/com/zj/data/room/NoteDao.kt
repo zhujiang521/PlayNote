@@ -31,12 +31,7 @@ interface NoteDao {
     fun getNoteById(id: Int): Note
 
     // 在 NoteDao 中添加模糊查询方法：
-    @Query("""
-        SELECT note.* FROM note 
-        JOIN note_fts ON note.id = note_fts.docid 
-        WHERE note_fts MATCH :query 
-        ORDER BY timestamp DESC
-    """)
+    @Query("SELECT * FROM note WHERE title LIKE '%' || :query || '%' OR content LIKE '%' || :query || '%' ORDER BY timestamp DESC")
     fun getNotesWithSearch(query: String): PagingSource<Int, Note>
 
     @Query("SELECT COUNT(*) FROM note")

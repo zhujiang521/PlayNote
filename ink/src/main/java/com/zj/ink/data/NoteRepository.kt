@@ -51,11 +51,7 @@ class NoteRepository @Inject constructor(private val noteDao: NoteDao) {
 
     fun getNotesWithSearch(query: String): Flow<PagingData<Note>> {
         return Pager(
-            config = PagingConfig(
-                pageSize = 50,
-                prefetchDistance = 30,
-                enablePlaceholders = true
-            ),
+            config = PagingConfig(pageSize = 20),
             pagingSourceFactory = { noteDao.getNotesWithSearch(query) }
         ).flow
     }
