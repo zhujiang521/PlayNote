@@ -1,45 +1,15 @@
 package com.zj.ink.brush
 
+import androidx.compose.ui.graphics.toArgb
 import androidx.ink.brush.Brush
 import androidx.ink.brush.BrushFamily
 import androidx.ink.brush.StockBrushes
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 
 /**
  * 画笔工厂类
  * 负责根据画笔类型和属性创建具体的画笔实例
  */
 object BrushFactory {
-
-    /**
-     * 根据画笔类型创建默认画笔
-     */
-    fun createBrush(brushType: BrushType): Brush {
-        return createBrush(
-            brushType = brushType,
-            color = Color.Black,
-            size = brushType.defaultSize,
-            opacity = brushType.defaultOpacity
-        )
-    }
-
-    /**
-     * 根据画笔类型和自定义属性创建画笔
-     */
-    fun createBrush(
-        brushType: BrushType,
-        color: Color,
-        size: Float = brushType.defaultSize,
-        opacity: Float = brushType.defaultOpacity
-    ): Brush {
-        val properties = BrushProperties.fromBrushType(brushType).copy(
-            color = color,
-            size = size,
-            opacity = opacity
-        )
-        return createBrush(properties)
-    }
 
     /**
      * 根据BrushProperties创建画笔 - 应用所有画笔属性
@@ -119,12 +89,6 @@ object BrushFactory {
         return StockBrushes.pressurePen()
     }
 
-    /**
-     * 应用透明度到颜色
-     */
-    private fun applyOpacity(color: Color, opacity: Float): Color {
-        return color.copy(alpha = (color.alpha * opacity.coerceIn(0f, 1f)))
-    }
 
     /**
      * 根据画笔类型调整尺寸
@@ -160,45 +124,4 @@ object BrushFactory {
         }
     }
 
-    /**
-     * 检查画笔类型是否支持压感
-     */
-    fun supportsPressure(brushType: BrushType): Boolean {
-        return brushType.supportsPressure
-    }
-
-    /**
-     * 检查画笔类型是否支持纹理
-     */
-    fun supportsTexture(brushType: BrushType): Boolean {
-        return brushType.supportsTexture
-    }
-
-    /**
-     * 获取画笔类型的推荐颜色
-     */
-    fun getRecommendedColors(brushType: BrushType): List<Color> {
-        return when (brushType) {
-            BrushType.PEN -> listOf(
-                Color.Black, Color.Blue, Color.Red,
-                Color(0xFF2E7D32), Color(0xFF6A1B9A)
-            )
-            BrushType.PENCIL -> listOf(
-                Color(0xFF424242), Color(0xFF616161), Color(0xFF757575),
-                Color(0xFF9E9E9E), Color(0xFFBDBDBD)
-            )
-            BrushType.HIGHLIGHTER -> listOf(
-                Color.Yellow, Color(0xFFFFEB3B), Color(0xFF4CAF50),
-                Color(0xFF2196F3), Color(0xFFFF9800)
-            )
-            BrushType.WATERCOLOR -> listOf(
-                Color(0xFF1976D2), Color(0xFF388E3C), Color(0xFFD32F2F),
-                Color(0xFF7B1FA2), Color(0xFFFF8F00)
-            )
-            else -> listOf(
-                Color.Black, Color.Red, Color.Blue,
-                Color.Green, Color(0xFFFF9800)
-            )
-        }
-    }
 }
