@@ -33,15 +33,37 @@ object BrushFactory {
         size: Float = brushType.defaultSize,
         opacity: Float = brushType.defaultOpacity
     ): Brush {
-        val adjustedColor = applyOpacity(color, opacity)
-        val adjustedSize = adjustSize(size, brushType)
-        val brushFamily = getBrushFamily(brushType)
+        val properties = BrushProperties.fromBrushType(brushType).copy(
+            color = color,
+            size = size,
+            opacity = opacity
+        )
+        return createBrush(properties)
+    }
+
+    /**
+     * 根据BrushProperties创建画笔 - 应用所有画笔属性
+     */
+    fun createBrush(properties: BrushProperties): Brush {
+        val brushFamily = getBrushFamily(properties.brushType)
+        val adjustedSize = adjustSize(properties.size, properties.brushType)
+
+        // 计算最终的透明度（结合opacity和flow）
+        val finalOpacity = properties.calculateFinalOpacity()
+
+        // 计算画笔颜色（应用透明度）
+        val finalColor = properties.color.copy(alpha = finalOpacity)
+
+        // 应用硬度调整（通过调整epsilon值）
+        // 硬度越高，epsilon越小，笔触越锐利
+        val baseEpsilon = getEpsilon(properties.brushType)
+        val epsilon = baseEpsilon * (1f - properties.hardness * 0.7f)
 
         return Brush.createWithColorIntArgb(
             family = brushFamily,
-            colorIntArgb = adjustedColor.toArgb(),
+            colorIntArgb = finalColor.toArgb(),
             size = adjustedSize,
-            epsilon = getEpsilon(brushType)
+            epsilon = epsilon.coerceIn(0.01f, 1.0f) // 确保epsilon在合理范围内
         )
     }
 

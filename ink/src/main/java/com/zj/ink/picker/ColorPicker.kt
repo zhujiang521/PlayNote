@@ -218,7 +218,7 @@ private fun ColorPresetsSection(
 ) {
     Column {
         Text(
-            text = "预设颜色",
+            text = stringResource(R.string.preset_colors),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -263,7 +263,7 @@ private fun RGBControlSection(
 ) {
     Column {
         Text(
-            text = "RGB 调节",
+            text = stringResource(R.string.rgb_adjustment),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
@@ -276,7 +276,7 @@ private fun RGBControlSection(
 
         // 红色滑块
         EnhancedColorSlider(
-            label = "红色 (R)",
+            label = stringResource(R.string.red_color),
             value = red,
             color = Color.Red,
             onValueChange = { newRed ->
@@ -294,7 +294,7 @@ private fun RGBControlSection(
 
         // 绿色滑块
         EnhancedColorSlider(
-            label = "绿色 (G)",
+            label = stringResource(R.string.green_color),
             value = green,
             color = Color.Green,
             onValueChange = { newGreen ->
@@ -312,7 +312,7 @@ private fun RGBControlSection(
 
         // 蓝色滑块
         EnhancedColorSlider(
-            label = "蓝色 (B)",
+            label = stringResource(R.string.blue_color),
             value = blue,
             color = Color.Blue,
             onValueChange = { newBlue ->
@@ -373,16 +373,21 @@ private fun EnhancedColorSlider(
         }
 
         Spacer(modifier = Modifier.height(8.dp))
-
         Slider(
             value = value.toFloat(),
-            onValueChange = { onValueChange(it.toInt()) },
+            onValueChange = { newValue ->
+                val clampedValue = newValue.coerceIn(0f, 255f).toInt()
+                onValueChange(clampedValue)
+            },
             valueRange = 0f..255f,
+            steps = 254,
             modifier = Modifier.fillMaxWidth(),
             colors = SliderDefaults.colors(
-                thumbColor = color,
-                activeTrackColor = color,
-                inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant
+                thumbColor = MaterialTheme.colorScheme.onSurface,
+                activeTrackColor = color.copy(alpha = 0.8f),
+                inactiveTrackColor = MaterialTheme.colorScheme.outlineVariant,
+                activeTickColor = Color.Transparent,
+                inactiveTickColor = Color.Transparent
             )
         )
     }

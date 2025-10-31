@@ -35,6 +35,7 @@ import androidx.ink.strokes.Stroke
 import androidx.input.motionprediction.MotionEventPredictor
 import com.zj.data.R
 import com.zj.data.utils.saveBitmapToFile
+import com.zj.ink.brush.withPressure
 import com.zj.ink.data.EditNoteViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -50,8 +51,6 @@ fun DrawingSurface(
 ) {
     val finishedStrokesState = viewModel.finishedStrokes
     val selectedColor = viewModel.selectedColor
-    val selectedBrushFamily = viewModel.selectedBrushFamily
-    val selectedBrushSize = viewModel.selectedBrushSize
 
     // 新增：使用新的画笔系统
     val currentBrushProperties = viewModel.currentBrushProperties
@@ -78,6 +77,7 @@ fun DrawingSurface(
     ) {
         defaultBrush.value = viewModel.getCurrentBrush()
     }
+
 
     val color = colorResource(R.color.dialog_background)
     Box(modifier = Modifier.fillMaxSize()) {
@@ -126,22 +126,25 @@ fun DrawingSurface(
                                     )
                                     true
                                 } else {
-                                    if (viewModel.isEraserMode.value) {
-                                        // 橡皮擦模式：无需特殊处理，直接返回 true
-                                        true
-                                    } else {
-                                        // First pointer - treat it as inking.
-                                        view.requestUnbufferedDispatch(event)
-                                        val pointerIndex = event.actionIndex
-                                        val pointerId = event.getPointerId(pointerIndex)
-                                        currentPointerId.value = pointerId
-                                        currentStrokeId.value = inProgressStrokesView?.startStroke(
-                                            event = event,
-                                            pointerId = pointerId,
-                                            brush = defaultBrush.value
-                                        )
-                                        true
-                                    }
+                                    // First pointer - treat it as inking.
+                                    view.requestUnbufferedDispatch(event)
+                                    val pointerIndex = event.actionIndex
+                                    val pointerId = event.getPointerId(pointerIndex)
+                                    currentPointerId.value = pointerId
+
+                                    // 获取压力值并创建相应的画笔
+                                    val pressure = event.getPressure(pointerIndex)
+                                    val pressureAwareBrush = createPressureAwareBrush(
+                                        viewModel,
+                                        pressure
+                                    )
+
+                                    currentStrokeId.value = inProgressStrokesView?.startStroke(
+                                        event = event,
+                                        pointerId = pointerId,
+                                        brush = pressureAwareBrush
+                                    )
+                                    true
                                 }
                             }
 
@@ -280,4 +283,24 @@ suspend fun recordCanvasToBitmap(
     picture.endRecording()
     val bitmap = Bitmap.createBitmap(picture)
     onBitmap(bitmap)
+}
+
+/**
+ * 根据压力值创建压感画笔
+ */
+private fun createPressureAwareBrush(
+    viewModel: EditNoteViewModel,
+    pressure: Float
+): Brush {
+    val currentProperties = viewModel.currentBrushProperties.value
+
+    // 如果启用了压感且画笔支持压感
+    return if (currentProperties.pressureEnabled && currentProperties.brushType.supportsPressure) {
+        // 使用压感调整后的属性创建画笔
+        val pressureAdjustedProperties = currentProperties.withPressure(pressure)
+        com.zj.ink.brush.BrushFactory.createBrush(pressureAdjustedProperties)
+    } else {
+        // 使用默认画笔
+        viewModel.getCurrentBrush()
+    }
 }

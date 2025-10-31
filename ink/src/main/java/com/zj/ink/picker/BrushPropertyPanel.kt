@@ -350,7 +350,6 @@ private fun PropertySection(
             containerColor = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.6f)
         ),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier

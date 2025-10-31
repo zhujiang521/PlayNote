@@ -445,12 +445,7 @@ class EditNoteViewModel @Inject constructor(
      * 获取当前画笔实例
      */
     fun getCurrentBrush(): androidx.ink.brush.Brush {
-        return BrushFactory.createBrush(
-            brushType = _selectedBrushType.value,
-            color = _currentBrushProperties.value.color,
-            size = _currentBrushProperties.value.size,
-            opacity = _currentBrushProperties.value.opacity
-        )
+        return BrushFactory.createBrush(_currentBrushProperties.value)
     }
 
     /**

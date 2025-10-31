@@ -150,4 +150,11 @@
     <string name="enable_texture">启用纹理</string>
     <string name="reset">重置</string>
     <string name="done">完成</string>
+
+    <!-- 颜色选择器相关字符串 -->
+    <string name="preset_colors">预设颜色</string>
+    <string name="rgb_adjustment">RGB 调节</string>
+    <string name="red_color">红色 (R)</string>
+    <string name="green_color">绿色 (G)</string>
+    <string name="blue_color">蓝色 (B)</string>
 </resources>
