@@ -16,9 +16,9 @@ abstract class AppDatabase : RoomDatabase() {
 
     companion object {
         val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(database: SupportSQLiteDatabase) {
+            override fun migrate(db: SupportSQLiteDatabase) {
                 // 创建FTS表
-                database.execSQL("""
+                db.execSQL("""
                     CREATE VIRTUAL TABLE IF NOT EXISTS note_fts USING fts4(
                         content='note',
                         docid='id',
@@ -27,7 +27,7 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                 """)
                 // 从原表复制数据到FTS表
-                database.execSQL("""
+                db.execSQL("""
                     INSERT INTO note_fts(docid, title, content)
                     SELECT id, title, content FROM note
                 """)

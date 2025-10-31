@@ -1,8 +1,8 @@
 package com.zj.data.common
 
 import androidx.compose.animation.core.TweenSpec
-import androidx.compose.animation.core.exponentialDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
 import androidx.compose.foundation.gestures.AnchoredDraggableState
 import androidx.compose.foundation.gestures.DraggableAnchors
 import androidx.compose.foundation.gestures.Orientation
@@ -28,7 +28,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
@@ -74,21 +73,23 @@ fun SwipeBox(
                 DragAnchors.Center at 0f
                 DragAnchors.End at (if (endFillAction != null) -actionWidthPx else 0f) - endWidth
                 DragAnchors.EndFill at (if (endFillAction != null) -contentWidth else 0f) - endWidth
-            },
-            positionalThreshold = { distance ->
-                if (startFillAction != null && distance > startFillWidth) {
-                    startWidth
-                } else if (endFillAction != null && distance > endFillWidth) {
-                    endWidth
-                } else {
-                    distance
-                } * 0.5f
-            },
-            velocityThreshold = { with(density) { 100.dp.toPx() } },
-            snapAnimationSpec = TweenSpec(durationMillis = 200), // 减少动画时间以提高响应性
-            decayAnimationSpec = exponentialDecay(10f),
+            }
         )
     }
+
+    val flingBehavior = AnchoredDraggableDefaults.flingBehavior(
+        state = state,
+        positionalThreshold = { distance ->
+            if (startFillAction != null && distance > startFillWidth) {
+                startWidth
+            } else if (endFillAction != null && distance > endFillWidth) {
+                endWidth
+            } else {
+                distance
+            } * 0.5f
+        },
+        animationSpec = TweenSpec(durationMillis = 200), // 减少动画时间以提高响应性
+    )
     LaunchedEffect(control, state) {
         with(control) {
             handleControlEvents(
@@ -125,6 +126,7 @@ fun SwipeBox(
             .anchoredDraggable(
                 state = state,
                 orientation = Orientation.Horizontal,
+                flingBehavior = flingBehavior
             )
             .clipToBounds()
     ) {

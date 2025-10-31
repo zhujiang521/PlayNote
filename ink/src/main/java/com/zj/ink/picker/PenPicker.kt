@@ -22,9 +22,9 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -167,18 +167,16 @@ fun PenPicker(
                     modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colorScheme.surfaceContainer.copy(alpha = 0.3f)
                 ) {
-                    TabRow(
+                    PrimaryTabRow(
                         selectedTabIndex = selectedTabIndex,
                         modifier = Modifier.fillMaxWidth(),
                         containerColor = Color.Transparent,
                         contentColor = MaterialTheme.colorScheme.onSurface,
-                        indicator = { tabPositions ->
-                            if (selectedTabIndex < tabPositions.size) {
-                                androidx.compose.material3.TabRowDefaults.SecondaryIndicator(
-                                    modifier = Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                            }
+                        indicator = {
+                            TabRowDefaults.PrimaryIndicator(
+                                modifier = Modifier.tabIndicatorOffset(selectedTabIndex),
+                                color = MaterialTheme.colorScheme.primary
+                            )
                         }
                     ) {
                         tabs.forEachIndexed { index, title ->
@@ -211,6 +209,7 @@ fun PenPicker(
                         },
                         onDismiss = { expanded.value = false }
                     )
+
                     1 -> QuickPresetsTab(
                         onPresetSelected = { brushType ->
                             selectedBrushType.value = brushType
@@ -223,6 +222,7 @@ fun PenPicker(
                             expanded.value = false
                         }
                     )
+
                     2 -> if (brushPresetManager != null) {
                         UserPresetsTab(
                             brushPresetManager = brushPresetManager,
