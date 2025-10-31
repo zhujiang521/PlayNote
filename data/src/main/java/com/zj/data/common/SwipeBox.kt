@@ -41,12 +41,10 @@ import kotlin.math.roundToInt
 @Composable
 fun SwipeBox(
     modifier: Modifier = Modifier,
+    itemId: String,
     control: SwipeBoxControl = rememberSwipeBoxControl(),
     actionWidth: Dp,
-    startAction: List<@Composable BoxScope.() -> Unit> = listOf(),
-    startFillAction: (@Composable BoxScope.() -> Unit)? = null,
     endAction: List<@Composable BoxScope.() -> Unit> = listOf(),
-    endFillAction: (@Composable BoxScope.() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
     val scope = rememberCoroutineScope()
@@ -54,55 +52,47 @@ fun SwipeBox(
     val actionWidthPx = with(density) {
         actionWidth.toPx()
     }
-    val startWidth = actionWidthPx * startAction.size
-    val startActionSize =
-        if (startFillAction == null) startAction.size else startAction.size + 1 // startAction + startFillAction
-    val startFillWidth = actionWidthPx * startActionSize
     val endWidth = actionWidthPx * endAction.size
-    val endActionSize =
-        if (endFillAction == null) endAction.size else endAction.size + 1 // endAction + endFillAction
-    val endFillWidth = actionWidthPx * endActionSize
     var contentWidth by remember { mutableFloatStateOf(0f) }
     var contentHeight by remember { mutableFloatStateOf(0f) }
-    val state = remember(startWidth, endWidth, contentWidth) {
+    val state = remember(endWidth, contentWidth) {
         AnchoredDraggableState(
             initialValue = DragAnchors.Center,
             anchors = DraggableAnchors {
-                DragAnchors.Start at (if (startFillAction != null) actionWidthPx else 0f) + startWidth
-                DragAnchors.StartFill at (if (startFillAction != null) contentWidth else 0f) + startWidth
                 DragAnchors.Center at 0f
-                DragAnchors.End at (if (endFillAction != null) -actionWidthPx else 0f) - endWidth
-                DragAnchors.EndFill at (if (endFillAction != null) -contentWidth else 0f) - endWidth
+                DragAnchors.End at -endWidth
             }
         )
     }
 
+
     val flingBehavior = AnchoredDraggableDefaults.flingBehavior(
         state = state,
-        positionalThreshold = { distance ->
-            if (startFillAction != null && distance > startFillWidth) {
-                startWidth
-            } else if (endFillAction != null && distance > endFillWidth) {
-                endWidth
-            } else {
-                distance
-            } * 0.5f
-        },
-        animationSpec = TweenSpec(durationMillis = 200), // 减少动画时间以提高响应性
+        positionalThreshold = { distance -> distance * 0.5f },
+        animationSpec = TweenSpec(durationMillis = 200),
     )
-    LaunchedEffect(control, state) {
+
+    // 监听状态变化
+    LaunchedEffect(state.currentValue, itemId) {
+        println("SwipeBox[$itemId] 状态变化: ${state.currentValue}")
+        when (state.currentValue) {
+            DragAnchors.End -> {
+                println("SwipeBox[$itemId] 设置为展开状态")
+                SwipeBoxGlobalState.setExpanded(itemId)
+            }
+
+            DragAnchors.Center -> {
+                if (SwipeBoxGlobalState.currentExpandedId.value == itemId) {
+                    println("SwipeBox[$itemId] 清除展开状态")
+                    SwipeBoxGlobalState.clearExpanded()
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(control, state, itemId) {
         with(control) {
             handleControlEvents(
-                onStart = {
-                    scope.launch {
-                        state.animateTo(DragAnchors.Start)
-                    }
-                },
-                onStartFill = {
-                    scope.launch {
-                        state.animateTo(DragAnchors.StartFill)
-                    }
-                },
                 onCenter = {
                     scope.launch {
                         state.animateTo(DragAnchors.Center)
@@ -111,11 +101,6 @@ fun SwipeBox(
                 onEnd = {
                     scope.launch {
                         state.animateTo(DragAnchors.End)
-                    }
-                },
-                onEndFill = {
-                    scope.launch {
-                        state.animateTo(DragAnchors.EndFill)
                     }
                 }
             )
@@ -126,53 +111,11 @@ fun SwipeBox(
             .anchoredDraggable(
                 state = state,
                 orientation = Orientation.Horizontal,
-                flingBehavior = flingBehavior
+                flingBehavior = flingBehavior,
+                enabled = SwipeBoxGlobalState.canStartSwipe(itemId)
             )
             .clipToBounds()
     ) {
-        startAction.forEachIndexed { index, action ->
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .width(actionWidth)
-                    .height(with(density) {
-                        contentHeight.toDp()
-                    })
-                    .offset {
-                        IntOffset(
-                            x = if (state.offset <= actionWidthPx * startActionSize) {
-                                (-actionWidthPx + state.offset / startActionSize * (startActionSize - index)).roundToInt()
-                            } else {
-                                (-actionWidthPx * (index + 1) + state.offset).roundToInt()
-                            },
-                            y = 0,
-                        )
-                    }
-            ) {
-                action()
-            }
-        }
-        startFillAction?.let {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .height(with(density) {
-                        contentHeight.toDp()
-                    })
-                    .offset {
-                        IntOffset(
-                            x = if (state.offset <= actionWidthPx * startActionSize) {
-                                (-contentWidth + state.offset / startActionSize).roundToInt()
-                            } else {
-                                (-contentWidth - startWidth + state.offset).roundToInt()
-                            },
-                            y = 0,
-                        )
-                    }
-            ) {
-                it()
-            }
-        }
         endAction.forEachIndexed { index, action ->
             Box(
                 modifier = Modifier
@@ -183,37 +126,12 @@ fun SwipeBox(
                     })
                     .offset {
                         IntOffset(
-                            x = if (state.offset >= -(actionWidthPx * endActionSize)) {
-                                (actionWidthPx + state.offset / endActionSize * (endActionSize - index)).roundToInt()
-                            } else {
-                                (actionWidthPx * (index + 1) + state.offset).roundToInt()
-                            },
+                            x = (actionWidthPx * (index + 1) + state.offset).roundToInt(),
                             y = 0,
                         )
                     }
             ) {
                 action()
-            }
-        }
-        endFillAction?.let {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .height(with(density) {
-                        contentHeight.toDp()
-                    })
-                    .offset {
-                        IntOffset(
-                            x = if (state.offset >= -(actionWidthPx * endActionSize)) {
-                                (contentWidth + state.offset / endActionSize).roundToInt()
-                            } else {
-                                (contentWidth + endWidth + state.offset).roundToInt()
-                            },
-                            y = 0,
-                        )
-                    }
-            ) {
-                it()
             }
         }
         Box(
@@ -239,40 +157,23 @@ class SwipeBoxControl(
     private val scope: CoroutineScope
 ) {
     private sealed interface ControlEvent {
-        data object Start : ControlEvent
-        data object StartFill : ControlEvent
         data object Center : ControlEvent
         data object End : ControlEvent
-        data object EndFill : ControlEvent
     }
 
     private val controlEvents: MutableSharedFlow<ControlEvent> = MutableSharedFlow()
 
     @OptIn(FlowPreview::class)
     internal suspend fun handleControlEvents(
-        onStart: () -> Unit = {},
-        onStartFill: () -> Unit = {},
         onCenter: () -> Unit = {},
         onEnd: () -> Unit = {},
-        onEndFill: () -> Unit = {},
     ) = withContext(Dispatchers.Main) {
-        controlEvents.debounce(100).collect { event -> // 减少防抖时间以提高响应性
+        controlEvents.debounce(100).collect { event ->
             when (event) {
-                ControlEvent.Start -> onStart()
-                ControlEvent.StartFill -> onStartFill()
                 ControlEvent.Center -> onCenter()
                 ControlEvent.End -> onEnd()
-                ControlEvent.EndFill -> onEndFill()
             }
         }
-    }
-
-    fun start() {
-        scope.launch { controlEvents.emit(ControlEvent.Start) }
-    }
-
-    fun startFill() {
-        scope.launch { controlEvents.emit(ControlEvent.Start) }
     }
 
     fun center() {
@@ -282,10 +183,6 @@ class SwipeBoxControl(
     fun end() {
         scope.launch { controlEvents.emit(ControlEvent.End) }
     }
-
-    fun endFill() {
-        scope.launch { controlEvents.emit(ControlEvent.EndFill) }
-    }
 }
 
 @Composable
@@ -294,9 +191,6 @@ fun rememberSwipeBoxControl(
 ): SwipeBoxControl = remember(coroutineScope) { SwipeBoxControl(coroutineScope) }
 
 enum class DragAnchors {
-    Start,
-    StartFill,
     Center,
     End,
-    EndFill,
 }

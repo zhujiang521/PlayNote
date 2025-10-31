@@ -61,6 +61,7 @@ fun NoteItem(
 ) {
     val showDialog = remember { mutableStateOf(false) }
     SwipeBox(
+        itemId = note.id.toString(),
         control = control,
         modifier = Modifier
             .padding(
