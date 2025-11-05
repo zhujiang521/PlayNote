@@ -37,7 +37,6 @@ import com.zj.data.model.INVALID_ID
 import com.zj.ink.data.NoteViewModel
 import com.zj.data.common.SearchTextField
 import com.zj.data.common.lazyPagingStates
-import com.zj.data.common.rememberSwipeBoxControl
 import com.zj.data.lce.LoadingContent
 import com.zj.data.lce.NoContent
 
@@ -127,7 +126,6 @@ fun NoteScreen(
                 ) { index ->
                     val item = notes[index] ?: return@items
                     // 为每个NoteItem创建独立的SwipeBoxControl
-                    val swipeControl = rememberSwipeBoxControl()
                     NoteItem(
                         note = item,
                         onClick = {
@@ -135,7 +133,6 @@ fun NoteScreen(
                         },
                         searchQuery = viewModel.searchQuery.value,
                         onDelete = { viewModel.deleteNote(item) },
-                        control = swipeControl
                     )
                 }
                 lazyPagingStates(notes)

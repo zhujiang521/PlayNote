@@ -35,7 +35,6 @@ object SwipeBoxGlobalState {
     fun canStartSwipe(itemId: String): Boolean {
         val currentExpanded = _currentExpandedId.value
         val canSwipe = currentExpanded == null || currentExpanded == itemId
-        println("SwipeBoxGlobalState: canStartSwipe[$itemId] = $canSwipe (当前展开: $currentExpanded)")
         return canSwipe
     }
 }
