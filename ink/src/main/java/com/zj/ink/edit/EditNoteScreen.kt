@@ -24,14 +24,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,13 +37,13 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
@@ -119,17 +117,36 @@ fun EditNoteScreen(
                 .padding(horizontal = dimensionResource(R.dimen.screen_horizontal_margin))
                 .background(MaterialTheme.colorScheme.background)
         ) {
-            InputTextField(
-                value = note.title,
-                onValueChange = { viewModel.updateNoteTitle(it) },
+            // 使用增强版编辑器支持TextFieldValue，保持光标位置
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(42.dp)
-                    .animateContentSize()
-                    .focusRequester(focusRequester),
-                placeholder = stringResource(R.string.title_placeholder),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            )
+                    .background(
+                        color = colorResource(R.color.edit_background),
+                        shape = MaterialTheme.shapes.extraLarge
+                    ),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                EnhancedMarkdownEditor(
+                    value = viewModel.noteTitle.value,
+                    onValueChange = { viewModel.updateNoteTitle(it) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .animateContentSize()
+                        .focusRequester(focusRequester)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    placeholder = stringResource(R.string.title_placeholder),
+                    textStyle = TextStyle(
+                        fontSize = dimensionResource(R.dimen.title_text).value.sp,
+                        color = colorResource(R.color.text_color)
+                    ),
+                    singleLine = true,
+                    maxLines = 1,
+                    showLineNumbers = false,
+                    highlightCurrentLine = false
+                )
+            }
 
             Spacer(Modifier.height(dimensionResource(R.dimen.image_screen_horizontal_margin)))
             val isPad = isPad()
@@ -256,46 +273,53 @@ private fun NoteEditView(modifier: Modifier = Modifier, viewModel: EditNoteViewM
             },
         )
 
-        BasicTextField(
+        EnhancedMarkdownEditor(
             value = viewModel.noteContent.value,
             onValueChange = { viewModel.updateNoteContent(it) },
             modifier = Modifier
                 .fillMaxSize()
-                .weight(1f) // 添加weight来分配空间
-                .padding(horizontal = dimensionResource(R.dimen.image_screen_horizontal_margin))
+                .weight(1f)
                 .onPreviewKeyEvent { keyEvent ->
-                    if (keyEvent.type == KeyEventType.KeyDown && keyEvent.isCtrlPressed) {
-                        shortcutMap[keyEvent.key]?.let { template ->
-                            viewModel.insertTemplate(template)
-                            true
-                        } ?: run {
-                            false
+                    if (keyEvent.type == KeyEventType.KeyDown) {
+                        // Ctrl+快捷键处理
+                        if (keyEvent.isCtrlPressed) {
+                            shortcutMap[keyEvent.key]?.let { template ->
+                                viewModel.insertTemplate(template)
+                                return@onPreviewKeyEvent true
+                            }
                         }
-                    } else {
-                        false
+
+                        // Tab键处理（增加/减少缩进）
+                        if (keyEvent.key == Key.Tab) {
+                            val newValue = SmartInputHandler.handleTab(
+                                viewModel.noteContent.value,
+                                shift = keyEvent.isShiftPressed
+                            )
+                            viewModel.updateNoteContent(newValue)
+                            return@onPreviewKeyEvent true
+                        }
+
+                        // Enter键处理（智能换行）
+                        if (keyEvent.key == Key.Enter) {
+                            val newValue = SmartInputHandler.handleNewLine(
+                                viewModel.noteContent.value
+                            )
+                            viewModel.updateNoteContent(newValue)
+                            return@onPreviewKeyEvent true
+                        }
                     }
+                    false
                 }
                 .animateContentSize(),
+            placeholder = stringResource(R.string.content_placeholder),
             textStyle = TextStyle(
                 fontSize = dimensionResource(R.dimen.subtitle_text).value.sp,
-                textAlign = TextAlign.Start,
-                color = colorResource(R.color.text_color)
+                textAlign = TextAlign.Start
             ),
+            showLineNumbers = false,  // 默认关闭，用户可通过设置启用
+            highlightCurrentLine = false,  // 默认关闭
             singleLine = false,
-            maxLines = Int.MAX_VALUE,
-            decorationBox = { innerTextField ->
-                Box(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    if (viewModel.noteContent.value.text.isEmpty()) {
-                        Text(
-                            text = stringResource(R.string.content_placeholder),
-                            style = LocalTextStyle.current.copy(color = Color.Gray),
-                            modifier = Modifier.align(Alignment.TopStart)
-                        )
-                    }
-                    innerTextField()
-                }
-            })
+            maxLines = Int.MAX_VALUE
+        )
     }
 }

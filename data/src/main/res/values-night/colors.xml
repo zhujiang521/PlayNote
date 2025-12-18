@@ -25,4 +25,11 @@
     <color name="footnote_border">#30363D</color>
     <color name="task_list_checked">#3FB950</color>
     <color name="task_list_unchecked">#8B949E</color>
+
+    <!-- 编辑器增强颜色 - 夜间模式 -->
+    <color name="line_number_background">#1A1A1A</color>
+    <color name="line_number_default">#666666</color>
+    <color name="line_number_current">#1686FA</color>
+    <color name="current_line_highlight">#1A2A3A</color>
+    <color name="cursor_color">#1686FA</color>
 </resources>

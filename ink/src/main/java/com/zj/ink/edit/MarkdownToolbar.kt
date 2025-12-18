@@ -21,14 +21,21 @@ import com.zj.data.utils.saveImageToAppStorage
 import com.zj.data.R
 import com.zj.ink.picker.TablePicker
 
+/**
+ * Markdown快捷键映射表
+ * Ctrl + 按键 → Markdown模板
+ */
 val shortcutMap = mapOf(
-    Key.B to "**%s**",
-    Key.I to "*%s*",
-    Key.L to "- %s\n",
-    Key.H to "# %s\n",
-    Key.Q to "```\n%s\n```",
-    Key.T to "|\t%s\t|\tHeader2\t|\n|---|---|\n|\tRow1\t|\tRow2\t|",
-    Key.K to ">%s\n"
+    Key.B to "**%s**",           // Ctrl+B: 加粗
+    Key.I to "*%s*",             // Ctrl+I: 斜体
+    Key.L to "- %s\n",           // Ctrl+L: 无序列表
+    Key.H to "# %s\n",           // Ctrl+H: 标题
+    Key.Q to "```\n%s\n```",     // Ctrl+Q: 代码块
+    Key.T to "|\t%s\t|\tHeader2\t|\n|---|---|\n|\tRow1\t|\tRow2\t|", // Ctrl+T: 表格
+    Key.K to ">%s\n",            // Ctrl+K: 引用
+    Key.U to "~~%s~~",           // Ctrl+U: 删除线
+    Key.E to "`%s`",             // Ctrl+E: 行内代码
+    Key.M to "[%s](url)",        // Ctrl+M: 链接
 )
 
 @Composable

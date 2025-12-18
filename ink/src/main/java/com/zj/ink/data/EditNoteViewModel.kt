@@ -41,12 +41,15 @@ class EditNoteViewModel @Inject constructor(
     private val noteRepository: NoteRepository
 ) : BaseShareViewModel(application) {
 
-    // 新增：使用 TextFieldValue 管理文本和光标位置
+    // 新增：使用 TextFieldValue 管理标题和内容的文本及光标位置
+    private val _noteTitle = mutableStateOf(TextFieldValue(""))
+    val noteTitle: MutableState<TextFieldValue> = _noteTitle
+
     private val _noteContent = mutableStateOf(TextFieldValue(""))
     val noteContent: MutableState<TextFieldValue> = _noteContent
 
-    // 同步 Note 对象的 content
-    private val _note = MutableStateFlow(Note(title = "", content = _noteContent.value.text))
+    // 同步 Note 对象
+    private val _note = MutableStateFlow(Note(title = _noteTitle.value.text, content = _noteContent.value.text))
     val note: StateFlow<Note> = _note.asStateFlow()
 
     // 将原来的 Note 列表改为 EditState 列表
@@ -139,8 +142,18 @@ class EditNoteViewModel @Inject constructor(
     private val _cols = mutableStateOf("2")
     val cols: MutableState<String> = _cols
 
-    // 同步 noteContent 和 note 的 content
+    // 同步 noteTitle 和 noteContent 到 note
     init {
+        // 同步标题
+        viewModelScope.launch {
+            snapshotFlow { _noteTitle.value }
+                .filter { newTitle -> newTitle.text != _note.value.title }
+                .collect { newTitle ->
+                    _note.update { it.copy(title = newTitle.text) }
+                }
+        }
+
+        // 同步内容
         viewModelScope.launch {
             snapshotFlow { _noteContent.value }
                 .filter { newContent -> newContent.text != _note.value.content }
@@ -150,20 +163,24 @@ class EditNoteViewModel @Inject constructor(
         }
     }
 
-    fun saveNote() {
+    fun saveNote(onSaved: () -> Unit = {}) {
         viewModelScope.launch {
-            val noteToSave = if (_note.value.title.isBlank() || _note.value.content.isBlank()) {
-                val title = _note.value.title.ifBlank {
+            // 从TextFieldValue获取最新的文本内容
+            val currentTitle = _noteTitle.value.text
+            val currentContent = _noteContent.value.text
+
+            val noteToSave = if (currentTitle.isBlank() || currentContent.isBlank()) {
+                val title = currentTitle.ifBlank {
                     getApplication<Application>().getString(R.string.note)
                 }
 
-                val content = _note.value.content.ifBlank {
+                val content = currentContent.ifBlank {
                     title
                 }
 
                 _note.value.copy(title = title, content = content)
             } else {
-                _note.value
+                _note.value.copy(title = currentTitle, content = currentContent)
             }
 
             if (noteToSave.id > 0) {
@@ -172,23 +189,45 @@ class EditNoteViewModel @Inject constructor(
                 noteRepository.insertNote(noteToSave)
             }
 
-            // 更新内部状态
+            // 更新内部状态，如果标题被设置为默认值，同步到noteTitle
             _note.value = noteToSave
+            if (currentTitle.isBlank() && noteToSave.title.isNotBlank()) {
+                _noteTitle.value = TextFieldValue(
+                    text = noteToSave.title,
+                    selection = TextRange(noteToSave.title.length)
+                )
+            }
+
             _isDirty.value = false
             updateNoteWidget(getApplication())
+
+            // 保存完成后的回调，用于清除焦点
+            onSaved()
         }
     }
 
-    // 更新方法
-    fun updateNoteTitle(newTitle: String) {
+    // 更新标题 - 接收TextFieldValue保持光标位置
+    fun updateNoteTitle(newValue: TextFieldValue) {
         val currentState = _note.value
-        noteUndoStack.add(EditState(currentState, newTitle.length))
+        val currentCursorPosition = newValue.selection.min
+        noteUndoStack.add(EditState(currentState, currentCursorPosition))
         noteRedoStack.clear()
 
-        _note.value = currentState.copy(title = newTitle)
+        _noteTitle.value = newValue
+        _note.value = currentState.copy(title = newValue.text)
+
         _undoEnabled.value = noteUndoStack.isNotEmpty()
         _redoEnabled.value = noteRedoStack.isNotEmpty()
         _isDirty.value = true
+    }
+
+    // 兼容旧的String版本（如果有其他地方调用）
+    @Deprecated("使用 updateNoteTitle(TextFieldValue) 以保持光标位置", ReplaceWith("updateNoteTitle(TextFieldValue(newTitle))"))
+    fun updateNoteTitle(newTitle: String) {
+        updateNoteTitle(TextFieldValue(
+            text = newTitle,
+            selection = TextRange(newTitle.length) // 光标放在末尾
+        ))
     }
 
     fun updateNoteContent(newValue: TextFieldValue) {
@@ -238,20 +277,46 @@ class EditNoteViewModel @Inject constructor(
         }
     }
 
-    // 修改后的 insertTemplate
+    /**
+     * 智能插入Markdown模板
+     * - 有选中文本：用模板包裹选中内容
+     * - 无选中文本：插入模板并定位光标到编辑位置
+     */
     fun insertTemplate(template: String) {
         val current = _noteContent.value
-        val cursor = current.selection.min
-        val placeholderIndex = template.indexOf("%s")
-        val newTemplate = template.replace("%s", "")
-        val newContentText =
-            current.text.substring(0, cursor) +
+        val selection = current.selection
+        val hasSelection = selection.start != selection.end
+
+        val newContentText: String
+        val newCursorPosition: Int
+
+        if (hasSelection) {
+            // 有选中文本：包裹选中内容
+            val selectedText = current.text.substring(selection.start, selection.end)
+            val wrappedText = template.replace("%s", selectedText)
+
+            newContentText = current.text.substring(0, selection.start) +
+                    wrappedText +
+                    current.text.substring(selection.end)
+
+            // 光标定位到包裹后的文本末尾
+            newCursorPosition = selection.start + wrappedText.length
+        } else {
+            // 无选中文本：插入模板
+            val cursor = current.selection.min
+            val placeholderIndex = template.indexOf("%s")
+            val newTemplate = template.replace("%s", "")
+
+            newContentText = current.text.substring(0, cursor) +
                     newTemplate +
                     current.text.substring(cursor)
-        val newCursorPosition = if (placeholderIndex != -1) {
-            cursor + placeholderIndex
-        } else {
-            cursor + newTemplate.length
+
+            // 光标定位到占位符位置或模板末尾
+            newCursorPosition = if (placeholderIndex != -1) {
+                cursor + placeholderIndex
+            } else {
+                cursor + newTemplate.length
+            }
         }
 
         // 通过 updateNoteContent 触发 undo/redo 记录
@@ -298,13 +363,20 @@ class EditNoteViewModel @Inject constructor(
         _redoEnabled.value = noteRedoStack.isNotEmpty()
     }
 
-    // 在 getNoteById 中同步 noteContent
+    // 在 getNoteById 中同步 noteTitle 和 noteContent
     fun getNoteById(id: Int) {
         viewModelScope.launch {
             val note = noteRepository.getNoteById(id)
             _note.value = note
-            // 新增：同步到 noteContent
-            _noteContent.value = TextFieldValue(note.content)
+            // 同步标题和内容到 TextFieldValue，光标默认放在末尾
+            _noteTitle.value = TextFieldValue(
+                text = note.title,
+                selection = TextRange(note.title.length)
+            )
+            _noteContent.value = TextFieldValue(
+                text = note.content,
+                selection = TextRange(note.content.length)
+            )
             _isDirty.value = false // 加载旧数据不算修改
         }
     }

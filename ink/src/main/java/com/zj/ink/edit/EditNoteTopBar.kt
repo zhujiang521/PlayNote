@@ -118,8 +118,10 @@ fun EditNoteTopBar(
                 }
                 if (isDirty) {
                     IconButton(onClick = {
-                        viewModel.saveNote()
-                        keyboardController?.hide()
+                        // 保存笔记，保存完成后隐藏键盘
+                        viewModel.saveNote {
+                            keyboardController?.hide()
+                        }
                     }, enabled = note.title.isNotBlank() || note.content.isNotBlank()) {
                         Icon(
                             painter = painterResource(R.drawable.baseline_save),
@@ -167,8 +169,10 @@ fun EditNoteTopBar(
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.save)) },
                             onClick = {
-                                viewModel.saveNote()
-                                keyboardController?.hide()
+                                // 保存笔记，保存完成后隐藏键盘
+                                viewModel.saveNote {
+                                    keyboardController?.hide()
+                                }
                                 expanded.value = false
                             },
                             enabled = note.title.isNotBlank() || note.content.isNotBlank()

@@ -31,4 +31,11 @@
     <color name="math_background">#FF0F00</color>
     <color name="math_border">#00FFD8</color>
     <color name="footnote_reference">#FF1AB1</color>
+
+    <!-- 编辑器增强颜色 -->
+    <color name="line_number_background">#F5F5F5</color>
+    <color name="line_number_default">#999999</color>
+    <color name="line_number_current">#1686FA</color>
+    <color name="current_line_highlight">#E8F4FD</color>
+    <color name="cursor_color">#1686FA</color>
 </resources>
