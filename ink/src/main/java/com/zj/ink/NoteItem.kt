@@ -143,15 +143,13 @@ fun NoteItem(
                     .pointerInput(Unit) {
                         detectTapGestures(
                             onPress = {
-                                isPressed = true
                                 tryAwaitRelease()
-                                isPressed = false
                             }
                         )
                     }
                     .fillMaxWidth()
-                    .height(IntrinsicSize.Min) // 根据内容高度自动调整
-                    .heightIn(min = MIN_HEIGHT, max = MAX_HEIGHT), // 限制高度范围 ,
+                    .height(IntrinsicSize.Min) // 使用IntrinsicSize实现自适应高度
+                    .heightIn(min = MIN_HEIGHT, max = MAX_HEIGHT), // 限制高度范围
                 shape = MaterialTheme.shapes.large,
                 colors = CardDefaults.cardColors(
                     containerColor = colorResource(R.color.item_background)
@@ -185,7 +183,6 @@ fun NoteItem(
                         content = note.content,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .heightIn(min = MIN_HEIGHT, max = MAX_HEIGHT)
                             .clickable { onClick() }
                     )
                 }

@@ -9,6 +9,8 @@
     <string name="confirm">确定</string>
     <string name="model_name">模型名称</string>
     <string name="no_content">当前暂无内容。</string>
+    <string name="loading">加载中...</string>
+    <string name="error">错误</string>
     <string name="delete_confirm">确定要删除 %1s 吗？</string>
     <string name="note">笔记</string>
     <string name="add_note">新建笔记</string>

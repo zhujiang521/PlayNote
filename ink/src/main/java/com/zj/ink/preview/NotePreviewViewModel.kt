@@ -11,9 +11,19 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+
+/**
+ * 笔记预览UI状态
+ */
+sealed class NotePreviewUiState {
+    object Loading : NotePreviewUiState()
+    data class Success(val note: Note) : NotePreviewUiState()
+    data class Error(val message: String) : NotePreviewUiState()
+}
 
 @HiltViewModel
 class NotePreviewViewModel @Inject constructor(
@@ -21,21 +31,34 @@ class NotePreviewViewModel @Inject constructor(
     private val noteRepository: NoteRepository
 ) : BaseShareViewModel(application) {
 
+    private val _uiState = MutableStateFlow<NotePreviewUiState>(NotePreviewUiState.Loading)
+    val uiState: StateFlow<NotePreviewUiState> = _uiState.asStateFlow()
+
     private val _note = MutableStateFlow(Note(title = "", content = ""))
     val note: StateFlow<Note> get() = _note
 
     /**
      * 根据ID加载笔记数据
-     * 优化：使用IO线程加载数据，加载完成后立即发射，不等待解析
+     * 优化：显示加载状态，避免空白闪屏
      */
     fun getNoteById(id: Int) {
         viewModelScope.launch {
-            // 在IO线程加载数据
-            val note = withContext(Dispatchers.IO) {
-                noteRepository.getNoteById(id)
+            try {
+                // 设置加载状态
+                _uiState.value = NotePreviewUiState.Loading
+
+                // 在IO线程加载数据
+                val note = withContext(Dispatchers.IO) {
+                    noteRepository.getNoteById(id)
+                }
+
+                // 更新状态为成功
+                _note.value = note
+                _uiState.value = NotePreviewUiState.Success(note)
+            } catch (e: Exception) {
+                // 处理加载错误
+                _uiState.value = NotePreviewUiState.Error(e.message ?: "加载失败")
             }
-            // 立即发射数据，UI层会异步解析
-            _note.value = note
         }
     }
 

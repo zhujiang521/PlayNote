@@ -93,6 +93,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.SubcomposeAsyncImage
 import coil3.request.ImageRequest
+import coil3.size.Size.Companion.ORIGINAL
 import com.zj.data.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -403,7 +404,7 @@ private fun RenderMarkdownElement(
                         SubcomposeAsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
                                 .data(element.url)
-                                .size(300, 300) // 使用缩略图尺寸
+                                .size(ORIGINAL)
                                 .build(),
                             modifier = Modifier
                                 .fillMaxSize()
@@ -466,7 +467,7 @@ private fun RenderMarkdownElement(
                     SubcomposeAsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
                             .data(element.url)
-                            .size(300, 300) // 使用缩略图尺寸
+                            .size(ORIGINAL)
                             .build(),
                         modifier = Modifier
                             .fillMaxSize()
@@ -698,7 +699,7 @@ private fun RenderMarkdownElement(
                 text = element.text,
                 isChecked = element.isChecked,
                 level = element.level,
-                onCheckedChange = { newChecked ->
+                onCheckedChange = { _ ->
                     // 触发任务状态切换回调
                     onTaskToggle?.invoke(taskIndex, element.text, element.isChecked)
                 }

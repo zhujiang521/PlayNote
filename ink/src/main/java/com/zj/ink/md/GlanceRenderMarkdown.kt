@@ -158,7 +158,7 @@ fun GlanceRenderMarkdown(content: String) {
                     when (element) {
                         is Table -> element.rows.size <= 3 // 限制表格行数
                         is CodeBlock -> element.text.length <= 500 // 限制代码块长度
-                        is Image -> false // Glance中暂时不渲染图片，避免网络和内存问题
+                        is Image -> true // Glance中暂时不渲染图片，避免网络和内存问题
                         else -> true
                     }
                 }
@@ -173,7 +173,7 @@ fun GlanceRenderMarkdown(content: String) {
             Pair(fallbackElements, true)
         }
     }
-    
+
     // 显示解析错误提示（如果有）
     if (hasError) {
         Column(modifier = GlanceModifier.padding(4.dp)) {

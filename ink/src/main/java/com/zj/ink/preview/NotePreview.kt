@@ -24,6 +24,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.zj.data.R
+import com.zj.data.lce.ErrorContent
+import com.zj.data.lce.LoadingContent
 import com.zj.ink.md.RenderMarkdown
 import com.zj.ink.widget.ShareIconButton
 
@@ -37,13 +39,19 @@ fun NotePreview(
     onImageClick: (String) -> Unit = {},
     back: () -> Unit = {},
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     val note by viewModel.note.collectAsState()
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        note.title,
+                        text = when (uiState) {
+                            is NotePreviewUiState.Success -> note.title
+                            is NotePreviewUiState.Loading -> stringResource(R.string.loading)
+                            is NotePreviewUiState.Error -> stringResource(R.string.error)
+                        },
                         fontSize = dimensionResource(R.dimen.top_bar_title).value.sp
                     )
                 },
@@ -57,31 +65,59 @@ fun NotePreview(
                     }
                 },
                 actions = {
-                    IconButton(
-                        onClick = { onEditClick(note.id) },
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.baseline_draw),
-                            contentDescription = stringResource(R.string.edit_note)
-                        )
+                    // 只在成功加载时显示操作按钮
+                    if (uiState is NotePreviewUiState.Success) {
+                        IconButton(
+                            onClick = { onEditClick(note.id) },
+                        ) {
+                            Icon(
+                                painter = painterResource(R.drawable.baseline_draw),
+                                contentDescription = stringResource(R.string.edit_note)
+                            )
+                        }
+                        ShareIconButton(viewModel, note)
                     }
-                    ShareIconButton(viewModel, note)
                 },
             )
         }) { paddingValues ->
-        RenderMarkdown(
-            markdown = note.content,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = dimensionResource(R.dimen.screen_horizontal_margin))
-                .animateContentSize(),
-            sharedTransitionScope = sharedTransitionScope,
-            animatedContentScope = animatedContentScope,
-            onImageClick = onImageClick,
-            onTaskToggle = { taskIndex, taskText, currentChecked ->
-                viewModel.toggleTaskAndSave(taskIndex, taskText, currentChecked)
+
+        // 根据UI状态显示不同内容
+        when (uiState) {
+            is NotePreviewUiState.Loading -> {
+                // 显示加载状态，避免空白闪屏
+                LoadingContent(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                )
             }
-        )
+
+            is NotePreviewUiState.Success -> {
+                // 显示笔记内容
+                RenderMarkdown(
+                    markdown = note.content,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(horizontal = dimensionResource(R.dimen.screen_horizontal_margin))
+                        .animateContentSize(),
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedContentScope = animatedContentScope,
+                    onImageClick = onImageClick,
+                    onTaskToggle = { taskIndex, taskText, currentChecked ->
+                        viewModel.toggleTaskAndSave(taskIndex, taskText, currentChecked)
+                    }
+                )
+            }
+
+            is NotePreviewUiState.Error -> {
+                // 显示错误状态
+                ErrorContent(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                )
+            }
+        }
     }
 }
