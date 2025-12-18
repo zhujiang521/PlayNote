@@ -36,6 +36,7 @@ import com.zj.data.R
 import com.zj.data.model.INVALID_ID
 import com.zj.ink.data.NoteViewModel
 import com.zj.data.common.SearchTextField
+import com.zj.data.common.buttonPressAnimation
 import com.zj.data.common.lazyPagingStates
 import com.zj.data.lce.LoadingContent
 import com.zj.data.lce.NoContent
@@ -60,9 +61,12 @@ fun NoteScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
                 actions = {
                     if (!viewModel.searchExpanded.value) {
-                        IconButton(onClick = {
-                            viewModel.searchExpanded.value = !viewModel.searchExpanded.value
-                        }) {
+                        IconButton(
+                            onClick = {
+                                viewModel.searchExpanded.value = !viewModel.searchExpanded.value
+                            },
+                            modifier = Modifier.buttonPressAnimation()
+                        ) {
                             Icon(
                                 painter = painterResource(R.drawable.baseline_search),
                                 contentDescription = stringResource(R.string.search)

@@ -5,7 +5,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.toArgb
 import androidx.ink.strokes.Stroke
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
 
@@ -215,8 +214,8 @@ data class VectorStroke(
                 val sin = kotlin.math.sin(rotation)
                 val newX = x * cos - y * sin
                 val newY = x * sin + y * cos
-                x = newX.toFloat()
-                y = newY.toFloat()
+                x = newX
+                y = newY
             }
 
             // 平移回原位置并应用偏移
@@ -343,7 +342,7 @@ enum class VectorStrokeStyle(val displayName: String) {
 
     companion object {
         fun fromName(name: String): VectorStrokeStyle? =
-            values().find { it.name.equals(name, ignoreCase = true) }
+            entries.find { it.name.equals(name, ignoreCase = true) }
     }
 }
 

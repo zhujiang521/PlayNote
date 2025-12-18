@@ -1,6 +1,11 @@
 // ShareOptionsDialog.kt
 package com.zj.ink.edit
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,8 +15,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -19,6 +28,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.zj.data.R
+import com.zj.data.common.AnimationConfig
+import com.zj.data.common.buttonPressAnimation
 import com.zj.data.model.Note
 import com.zj.ink.data.BaseShareViewModel
 import com.zj.ink.widget.LoadingDialog
@@ -43,8 +54,29 @@ fun ShareOptionsDialog(
         LoadingDialog(message = loadingMessage)
     }
 
+    var isVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        isVisible = true
+    }
+
     Dialog(onDismissRequest = onDismissRequest) {
-        Surface(
+        AnimatedVisibility(
+            visible = isVisible,
+            enter = scaleIn(
+                initialScale = 0.9f,
+                animationSpec = AnimationConfig.tweenNormal()
+            ) + fadeIn(
+                animationSpec = AnimationConfig.tweenNormal()
+            ),
+            exit = scaleOut(
+                targetScale = 0.95f,
+                animationSpec = AnimationConfig.tweenFast()
+            ) + fadeOut(
+                animationSpec = AnimationConfig.tweenFast()
+            )
+        ) {
+            Surface(
             shape = MaterialTheme.shapes.medium,
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 6.dp
@@ -62,7 +94,8 @@ fun ShareOptionsDialog(
                         }
                     },
                     modifier = Modifier
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 4.dp)
+                        .buttonPressAnimation(),
                     contentPadding = PaddingValues(
                         horizontal = dimensionResource(R.dimen.screen_horizontal_margin),
                         vertical = dimensionResource(R.dimen.image_screen_horizontal_margin),
@@ -81,7 +114,8 @@ fun ShareOptionsDialog(
                         }
                     },
                     modifier = Modifier
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 4.dp)
+                        .buttonPressAnimation(),
                     contentPadding = PaddingValues(
                         horizontal = dimensionResource(R.dimen.screen_horizontal_margin),
                         vertical = dimensionResource(R.dimen.image_screen_horizontal_margin),
@@ -100,7 +134,8 @@ fun ShareOptionsDialog(
                         }
                     },
                     modifier = Modifier
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 4.dp)
+                        .buttonPressAnimation(),
                     contentPadding = PaddingValues(
                         horizontal = dimensionResource(R.dimen.screen_horizontal_margin),
                         vertical = dimensionResource(R.dimen.image_screen_horizontal_margin),
@@ -119,7 +154,8 @@ fun ShareOptionsDialog(
                         }
                     },
                     modifier = Modifier
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 4.dp)
+                        .buttonPressAnimation(),
                     contentPadding = PaddingValues(
                         horizontal = dimensionResource(R.dimen.screen_horizontal_margin),
                         vertical = dimensionResource(R.dimen.image_screen_horizontal_margin),
@@ -138,7 +174,8 @@ fun ShareOptionsDialog(
                         }
                     },
                     modifier = Modifier
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = 4.dp)
+                        .buttonPressAnimation(),
                     contentPadding = PaddingValues(
                         horizontal = dimensionResource(R.dimen.screen_horizontal_margin),
                         vertical = dimensionResource(R.dimen.image_screen_horizontal_margin),
@@ -149,6 +186,7 @@ fun ShareOptionsDialog(
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
+            }
             }
         }
     }

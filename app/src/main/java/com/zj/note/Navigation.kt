@@ -10,8 +10,10 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import com.zj.data.common.AnimationConfig
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -158,27 +160,35 @@ private fun NavGraphBuilder.animateComposable(
 private fun AnimatedContentTransitionScope<NavBackStackEntry>.slideEnter(): EnterTransition {
     return slideIntoContainer(
         AnimatedContentTransitionScope.SlideDirection.Start,
-        animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing)
+        animationSpec = AnimationConfig.tweenEnter()
+    ) + fadeIn(
+        animationSpec = AnimationConfig.tweenNormal()
     )
 }
 
 private fun AnimatedContentTransitionScope<NavBackStackEntry>.slideExit(): ExitTransition {
     return slideOutOfContainer(
         AnimatedContentTransitionScope.SlideDirection.Start,
-        animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing)
+        animationSpec = AnimationConfig.tweenExit()
+    ) + fadeOut(
+        animationSpec = AnimationConfig.tweenFast()
     )
 }
 
 private fun AnimatedContentTransitionScope<NavBackStackEntry>.slidePopEnter(): EnterTransition {
     return slideIntoContainer(
         AnimatedContentTransitionScope.SlideDirection.End,
-        animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing)
+        animationSpec = AnimationConfig.tweenEnter()
+    ) + fadeIn(
+        animationSpec = AnimationConfig.tweenNormal()
     )
 }
 
 private fun AnimatedContentTransitionScope<NavBackStackEntry>.slidePopExit(): ExitTransition {
     return slideOutOfContainer(
         AnimatedContentTransitionScope.SlideDirection.End,
-        animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing)
+        animationSpec = AnimationConfig.tweenExit()
+    ) + fadeOut(
+        animationSpec = AnimationConfig.tweenFast()
     )
 }

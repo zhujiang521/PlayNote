@@ -1,5 +1,10 @@
 package com.zj.data.common
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -83,7 +88,22 @@ fun DialogX(
     Dialog(onDismissRequest = {
         alertDialog.value = false
     }) {
-        Card(
+        AnimatedVisibility(
+            visible = alertDialog.value,
+            enter = scaleIn(
+                initialScale = 0.9f,
+                animationSpec = AnimationConfig.tweenNormal()
+            ) + fadeIn(
+                animationSpec = AnimationConfig.tweenNormal()
+            ),
+            exit = scaleOut(
+                targetScale = 0.95f,
+                animationSpec = AnimationConfig.tweenFast()
+            ) + fadeOut(
+                animationSpec = AnimationConfig.tweenFast()
+            )
+        ) {
+            Card(
             shape = MaterialTheme.shapes.medium,
             modifier = Modifier
                 .width(400.dp)
@@ -148,6 +168,7 @@ fun DialogX(
                         )
                     }
                 }
+            }
             }
         }
     }

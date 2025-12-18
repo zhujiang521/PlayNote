@@ -1,6 +1,7 @@
 package com.zj.data.common
 
-import androidx.compose.animation.core.TweenSpec
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.AnchoredDraggableDefaults
 import androidx.compose.foundation.gestures.AnchoredDraggableState
@@ -69,7 +70,10 @@ fun SwipeBox(
     val flingBehavior = AnchoredDraggableDefaults.flingBehavior(
         state = state,
         positionalThreshold = { distance -> distance * 0.5f },
-        animationSpec = TweenSpec(durationMillis = 200),
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMediumLow
+        ),
     )
 
     // 监听状态变化

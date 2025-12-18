@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import com.zj.data.R
+import com.zj.data.common.buttonPressAnimation
 import com.zj.data.common.isPad
 import com.zj.data.model.Note
 import com.zj.data.model.isValid
@@ -54,13 +55,16 @@ fun EditNoteTopBar(
         },
         colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
         navigationIcon = {
-            IconButton(onClick = {
+            IconButton(
+                onClick = {
                 if (isDirty) {
                     exitDialogShown.value = true
                 } else {
                     back()
                 }
-            }) {
+                },
+                modifier = Modifier.buttonPressAnimation()
+            ) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_arrow_back),
                     contentDescription = stringResource(R.string.back),
@@ -68,17 +72,25 @@ fun EditNoteTopBar(
             }
         },
         actions = {
-            IconButton(onClick = {
-                viewModel.undo()
-            }, enabled = undoEnabled) {
+            IconButton(
+                onClick = {
+                    viewModel.undo()
+                },
+                enabled = undoEnabled,
+                modifier = Modifier.buttonPressAnimation()
+            ) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_undo),
                     contentDescription = stringResource(R.string.undo)
                 )
             }
-            IconButton(onClick = {
-                viewModel.redo()
-            }, enabled = redoEnabled) {
+            IconButton(
+                onClick = {
+                    viewModel.redo()
+                },
+                enabled = redoEnabled,
+                modifier = Modifier.buttonPressAnimation()
+            ) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_redo),
                     contentDescription = stringResource(R.string.redo)

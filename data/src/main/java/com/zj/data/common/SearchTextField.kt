@@ -1,9 +1,10 @@
 package com.zj.data.common
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -41,13 +42,15 @@ fun SearchTextField(
     val scope = rememberCoroutineScope()
     AnimatedVisibility(
         visible = visible,
-        enter = slideInHorizontally(
-            initialOffsetX = { it }, // 从右侧滑入
-            animationSpec = tween(durationMillis = 300) // 动画持续时间为300毫秒
+        enter = expandHorizontally(
+            animationSpec = AnimationConfig.tweenNormal()
+        ) + fadeIn(
+            animationSpec = AnimationConfig.tweenNormal()
         ),
-        exit = slideOutHorizontally(
-            targetOffsetX = { it }, // 向右侧滑出
-            animationSpec = tween(durationMillis = 300) // 动画持续时间为300毫秒
+        exit = shrinkHorizontally(
+            animationSpec = AnimationConfig.tweenFast()
+        ) + fadeOut(
+            animationSpec = AnimationConfig.tweenFast()
         )
     ) {
         Row(
