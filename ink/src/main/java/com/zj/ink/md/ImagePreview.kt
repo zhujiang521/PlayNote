@@ -68,7 +68,7 @@ fun ImagePreview(
     viewModel: ImageViewModel = hiltViewModel(),
     imageUrl: String,
     sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
+    animatedContentScope: AnimatedContentScope? = null,
     back: () -> Unit = {},
 ) {
     var bitmap by remember { mutableStateOf<Bitmap?>(null) }
@@ -79,10 +79,10 @@ fun ImagePreview(
     val coroutineScope = rememberCoroutineScope()
 
     BottomSheetScaffold(
-        scaffoldState = bottomSheetScaffoldState, 
+        scaffoldState = bottomSheetScaffoldState,
         sheetContent = {
             BottomSheet(viewModel, imageUrl, bitmap, bottomSheetScaffoldState, coroutineScope)
-        }, 
+        },
         sheetPeekHeight = 0.dp
     ) { padding ->
         Surface(
@@ -114,28 +114,48 @@ fun ImagePreview(
                             contentDescription = stringResource(R.string.down_fail)
                         )
                     },
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .sharedElement(
-                            sharedTransitionScope.rememberSharedContentState(key = "image-${imageUrl}"),
-                            animatedVisibilityScope = animatedContentScope
-                        )
-                        .zoomable(
-                            zoomState = rememberZoomState(),
-                            onTap = {
-                                if (bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
-                                    coroutineScope.launch {
-                                        bottomSheetScaffoldState.bottomSheetState.partialExpand()
+                    modifier =
+                        if (animatedContentScope != null)
+                            Modifier
+                                .fillMaxSize()
+                                .sharedElement(
+                                    sharedTransitionScope.rememberSharedContentState(key = "image-${imageUrl}"),
+                                    animatedVisibilityScope = animatedContentScope
+                                )
+                                .zoomable(
+                                    zoomState = rememberZoomState(),
+                                    onTap = {
+                                        if (bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
+                                            coroutineScope.launch {
+                                                bottomSheetScaffoldState.bottomSheetState.partialExpand()
+                                            }
+                                        } else {
+                                            back()
+                                        }
+                                    },
+                                    onLongPress = {
+                                        coroutineScope.launch {
+                                            bottomSheetScaffoldState.bottomSheetState.expand()
+                                        }
+                                    })
+                        else Modifier
+                            .fillMaxSize()
+                            .zoomable(
+                                zoomState = rememberZoomState(),
+                                onTap = {
+                                    if (bottomSheetScaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
+                                        coroutineScope.launch {
+                                            bottomSheetScaffoldState.bottomSheetState.partialExpand()
+                                        }
+                                    } else {
+                                        back()
                                     }
-                                } else {
-                                    back()
-                                }
-                            },
-                            onLongPress = {
-                                coroutineScope.launch {
-                                    bottomSheetScaffoldState.bottomSheetState.expand()
-                                }
-                            }),
+                                },
+                                onLongPress = {
+                                    coroutineScope.launch {
+                                        bottomSheetScaffoldState.bottomSheetState.expand()
+                                    }
+                                }),
                     onSuccess = { drawable ->
                         bitmap = drawable.result.image.toBitmap()
                     })
@@ -172,7 +192,7 @@ private fun BottomSheet(
             iconRes = R.drawable.baseline_share,
             coroutineScope = coroutineScope
         ) {
-            bitmap?.let { 
+            bitmap?.let {
                 coroutineScope.launch {
                     shareImage(context, imageUrl, it)
                 }
@@ -210,24 +230,24 @@ private fun BottomSheetItem(
                     color = colorResource(R.color.item_background),
                     shape = MaterialTheme.shapes.large
                 )
-                .size(60.dp), 
+                .size(60.dp),
             onClick = {
                 if (bitmap == null) {
                     ToastUtil.showToast(context, imageToast)
                     return@IconButton
                 }
-                
+
                 coroutineScope.launch(Dispatchers.IO) {
                     bottomSheetScaffoldState.bottomSheetState.partialExpand()
                     onClick()
                 }
             }) {
             Icon(
-                painter = painterResource(iconRes), 
+                painter = painterResource(iconRes),
                 contentDescription = stringResource(textRes)
             )
         }
-        
+
         Text(
             text = stringResource(textRes),
             modifier = Modifier.padding(vertical = 5.dp),

@@ -24,8 +24,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.ui.Alignment
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +35,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -52,14 +51,12 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.zj.data.R
 import com.zj.data.common.DialogX
-import com.zj.data.common.InputTextField
 import com.zj.data.common.isPad
 import com.zj.data.model.Note
 import com.zj.data.model.isValid
@@ -73,7 +70,7 @@ import kotlinx.coroutines.delay
 fun EditNoteScreen(
     viewModel: EditNoteViewModel = hiltViewModel<EditNoteViewModel>(),
     sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
+    animatedContentScope: AnimatedContentScope? = null,
     onImageClick: (String) -> Unit = {},
     back: () -> Unit = {},
 ) {
@@ -220,7 +217,7 @@ private fun NotePreview(
     modifier: Modifier = Modifier,
     viewModel: EditNoteViewModel,
     sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
+    animatedContentScope: AnimatedContentScope? = null,
     note: Note,
     isPad: Boolean,
     onImageClick: (String) -> Unit = {}

@@ -36,7 +36,7 @@ fun NotePreview(
     viewModel: NotePreviewViewModel = hiltViewModel<NotePreviewViewModel>(),
     showBackButton: Boolean = true,
     sharedTransitionScope: SharedTransitionScope,
-    animatedContentScope: AnimatedContentScope,
+    animatedContentScope: AnimatedContentScope? = null,
     onEditClick: (Int) -> Unit = {},
     onImageClick: (String) -> Unit = {},
     back: () -> Unit = {},

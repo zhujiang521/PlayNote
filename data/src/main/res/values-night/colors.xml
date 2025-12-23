@@ -12,6 +12,8 @@
     <color name="card_border">#232323</color>
     <color name="icon_color">#F0F0F0FF</color>
 
+    <color name="edit_background">#141288</color>
+
     <!-- Markdown扩展功能颜色 - 夜间模式 -->
     <color name="highlight_background">#FFFF00</color>
     <color name="highlight_text">#000000</color>
