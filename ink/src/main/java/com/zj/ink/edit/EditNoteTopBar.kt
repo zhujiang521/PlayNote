@@ -1,6 +1,7 @@
 package com.zj.ink.edit
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -19,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.SoftwareKeyboardController
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -63,7 +65,9 @@ fun EditNoteTopBar(
                     back()
                 }
                 },
-                modifier = Modifier.buttonPressAnimation()
+                modifier = Modifier
+                    .buttonPressAnimation()
+                    .padding(4.dp) // 增加内边距，扩大点击区域
             ) {
                 Icon(
                     painter = painterResource(R.drawable.baseline_arrow_back),

@@ -20,10 +20,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.zj.data.R
+import com.zj.data.common.buttonPressAnimation
 import com.zj.data.lce.ErrorContent
 import com.zj.data.lce.LoadingContent
 import com.zj.ink.md.RenderMarkdown
@@ -57,7 +59,12 @@ fun NotePreview(
                 },
                 navigationIcon = {
                     if (!showBackButton) return@TopAppBar
-                    IconButton(onClick = { back() }) {
+                    IconButton(
+                        onClick = { back() },
+                        modifier = Modifier
+                            .buttonPressAnimation()
+                            .padding(4.dp) // 增加内边距，扩大点击区域
+                    ) {
                         Icon(
                             painter = painterResource(R.drawable.baseline_arrow_back),
                             contentDescription = stringResource(R.string.back),
