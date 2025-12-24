@@ -67,6 +67,7 @@ private val ACTION_WIDTH = 100.dp
 fun NoteItem(
     onClick: () -> Unit = {},
     onDelete: () -> Unit = {},
+    isSelected: Boolean = false,
     searchQuery: String = "",
     control: SwipeBoxControl = rememberSwipeBoxControl(),
     note: Note
@@ -152,7 +153,7 @@ fun NoteItem(
                     .heightIn(min = MIN_HEIGHT, max = MAX_HEIGHT), // 限制高度范围
                 shape = MaterialTheme.shapes.large,
                 colors = CardDefaults.cardColors(
-                    containerColor = colorResource(R.color.item_background)
+                    containerColor = colorResource(if (isSelected) R.color.edit_background else R.color.item_background)
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {

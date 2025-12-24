@@ -26,6 +26,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.zj.data.lce.NoContent
+import com.zj.data.model.INVALID_ID
 import com.zj.ink.NoteScreen
 import com.zj.ink.data.EditNoteViewModel
 import com.zj.ink.data.NoteViewModel
@@ -75,7 +76,9 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID, noteFromArg: String?) {
     SharedTransitionLayout {
         NavDisplay(
             backStack = backStack,
-            onBack = { backStack.removeLastOrNull() },
+            onBack = {
+                backStack.removeLastOrNull()
+            },
             sceneStrategy = listDetailStrategy,
             entryProvider = entryProvider {
                 entry<NotesList>(
@@ -89,9 +92,9 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID, noteFromArg: String?) {
                     NoteScreen(
                         viewModel = viewModel,
                         previewNote = { id ->
-                            val first = backStack.last()
-                            if (first is NotePreview) {
-                                if (first.noteId != id) {
+                            val last = backStack.last()
+                            if (last is NotePreview) {
+                                if (last.noteId != id) {
                                     backStack.add(NotePreview(id))
                                 }
                             } else {
@@ -102,6 +105,12 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID, noteFromArg: String?) {
                             backStack.add(EditNote(id))
                         }
                     )
+                    val last = backStack.last()
+                    if (last is NotePreview) {
+                        viewModel.setSelectedNoteId(last.noteId)
+                    } else {
+                        viewModel.setSelectedNoteId(INVALID_ID)
+                    }
                 }
                 entry<NotePreview>(
                     metadata = ListDetailSceneStrategy.detailPane()
@@ -126,9 +135,7 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID, noteFromArg: String?) {
                         },
                         back = { backStack.removeLastOrNull() })
                 }
-                entry<EditNote>(
-                    metadata = ListDetailSceneStrategy.detailPane()
-                ) { notePreview ->
+                entry<EditNote> { notePreview ->
                     val viewModel = hiltViewModel<EditNoteViewModel>()
                     if (notePreview.noteId != DEFAULT_INVALID_ID) {
                         LaunchedEffect(Unit) {
@@ -146,9 +153,7 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID, noteFromArg: String?) {
                         backStack.removeLastOrNull()
                     }
                 }
-                entry<ImagePreview>(
-                    metadata = ListDetailSceneStrategy.extraPane()
-                ) { imagePreview ->
+                entry<ImagePreview> { imagePreview ->
                     val viewModel: ImageViewModel = hiltViewModel()
                     ImagePreview(
                         viewModel = viewModel,

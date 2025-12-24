@@ -33,13 +33,13 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.zj.data.R
-import com.zj.data.model.INVALID_ID
-import com.zj.ink.data.NoteViewModel
 import com.zj.data.common.SearchTextField
 import com.zj.data.common.buttonPressAnimation
 import com.zj.data.common.lazyPagingStates
 import com.zj.data.lce.LoadingContent
 import com.zj.data.lce.NoContent
+import com.zj.data.model.INVALID_ID
+import com.zj.ink.data.NoteViewModel
 
 @Composable
 fun NoteScreen(
@@ -49,6 +49,7 @@ fun NoteScreen(
 ) {
     val notes = viewModel.notes.collectAsLazyPagingItems()
     val isLoading by viewModel.isLoading.collectAsState()
+    val selectedNoteId by viewModel.selectedNoteId.collectAsState()
     Scaffold(
         topBar = {
             TopAppBar(
@@ -133,10 +134,12 @@ fun NoteScreen(
                     NoteItem(
                         note = item,
                         onClick = {
+                            viewModel.setSelectedNoteId(item.id)
                             previewNote(item.id)
                         },
                         searchQuery = viewModel.searchQuery.value,
                         onDelete = { viewModel.deleteNote(item) },
+                        isSelected = selectedNoteId == item.id
                     )
                 }
                 lazyPagingStates(notes)

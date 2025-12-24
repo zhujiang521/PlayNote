@@ -8,7 +8,7 @@
     <string name="share">分享</string>
     <string name="confirm">確定</string>
     <string name="model_name">模型名稱</string>
-    <string name="no_content">目前暫無內容。</string>
+    <string name="no_content">目前暫無內容</string>
     <string name="delete_confirm">確定要刪除 %1s 嗎？</string>
     <string name="note">筆記</string>
     <string name="add_note">新建筆記</string>

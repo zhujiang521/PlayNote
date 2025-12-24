@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.zj.data.R
+import com.zj.data.model.INVALID_ID
 import com.zj.data.model.Note
 import com.zj.data.utils.DataStoreUtils
 import com.zj.ink.widget.updateNoteWidget
@@ -43,6 +44,13 @@ class NoteViewModel @Inject constructor(
 
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
+    }
+
+    private val _selectedNoteId = MutableStateFlow(INVALID_ID)
+    val selectedNoteId: StateFlow<Int> = _selectedNoteId
+
+    fun setSelectedNoteId(id: Int) {
+        _selectedNoteId.value = id
     }
 
     // 同步 noteContent 和 note 的 content
