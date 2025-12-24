@@ -3,12 +3,8 @@
 package com.zj.note
 
 import android.annotation.SuppressLint
-import android.util.Log
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
@@ -17,8 +13,6 @@ import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneSt
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation3.runtime.NavKey
@@ -27,6 +21,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.zj.data.lce.NoContent
 import com.zj.data.model.INVALID_ID
+import com.zj.data.model.Note
 import com.zj.ink.NoteScreen
 import com.zj.ink.data.EditNoteViewModel
 import com.zj.ink.data.NoteViewModel
@@ -45,10 +40,13 @@ const val DEFAULT_INVALID_ID = -1
 object NotesList : NavKey
 
 @Serializable
-data class EditNote(val noteId: Int) : NavKey
+data class EditNote(val note: Note?) : NavKey
 
 @Serializable
-data class NotePreview(val noteId: Int) : NavKey
+data class NotePreview(val note: Note) : NavKey
+
+@Serializable
+data class NotePreviewById(val noteId: Int) : NavKey
 
 @Serializable
 data class ImagePreview(val imageUrl: String) : NavKey
@@ -60,7 +58,7 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID, noteFromArg: String?) {
     val initialRoute = if (noteId <= DEFAULT_INVALID_ID) {
         NotesList
     } else {
-        NotePreview(noteId)
+        NotePreviewById(noteId)
     }
 
     val backStack = rememberNavBackStack(initialRoute)
@@ -91,32 +89,48 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID, noteFromArg: String?) {
                     val viewModel = hiltViewModel<NoteViewModel>()
                     NoteScreen(
                         viewModel = viewModel,
-                        previewNote = { id ->
+                        previewNote = { note ->
                             val last = backStack.last()
                             if (last is NotePreview) {
-                                if (last.noteId != id) {
-                                    backStack.add(NotePreview(id))
+                                if (last.note.id != note.id) {
+                                    backStack.add(NotePreview(note))
                                 }
                             } else {
-                                backStack.add(NotePreview(id))
+                                backStack.add(NotePreview(note))
                             }
                         },
-                        editNote = { id ->
-                            backStack.add(EditNote(id))
+                        editNote = { note ->
+                            backStack.add(EditNote(note))
                         }
                     )
                     val last = backStack.last()
                     if (last is NotePreview) {
-                        viewModel.setSelectedNoteId(last.noteId)
+                        viewModel.setSelectedNoteId(last.note.id)
                     } else {
                         viewModel.setSelectedNoteId(INVALID_ID)
                     }
                 }
                 entry<NotePreview>(
                     metadata = ListDetailSceneStrategy.detailPane()
-                ) { notePreview ->
+                ) { note ->
                     val viewModel = hiltViewModel<NotePreviewViewModel>()
-                    val id = notePreview.noteId
+                    viewModel.setNote(note = note.note)
+                    NotePreview(
+                        viewModel = viewModel,
+                        showBackButton = noteFromArg != NOTE_FROM_VALUE,
+                        sharedTransitionScope = this@SharedTransitionLayout,
+                        animatedContentScope = null,
+                        onImageClick = { imageUrl ->
+                            backStack.add(ImagePreview(imageUrl))
+                        },
+                        onEditClick = {
+                            backStack.add(EditNote(note = note.note))
+                        },
+                        back = { backStack.removeLastOrNull() })
+                }
+                entry<NotePreviewById> { note ->
+                    val viewModel = hiltViewModel<NotePreviewViewModel>()
+                    val id = note.noteId
                     if (id != DEFAULT_INVALID_ID) {
                         LaunchedEffect(Unit) {
                             viewModel.getNoteById(id)
@@ -131,16 +145,19 @@ fun NoteApp(noteId: Int = DEFAULT_INVALID_ID, noteFromArg: String?) {
                             backStack.add(ImagePreview(imageUrl))
                         },
                         onEditClick = {
-                            backStack.add(EditNote(id))
+                            backStack.add(EditNote(note = viewModel.note.value))
                         },
                         back = { backStack.removeLastOrNull() })
                 }
                 entry<EditNote> { notePreview ->
                     val viewModel = hiltViewModel<EditNoteViewModel>()
-                    if (notePreview.noteId != DEFAULT_INVALID_ID) {
+                    val note = notePreview.note
+                    if (note != null) {
                         LaunchedEffect(Unit) {
-                            viewModel.getNoteById(notePreview.noteId)
+                            viewModel.setNote(notePreview.note)
                         }
+                    } else {
+                        viewModel.resetNote()
                     }
                     EditNoteScreen(
                         viewModel = viewModel,

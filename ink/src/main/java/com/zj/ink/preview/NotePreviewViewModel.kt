@@ -62,6 +62,11 @@ class NotePreviewViewModel @Inject constructor(
         }
     }
 
+    fun setNote(note: Note) {
+        _note.value = note
+        _uiState.value = NotePreviewUiState.Success(note)
+    }
+
     /**
      * 切换任务列表项的完成状态并立即保存（预览页面专用）
      *

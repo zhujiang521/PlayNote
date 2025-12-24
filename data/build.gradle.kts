@@ -90,6 +90,12 @@ dependencies {
     api(libs.androidx.paging.runtime.ktx)
     api(libs.androidx.paging.compose)
 
+    api(libs.androidx.navigation3.ui)
+    api(libs.androidx.navigation3.runtime)
+    api(libs.androidx.lifecycle.viewmodel.navigation3)
+    api(libs.androidx.material3.adaptive.navigation3)
+    api(libs.kotlinx.serialization.core)
+
     testImplementation(libs.junit)
     debugImplementation(libs.androidx.ui.tooling)
     androidTestImplementation(libs.androidx.junit)

@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -39,17 +40,34 @@ import com.zj.data.common.lazyPagingStates
 import com.zj.data.lce.LoadingContent
 import com.zj.data.lce.NoContent
 import com.zj.data.model.INVALID_ID
+import com.zj.data.model.Note
 import com.zj.ink.data.NoteViewModel
 
 @Composable
 fun NoteScreen(
     viewModel: NoteViewModel = hiltViewModel(),
-    editNote: (Int) -> Unit = {},
-    previewNote: (Int) -> Unit = {},
+    editNote: (Note?) -> Unit = {},
+    previewNote: (Note) -> Unit = {},
 ) {
     val notes = viewModel.notes.collectAsLazyPagingItems()
     val isLoading by viewModel.isLoading.collectAsState()
     val selectedNoteId by viewModel.selectedNoteId.collectAsState()
+    val state: LazyStaggeredGridState = rememberLazyStaggeredGridState()
+
+    // 监听 selectedNoteId 变化并滚动到对应项目
+    LaunchedEffect(selectedNoteId) {
+        if (selectedNoteId != INVALID_ID) {
+            var index = INVALID_ID
+            for (i in 0 until notes.itemCount) {
+                if (notes[i]?.id == selectedNoteId) {
+                    index = i
+                }
+            }
+            if (index > INVALID_ID) {
+                state.animateScrollToItem(index)
+            }
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -94,7 +112,7 @@ fun NoteScreen(
         }, floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    editNote(INVALID_ID)
+                    editNote(null)
                     viewModel.searchExpanded.value = false
                 },
                 modifier = Modifier
@@ -115,7 +133,6 @@ fun NoteScreen(
         } else if (notes.itemCount == 0) {
             NoContent()
         } else {
-            val state: LazyStaggeredGridState = rememberLazyStaggeredGridState()
             LazyVerticalStaggeredGrid(
                 modifier = Modifier
                     .fillMaxSize()
@@ -135,7 +152,7 @@ fun NoteScreen(
                         note = item,
                         onClick = {
                             viewModel.setSelectedNoteId(item.id)
-                            previewNote(item.id)
+                            previewNote(item)
                         },
                         searchQuery = viewModel.searchQuery.value,
                         onDelete = { viewModel.deleteNote(item) },

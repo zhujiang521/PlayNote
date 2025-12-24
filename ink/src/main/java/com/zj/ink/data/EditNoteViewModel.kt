@@ -364,21 +364,29 @@ class EditNoteViewModel @Inject constructor(
     }
 
     // 在 getNoteById 中同步 noteTitle 和 noteContent
-    fun getNoteById(id: Int) {
-        viewModelScope.launch {
-            val note = noteRepository.getNoteById(id)
-            _note.value = note
-            // 同步标题和内容到 TextFieldValue，光标默认放在末尾
-            _noteTitle.value = TextFieldValue(
-                text = note.title,
-                selection = TextRange(note.title.length)
-            )
-            _noteContent.value = TextFieldValue(
-                text = note.content,
-                selection = TextRange(note.content.length)
-            )
-            _isDirty.value = false // 加载旧数据不算修改
-        }
+    fun setNote(note: Note) {
+        _note.value = note
+        // 同步标题和内容到 TextFieldValue，光标默认放在末尾
+        _noteTitle.value = TextFieldValue(
+            text = note.title,
+            selection = TextRange(note.title.length)
+        )
+        _noteContent.value = TextFieldValue(
+            text = note.content,
+            selection = TextRange(note.content.length)
+        )
+        _isDirty.value = false // 加载旧数据不算修改
+    }
+
+    fun resetNote() {
+        _note.value = Note(
+            title = "",
+            content = "",
+            timestamp = System.currentTimeMillis()
+        )
+        _noteTitle.value = TextFieldValue("", TextRange(0))
+        _noteContent.value = TextFieldValue("", TextRange(0))
+        _isDirty.value = false
     }
 
     fun updateNoteContentImage(file: File) {
